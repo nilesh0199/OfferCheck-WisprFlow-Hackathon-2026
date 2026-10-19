@@ -31,20 +31,26 @@ To protect users and maintain absolute integrity, OfferCheck is explicitly **NOT
 
 OfferCheck strictly limits its core MVP scope to keep complexity low, eliminate security vulnerabilities, and ensure zero-cost reliability:
 
-### In Scope
+### In Scope (MVP & Core Pipeline)
 - Direct plain-text input of internship communications (emails, letters, chat messages) up to a maximum character limit (`MAX_INPUT_CHARS = 8000`).
 - Strict client-side and server-side text validation.
 - Server-side analysis returning structured, evidence-backed findings.
 - Client-side quotation verification to ensure no fabricated quotes appear.
 - Plain-language verification questions tailored to the provided offer.
 
+### Planned Document Input Feature (Phase 5)
+- Users may upload one PDF or up to three screenshots.
+- **Transcription Only:** The multimodal model is used solely to transcribe the uploaded document/images into raw text.
+- **User Review & Redaction Step:** The user reviews and can freely edit the generated transcript to remove personal details (names, phone numbers, addresses, financial data).
+- **Single Pipeline Integrity:** Analysis then runs through the exact same text-based pipeline, ensuring quotation validation works deterministically against the user-confirmed transcript.
+- **Verification of Limits:** Upload constraints (page count limits, file size caps, and request-body size thresholds) must be verified directly against current Vercel and Gemini documentation when building that phase, never assumed.
+
 ### Out of Scope (Non-Goals for MVP)
-- **No PDF or document upload:** No PDF parsing, Word document reading, or file storage.
-- **No Optical Character Recognition (OCR):** No image uploads or screenshot scanning.
-- **No inbox or messaging integration:** No Gmail, Outlook, WhatsApp, Telegram, or LinkedIn connectors.
-- **No browser extension:** Standalone accessible web application only.
-- **No user accounts or authentication:** Publicly accessible for students and judges without login or credentials.
-- **No database or saved history:** Ephemeral processing only. Once the user closes or refreshes the page, the submitted text and results are cleared.
+- **No Video Upload:** Video ingestion/processing is NOT planned (listed as potential future work).
+- **No Inbox or Messaging Integration:** No automated connectors for Gmail, Outlook, WhatsApp, Telegram, or LinkedIn.
+- **No Browser Extension:** Standalone accessible web application only.
+- **No User Accounts or Authentication:** Publicly accessible for students and judges without login or credentials.
+- **No Database or Saved History:** Ephemeral processing only. Once the user closes or refreshes the page, the submitted text and results are discarded.
 
 ---
 
@@ -107,6 +113,7 @@ To eliminate AI hallucinations and ensure trust, all findings must strictly foll
 4. **Log Sanitization:** Server logs must never record the raw offer text or personal identifiable information. Only operational metadata (e.g., character length, execution latency, status codes) may be logged.
 5. **Credential Security:** All API keys (e.g., Gemini API, Tavily API) reside exclusively on the server in environment variables. No client-accessible prefixes (`NEXT_PUBLIC_`) are allowed for private keys.
 6. **Pre-Submission Privacy Notice:** The UI mandates a prominent privacy notice prompting users to redact names, phone numbers, home addresses, government ID numbers, bank details, and sensitive credentials prior to pasting.
+7. **External AI Provider Disclosure:** Once connected to the AI provider, the UI privacy notice must explicitly disclose that submitted text is sent to an external AI service. The provider's free-tier data-use terms must be verified against current official documentation before wording this notice.
 
 ---
 
@@ -152,3 +159,15 @@ Four carefully constructed synthetic test cases will be maintained:
 When integrating external services in subsequent phases, assumptions are prohibited; details must be verified against live documentation:
 - **Google Gemini API:** Validate current SDK package (`@google/genai` vs `@google/generative-ai`), supported model identifiers (e.g., `gemini-2.5-flash`), token limits, rate quotas, and free-tier pricing at the time of implementation.
 - **Tavily API:** Validate current search endpoint specifications, authentication headers, credit consumption, and rate limits prior to any coding.
+
+---
+
+## 9. Key Architectural Decisions
+
+1. **Deployment Platform:** Deployed directly on Vercel for zero-configuration global distribution and zero-sign-in access for hackathon judges.
+2. **Stateless Operations:** Absolutely no user accounts, third-party analytics trackers, or persistent databases. All processing is transient and in-memory.
+3. **Log Hygiene:** Server logs exclude raw offer text and personal details under all circumstances. Only sanitized operational metadata (e.g., duration, byte count, HTTP status) may be recorded.
+4. **Language Limitation:** The MVP is strictly English-only. This is documented as a deliberate project boundary and limitation.
+5. **Rate Limiting Strategy:** Best-effort in-memory limits will be implemented with the AI provider quota serving as the hard ceiling. When limits are exceeded, the app serves a friendly "busy, try later" notice. (This will be refined in Phase 6; in-memory rate limiting is acknowledged to be weak across ephemeral serverless instances).
+6. **Public Repository Security:** The source repository is public; no API keys, secrets, or sensitive credentials may ever be committed.
+7. **Name Architecture:** The application name remains "OfferCheck", centralized in a single configuration constant (`APP_NAME` in `src/lib/config.ts`) so it can be updated in one place if needed.

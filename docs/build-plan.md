@@ -4,12 +4,12 @@
 > **Target Completion Date for Submission Package:** October 29, 2026  
 > **Track:** Builders track, solo entry ("No Hands: The Wispr Challenge")
 
-This phased build plan outlines the implementation roadmap for OfferCheck, an internship-offer review assistant. Each phase specifies a distinct goal, concrete acceptance criteria, and its current status.
+This phased build plan outlines the implementation roadmap for OfferCheck, an internship-offer review assistant. Each phase specifies a distinct goal, concrete acceptance criteria, and its truthful status.
 
 ---
 
 ## Phase 1: Spec, Scaffold, Deployable Shell
-- **Status:** In progress
+- **Status:** Complete
 - **Goal:** Establish project documentation, initialize the Next.js application framework with minimal dependencies, configure build/lint/typecheck scripts, and deliver a deployable frontend shell featuring the core input textarea, privacy guidance, live character counter, and tool limitations.
 - **Acceptance Criteria:**
   - `docs/project-spec.md`, `docs/build-plan.md`, `docs/dev-log.md`, `README.md`, and `.env.example` are created and accurate.
@@ -23,17 +23,18 @@ This phased build plan outlines the implementation roadmap for OfferCheck, an in
 ---
 
 ## Phase 2: Analysis Contract (Zod Schemas, Quotation Validator, Synthetic Examples, Unit Tests)
-- **Status:** Not started
-- **Goal:** Define strict type schemas and deterministic quotation validation mechanisms without connecting to an LLM, accompanied by four diverse synthetic test fixtures and unit tests.
+- **Status:** In progress
+- **Goal:** Define strict type schemas and deterministic quotation validation mechanisms without connecting to an LLM, accompanied by four diverse synthetic test fixtures and comprehensive unit tests.
 - **Acceptance Criteria:**
-  - Zod schemas define the structured analysis response (concerns, missing info, verification questions, limits).
-  - Pure function quotation validator checks every concern's quote against the raw user input; invalid or hallucinated quotes are safely rejected.
-  - Four synthetic test fixtures are created and clearly labelled:
+  - Zod schemas define the structured analysis response (`concerns`, `missingInfo`, `verificationQuestions`, `overallNote`) without risk scores or safety verdicts.
+  - Pure function quotation validator checks every concern's quote against the raw user input; invalid or hallucinated quotes are safely rejected with character offsets mapped into the original text.
+  - Overclaiming guardrail detector catches prohibited phrases ("verified safe", "definitely a scam", numeric percentages) while tolerating objective and hedged phrasing.
+  - Four synthetic test fixtures are created and clearly labelled as synthetic:
     1. Urgent payment request (fee demanded with tight deadline).
     2. Incomplete but not obviously suspicious offer (missing standard terms).
-    3. Detailed professional offer (no upfront payment clauses).
+    3. Detailed professional offer (no upfront payment clauses; zero payment-request words).
     4. Ambiguous communication (insufficient data to make an assessment).
-  - Unit tests verify schema compliance, quotation validation logic, and edge case handling (empty strings, whitespace, non-matching quotes).
+  - Vitest test suite verifies schema compliance, quotation validation logic, guardrails, edge cases, synthetic examples, and prompt-injection fixture.
 
 ---
 
@@ -51,8 +52,9 @@ This phased build plan outlines the implementation roadmap for OfferCheck, an in
 
 ## Phase 4: Results UI
 - **Status:** Not started
-- **Goal:** Connect the frontend form to the analysis endpoint, displaying structured findings across the four required sections with quotation highlights and verification question export.
+- **Goal:** Connect the frontend form to the analysis endpoint, displaying structured findings across the four required sections with quotation highlights and verification question export. Reorganize layout so input is higher on the page.
 - **Acceptance Criteria:**
+  - Input form moved higher on the page so users can immediately reach and paste text without scrolling past explanatory cards.
   - Submit/Analyze button added with loading, progress, and disabled states during request processing.
   - Four output sections rendered cleanly: Potential Concerns (with verbatim highlighted quotes), Missing or Unclear Information, Verification Questions, and Limits of the Review.
   - Easy one-click clipboard copying for suggested verification questions.
@@ -61,18 +63,31 @@ This phased build plan outlines the implementation roadmap for OfferCheck, an in
 
 ---
 
-## Phase 5: Safeguards and Documented Test Set
+## Phase 5: Document Input (PDF + Screenshots)
+- **Status:** Not started
+- **Goal:** Enable users to submit offers via one PDF or up to three screenshots, using multimodal transcription followed by explicit user review and redaction before running the unified text analysis pipeline.
+- **Acceptance Criteria:**
+  - File upload component accepts 1 PDF or up to 3 image screenshots.
+  - AI model only performs transcription to plain text; no direct analysis occurs during document intake.
+  - User reviews, verifies, and edits the transcription in the textarea to redact personal information.
+  - Verified transcript feeds directly into the standard Phase 3 text pipeline, preserving quotation validation against confirmed text.
+  - Strict file size and page count limits enforced and verified against current Vercel and Gemini documentation.
+  - Video upload explicitly disallowed and documented as future work.
+
+---
+
+## Phase 6: Safeguards and Documented Test Set
 - **Status:** Not started
 - **Goal:** Harden the application with input sanitization, client and server request timeouts, basic in-memory rate limiting with clearly documented limitations, and a documented test suite.
 - **Acceptance Criteria:**
   - Character limit strictly enforced on both frontend and backend.
   - Explicit request timeout mechanisms abort stalled upstream connections.
-  - Basic IP or session rate limiting implemented with documented operational limits (e.g., in-memory limitation across serverless instances).
+  - Basic IP or session rate limiting implemented with documented operational limits (best-effort in-memory limits plus provider quota ceiling; friendly "busy, try later" notice).
   - Documented verification test set verifying handling of empty input, max length, boundary text, prompt injection attempts, and special characters.
 
 ---
 
-## Phase 6: Research-Prompt Fallback (Copy + Perplexity Link)
+## Phase 7: Research-Prompt Fallback (Copy + Perplexity Link)
 - **Status:** Not started
 - **Goal:** Provide a resilient, zero-cost external research fallback allowing students to inspect recruiter and company authenticity via one-click queries.
 - **Acceptance Criteria:**
@@ -83,7 +98,7 @@ This phased build plan outlines the implementation roadmap for OfferCheck, an in
 
 ---
 
-## Phase 7: Optional Tavily Research (Lowest Priority — First to Cut)
+## Phase 8: Optional Tavily Research (Lowest Priority — First to Cut)
 - **Status:** Not started
 - **Goal:** If time and budget allow, implement an optional server-side Tavily search integration to surface public web footprint details for the claimed company.
 - **Acceptance Criteria:**
@@ -95,12 +110,12 @@ This phased build plan outlines the implementation roadmap for OfferCheck, an in
 
 ---
 
-## Phase 8: Docs, Deployment, Classmate Feedback, Demo, Submission Package
+## Phase 9: Docs, Deployment, Classmate Feedback, Demo, Submission Package
 - **Status:** Not started
-- **Goal:** Deploy the application to a public zero-sign-in URL, conduct peer evaluation, record demo walkthrough, and finalize all competition submission deliverables.
+- **Goal:** Deploy the application to a public zero-sign-in URL, conduct peer evaluation, record demo walkthrough (up to 2 minutes), and finalize all competition submission deliverables.
 - **Acceptance Criteria:**
   - Application deployed to Vercel with clean public URL accessible to hackathon judges without authentication.
   - Real-world feedback collected from student classmates and logged in `docs/dev-log.md`.
-  - Comprehensive demo video or walkthrough produced highlighting the problem, features, and evidence-first philosophy.
+  - Comprehensive demo video (up to 2 minutes) produced highlighting the problem, features, and evidence-first philosophy.
   - Submission repository packaged with updated documentation, architectural diagrams, and license.
   - Complete submission ready by target date of October 29, 2026.

@@ -48,6 +48,37 @@ export function parseModelOutput(raw: unknown): ParseModelOutputResult {
       }
     }
 
+    // Clean up nulls on optional arrays and properties commonly emitted by LLM structured outputs
+    if (candidate && typeof candidate === "object" && !Array.isArray(candidate)) {
+      const obj = candidate as Record<string, unknown>;
+      if (obj.concerns === null) obj.concerns = [];
+      if (obj.missingInfo === null) obj.missingInfo = [];
+      if (obj.verificationQuestions === null) obj.verificationQuestions = [];
+      if (obj.overallNote === null) delete obj.overallNote;
+      if (Array.isArray(obj.missingInfo)) {
+        for (const item of obj.missingInfo) {
+          if (
+            item &&
+            typeof item === "object" &&
+            (item as Record<string, unknown>).relatedQuote === null
+          ) {
+            delete (item as Record<string, unknown>).relatedQuote;
+          }
+        }
+      }
+      if (Array.isArray(obj.verificationQuestions)) {
+        for (const q of obj.verificationQuestions) {
+          if (
+            q &&
+            typeof q === "object" &&
+            (q as Record<string, unknown>).relatedConcernId === null
+          ) {
+            delete (q as Record<string, unknown>).relatedConcernId;
+          }
+        }
+      }
+    }
+
     const parseResult = ModelOutputSchema.safeParse(candidate);
     if (!parseResult.success) {
       const issueDetails = parseResult.error.issues

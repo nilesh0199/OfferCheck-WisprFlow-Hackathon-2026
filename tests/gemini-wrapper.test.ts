@@ -2,10 +2,17 @@ import { describe, it, expect, vi } from "vitest";
 import {
   analyzeOfferText,
   cleanJsonSchemaForGemini,
+  parseModelChain,
+  resolveThinkingLevel,
   GEMINI_RESPONSE_SCHEMA,
   GeminiModelClient,
 } from "@/lib/analysis/gemini";
-import { MIN_INPUT_CHARS, MAX_INPUT_CHARS } from "@/lib/config";
+import {
+  MIN_INPUT_CHARS,
+  MAX_INPUT_CHARS,
+  DEFAULT_MODEL_CHAIN,
+  MAX_OUTPUT_TOKENS,
+} from "@/lib/config";
 import { PROMPT_INJECTION_FIXTURE } from "@/data/test-fixtures";
 import { OFFER_DELIMITER_START, OFFER_DELIMITER_END } from "@/lib/analysis/prompt";
 
@@ -58,11 +65,51 @@ describe("cleanJsonSchemaForGemini", () => {
   });
 });
 
-describe("analyzeOfferText offline validation and error handling", () => {
+describe("parseModelChain and resolveThinkingLevel", () => {
+  it("returns DEFAULT_MODEL_CHAIN when environment variables are unset", () => {
+    const chain = parseModelChain(undefined, undefined);
+    expect(chain).toEqual(DEFAULT_MODEL_CHAIN);
+    expect(chain).toEqual([
+      "gemini-3.8-flash",
+      "gemini-3.6-flash",
+      "gemini-3.5-flash-lite",
+    ]);
+  });
+
+  it("parses GEMINI_MODELS, trims whitespace, drops empty items, and caps at 3", () => {
+    const chain = parseModelChain(" model-a , , model-b , model-c , model-d ");
+    expect(chain).toEqual(["model-a", "model-b", "model-c"]);
+  });
+
+  it("falls back to legacy GEMINI_MODEL as a single-item chain if GEMINI_MODELS is unset", () => {
+    const chain = parseModelChain(undefined, " gemini-legacy-flash ");
+    expect(chain).toEqual(["gemini-legacy-flash"]);
+  });
+
+  it("resolves lowest documented thinking level per model", () => {
+    expect(resolveThinkingLevel("gemini-3.8-flash")).toBe("low");
+    expect(resolveThinkingLevel("gemini-3.6-flash")).toBe("minimal");
+    expect(resolveThinkingLevel("gemini-3.5-flash-lite")).toBe("minimal");
+  });
+
+  it("applies GEMINI_THINKING_LEVEL override only when supported by the model", () => {
+    // gemini-3.8-flash supports low, medium, high (NOT minimal)
+    expect(resolveThinkingLevel("gemini-3.8-flash", "high")).toBe("high");
+    expect(resolveThinkingLevel("gemini-3.8-flash", "minimal")).toBe("low"); // falls back to lowest supported
+
+    // gemini-3.6-flash supports minimal, low, medium, high
+    expect(resolveThinkingLevel("gemini-3.6-flash", "low")).toBe("low");
+    expect(resolveThinkingLevel("gemini-3.6-flash", "minimal")).toBe("minimal");
+
+    // unlisted model returns undefined (never guess)
+    expect(resolveThinkingLevel("custom-unlisted-model")).toBeUndefined();
+  });
+});
+
+describe("analyzeOfferText offline validation and fallback handling", () => {
   const validOfferText =
     "We are pleased to offer you the Software Engineering Internship at Nebula Dynamics. A refundable equipment deposit of ₹4,500 is required within 24 hours to secure your workspace setup. Please contact hr@example.com for payment instructions.";
 
-  // Hand-written MOCK valid model response
   const mockValidModelJson = JSON.stringify({
     concerns: [
       {
@@ -176,109 +223,286 @@ describe("analyzeOfferText offline validation and error handling", () => {
     }
   });
 
-  it("returns RATE_LIMITED on upstream 429 / RESOURCE_EXHAUSTED", async () => {
-    const rateLimitError = new Error("Resource exhausted: quota exceeded (429)");
+  it("400/401/403 fails immediately with no fallback and exactly one call", async () => {
+    // 400 Bad Request
+    const err400 = new Error("Invalid parameter: 400 Bad Request");
+    (err400 as unknown as { status: number }).status = 400;
+
+    const fakeClient400: GeminiModelClient = {
+      interactions: { create: vi.fn().mockRejectedValue(err400) },
+    };
+
+    const res400 = await analyzeOfferText(validOfferText, {
+      apiKey: "fake-key",
+      client: fakeClient400,
+      modelChain: ["model-1", "model-2", "model-3"],
+    });
+
+    expect(fakeClient400.interactions!.create).toHaveBeenCalledTimes(1); // Exactly 1 call, no fallback!
+    expect(res400.ok).toBe(false);
+    if (!res400.ok) {
+      expect(res400.code).toBe("UPSTREAM_ERROR");
+      expect(res400.httpStatus).toBe(400);
+    }
+
+    // 401 Unauthorized
+    const err401 = new Error("API key invalid: 401 Unauthorized");
+    (err401 as unknown as { status: number }).status = 401;
+
+    const fakeClient401: GeminiModelClient = {
+      interactions: { create: vi.fn().mockRejectedValue(err401) },
+    };
+
+    const res401 = await analyzeOfferText(validOfferText, {
+      apiKey: "fake-key",
+      client: fakeClient401,
+      modelChain: ["model-1", "model-2", "model-3"],
+    });
+
+    expect(fakeClient401.interactions!.create).toHaveBeenCalledTimes(1);
+    expect(res401.ok).toBe(false);
+    if (!res401.ok) {
+      expect(res401.code).toBe("NOT_CONFIGURED");
+      expect(res401.httpStatus).toBe(500);
+    }
+
+    // 403 Forbidden
+    const err403 = new Error("Permission denied: 403 Forbidden");
+    (err403 as unknown as { status: number }).status = 403;
+
+    const fakeClient403: GeminiModelClient = {
+      interactions: { create: vi.fn().mockRejectedValue(err403) },
+    };
+
+    const res403 = await analyzeOfferText(validOfferText, {
+      apiKey: "fake-key",
+      client: fakeClient403,
+      modelChain: ["model-1", "model-2", "model-3"],
+    });
+
+    expect(fakeClient403.interactions!.create).toHaveBeenCalledTimes(1);
+    expect(res403.ok).toBe(false);
+    if (!res403.ok) {
+      expect(res403.code).toBe("NOT_CONFIGURED");
+      expect(res403.httpStatus).toBe(500);
+    }
+  });
+
+  it("primary 429 -> secondary used and modelUsed reported", async () => {
+    const rateLimitError = new Error("Resource exhausted: 429 quota exceeded");
     (rateLimitError as unknown as { status: number }).status = 429;
 
+    const mockCreate = vi
+      .fn()
+      .mockRejectedValueOnce(rateLimitError) // primary 429
+      .mockResolvedValueOnce({ output_text: mockValidModelJson }); // secondary succeeds
+
     const fakeClient: GeminiModelClient = {
-      interactions: { create: vi.fn().mockRejectedValue(rateLimitError) },
+      interactions: { create: mockCreate },
     };
 
     const res = await analyzeOfferText(validOfferText, {
       apiKey: "fake-key",
       client: fakeClient,
+      modelChain: ["gemini-3.8-flash", "gemini-3.6-flash"],
     });
 
+    expect(mockCreate).toHaveBeenCalledTimes(2);
+    expect(mockCreate.mock.calls[0][0].model).toBe("gemini-3.8-flash");
+    expect(mockCreate.mock.calls[1][0].model).toBe("gemini-3.6-flash");
+
+    expect(res.ok).toBe(true);
+    if (res.ok) {
+      expect(res.modelUsed).toBe("gemini-3.6-flash");
+      expect(res.attempts.length).toBe(2);
+      expect(res.attempts[0].outcome).toBe("RATE_LIMITED");
+      expect(res.attempts[1].outcome).toBe("SUCCESS");
+    }
+  });
+
+  it("primary 503 overloaded -> falls back to next model", async () => {
+    const overloadError = new Error("503 Service Unavailable: The model is overloaded");
+    (overloadError as unknown as { status: number }).status = 503;
+
+    const mockCreate = vi
+      .fn()
+      .mockRejectedValueOnce(overloadError) // primary 503
+      .mockResolvedValueOnce({ output_text: mockValidModelJson }); // secondary succeeds
+
+    const fakeClient: GeminiModelClient = {
+      interactions: { create: mockCreate },
+    };
+
+    const res = await analyzeOfferText(validOfferText, {
+      apiKey: "fake-key",
+      client: fakeClient,
+      modelChain: ["gemini-3.8-flash", "gemini-3.6-flash"],
+    });
+
+    expect(mockCreate).toHaveBeenCalledTimes(2);
+    expect(res.ok).toBe(true);
+    if (res.ok) {
+      expect(res.modelUsed).toBe("gemini-3.6-flash");
+      expect(res.attempts[0].outcome).toBe("UPSTREAM_ERROR");
+      expect(res.attempts[0].httpStatus).toBe(503);
+    }
+  });
+
+  it("primary timeout -> falls back to next model within deadline, never retrying same model on timeout", async () => {
+    const timeoutErr = new Error("The operation was aborted due to timeout");
+    timeoutErr.name = "TimeoutError";
+
+    const mockCreate = vi
+      .fn()
+      .mockRejectedValueOnce(timeoutErr) // primary timeout
+      .mockResolvedValueOnce({ output_text: mockValidModelJson }); // secondary succeeds
+
+    const fakeClient: GeminiModelClient = {
+      interactions: { create: mockCreate },
+    };
+
+    const res = await analyzeOfferText(validOfferText, {
+      apiKey: "fake-key",
+      client: fakeClient,
+      modelChain: ["gemini-3.8-flash", "gemini-3.6-flash"],
+    });
+
+    expect(mockCreate).toHaveBeenCalledTimes(2);
+    expect(mockCreate.mock.calls[0][0].model).toBe("gemini-3.8-flash");
+    expect(mockCreate.mock.calls[1][0].model).toBe("gemini-3.6-flash");
+
+    expect(res.ok).toBe(true);
+    if (res.ok) {
+      expect(res.modelUsed).toBe("gemini-3.6-flash");
+      expect(res.attempts[0].outcome).toBe("TIMEOUT");
+      expect(res.attempts[0].httpStatus).toBe(504);
+      expect(res.attempts[1].outcome).toBe("SUCCESS");
+    }
+  });
+
+  it("all three fail with 429 -> returns RATE_LIMITED after exactly 3 attempts", async () => {
+    const rateLimitError = new Error("Resource exhausted: 429 quota exceeded");
+    (rateLimitError as unknown as { status: number }).status = 429;
+
+    const mockCreate = vi.fn().mockRejectedValue(rateLimitError);
+
+    const fakeClient: GeminiModelClient = {
+      interactions: { create: mockCreate },
+    };
+
+    const res = await analyzeOfferText(validOfferText, {
+      apiKey: "fake-key",
+      client: fakeClient,
+      modelChain: ["gemini-3.8-flash", "gemini-3.6-flash", "gemini-3.5-flash-lite"],
+    });
+
+    expect(mockCreate).toHaveBeenCalledTimes(3); // Exactly 3 attempts!
     expect(res.ok).toBe(false);
     if (!res.ok) {
       expect(res.code).toBe("RATE_LIMITED");
       expect(res.httpStatus).toBe(429);
-      expect(res.message).toContain("busy");
+      expect(res.attempts.length).toBe(3);
+      expect(res.attempts.every((a) => a.outcome === "RATE_LIMITED")).toBe(true);
     }
   });
 
-  it("returns TIMEOUT on abort / timeout error", async () => {
-    const timeoutErr = new Error("The operation was aborted due to timeout");
-    timeoutErr.name = "TimeoutError";
+  it("invalid output on the first model -> valid output on the next model succeeds", async () => {
+    const mockCreate = vi
+      .fn()
+      .mockResolvedValueOnce({ output_text: "{ invalid json format..." }) // model 1 unparseable
+      .mockResolvedValueOnce({ output_text: mockValidModelJson }); // model 2 valid
 
     const fakeClient: GeminiModelClient = {
-      interactions: { create: vi.fn().mockRejectedValue(timeoutErr) },
+      interactions: { create: mockCreate },
     };
 
     const res = await analyzeOfferText(validOfferText, {
       apiKey: "fake-key",
       client: fakeClient,
+      modelChain: ["gemini-3.8-flash", "gemini-3.6-flash"],
+    });
+
+    expect(mockCreate).toHaveBeenCalledTimes(2);
+    expect(res.ok).toBe(true);
+    if (res.ok) {
+      expect(res.modelUsed).toBe("gemini-3.6-flash");
+      expect(res.attempts[0].outcome).toBe("INVALID_MODEL_OUTPUT");
+      expect(res.attempts[1].outcome).toBe("SUCCESS");
+    }
+  });
+
+  it("never makes more than 3 attempts even if chain has more models", async () => {
+    const serverErr = new Error("500 Internal Error");
+    (serverErr as unknown as { status: number }).status = 500;
+
+    const mockCreate = vi.fn().mockRejectedValue(serverErr);
+
+    const fakeClient: GeminiModelClient = {
+      interactions: { create: mockCreate },
+    };
+
+    const res = await analyzeOfferText(validOfferText, {
+      apiKey: "fake-key",
+      client: fakeClient,
+      modelChain: ["model-1", "model-2", "model-3", "model-4", "model-5"],
+    });
+
+    expect(mockCreate).toHaveBeenCalledTimes(3); // Capped at 3!
+    expect(res.ok).toBe(false);
+    if (!res.ok) {
+      expect(res.attempts.length).toBe(3);
+    }
+  });
+
+  it("shared deadline stops further attempts when little time remains", async () => {
+    const fakeClient: GeminiModelClient = {
+      interactions: {
+        create: vi.fn().mockImplementation(async () => {
+          // Simulate model taking 3500ms
+          await new Promise((r) => setTimeout(r, 50));
+          throw new Error("Generic failure");
+        }),
+      },
+    };
+
+    // Overall deadline of 2000ms: with safety margin of 3000ms, time remaining is immediately insufficient
+    const res = await analyzeOfferText(validOfferText, {
+      apiKey: "fake-key",
+      client: fakeClient,
+      modelChain: ["model-1", "model-2", "model-3"],
+      overallDeadlineMs: 1500, // Insufficient deadline (< 3000ms safety threshold)
     });
 
     expect(res.ok).toBe(false);
     if (!res.ok) {
       expect(res.code).toBe("TIMEOUT");
       expect(res.httpStatus).toBe(504);
-      expect(res.message).toContain("timed out");
+      expect(fakeClient.interactions!.create).not.toHaveBeenCalled();
     }
   });
 
-  it("returns UPSTREAM_ERROR on generic upstream error", async () => {
-    const networkErr = new Error("Fetch failed: network unreachable");
+  it("passes correct thinking_level and max_output_tokens in generation_config", async () => {
+    let capturedConfig: Record<string, unknown> | undefined;
 
-    const fakeClient: GeminiModelClient = {
-      interactions: { create: vi.fn().mockRejectedValue(networkErr) },
-    };
-
-    const res = await analyzeOfferText(validOfferText, {
-      apiKey: "fake-key",
-      client: fakeClient,
-    });
-
-    expect(res.ok).toBe(false);
-    if (!res.ok) {
-      expect(res.code).toBe("UPSTREAM_ERROR");
-      expect(res.httpStatus).toBe(502);
-    }
-  });
-
-  it("a second invalid model response produces INVALID_MODEL_OUTPUT after exactly 2 attempts and not more", async () => {
-    // Both attempts return unparseable string
     const fakeClient: GeminiModelClient = {
       interactions: {
-        create: vi.fn().mockResolvedValue({ output_text: "{ malformed json..." }),
+        create: vi.fn().mockImplementation((params) => {
+          capturedConfig = params.generation_config;
+          return Promise.resolve({ output_text: mockValidModelJson });
+        }),
       },
     };
 
     const res = await analyzeOfferText(validOfferText, {
       apiKey: "fake-key",
       client: fakeClient,
+      modelChain: ["gemini-3.8-flash"],
     });
 
-    expect(fakeClient.interactions!.create).toHaveBeenCalledTimes(2); // Exactly 2 attempts and not more!
-    expect(res.ok).toBe(false);
-    if (!res.ok) {
-      expect(res.code).toBe("INVALID_MODEL_OUTPUT");
-      expect(res.httpStatus).toBe(502);
-    }
-  });
-
-  it("retries once on invalid output and succeeds if attempt 2 returns valid JSON", async () => {
-    const fakeClient: GeminiModelClient = {
-      interactions: {
-        create: vi
-          .fn()
-          .mockResolvedValueOnce({ output_text: "broken output" })
-          .mockResolvedValueOnce({ output_text: mockValidModelJson }),
-      },
-    };
-
-    const res = await analyzeOfferText(validOfferText, {
-      apiKey: "fake-key",
-      client: fakeClient,
-    });
-
-    expect(fakeClient.interactions!.create).toHaveBeenCalledTimes(2);
     expect(res.ok).toBe(true);
-    if (res.ok) {
-      expect(res.analysis.concerns.length).toBe(1);
-      expect(res.analysis.concerns[0].quote).toBe("refundable equipment deposit of ₹4,500");
-    }
+    expect(capturedConfig).toBeDefined();
+    expect(capturedConfig?.thinking_level).toBe("low"); // lowest documented level for 3.8
+    expect(capturedConfig?.max_output_tokens).toBe(MAX_OUTPUT_TOKENS);
   });
 
   it("runs validateAnalysis and returns structured validated analysis on valid model output", async () => {
@@ -299,11 +523,11 @@ describe("analyzeOfferText offline validation and error handling", () => {
       expect(res.analysis.concerns[0].span.start).toBeDefined();
       expect(res.analysis.limits.length).toBeGreaterThanOrEqual(4);
       expect(res.analysis.droppedCount).toBe(0);
+      expect(res.modelUsed).toBe("gemini-3.8-flash");
     }
   });
 
   it("a concern with a fabricated quote is dropped and droppedCount increments through analyzeOfferText", async () => {
-    // Model hallucinates a quote not found anywhere in the offer text
     const responseWithFabricatedQuote = JSON.stringify({
       concerns: [
         {
@@ -339,11 +563,9 @@ describe("analyzeOfferText offline validation and error handling", () => {
 
     expect(res.ok).toBe(true);
     if (res.ok) {
-      // The real concern is kept
       expect(res.analysis.concerns.length).toBe(1);
       expect(res.analysis.concerns[0].id).toBe("c-real");
       expect(res.analysis.concerns[0].quote).toBe("refundable equipment deposit of ₹4,500");
-      // The fabricated concern was dropped and droppedCount was incremented
       expect(res.analysis.droppedCount).toBe(1);
     }
   });
@@ -356,7 +578,7 @@ describe("analyzeOfferText offline validation and error handling", () => {
     const sensitiveOfferText =
       "CONFIDENTIAL_SENSITIVE_TEXT: We offer student Jane Doe an internship with stipend details and private contact 9876543210 at SecretCorp.";
 
-    // Test Failure Case (model fails)
+    // Test Failure Case (all models fail)
     const failingClient: GeminiModelClient = {
       interactions: {
         create: vi.fn().mockRejectedValue(new Error("Generic model failure")),

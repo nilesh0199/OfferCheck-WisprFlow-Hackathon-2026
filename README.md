@@ -15,15 +15,16 @@ OfferCheck is built as a solo submission for **No Hands: The Wispr Challenge** (
 
 ---
 
-## Current Status: Phase 3 (Server-Side Gemini Analysis Endpoint)
+## Current Status: Phase 4 (Results UI)
 
 > [!NOTE]
-> **Project in progress:** Phases 1 and 2 are complete, and Phase 3 (server-side Gemini analysis endpoint) is implemented. The user-facing Results UI and Analyze button are scheduled for Phase 4.
+> **Project in progress:** Phases 1 through 4 are complete. The application features a fully functional results UI connected to the server-side Gemini analysis endpoint, rendering findings across four structured sections with verbatim quotation highlights and clipboard exports.
 
 Implemented so far:
 - **Phase 1 (Shell):** Project documentation, accessible text input, character counter against 8,000 chars, limits disclaimer, and pre-paste redaction notice.
 - **Phase 2 (Analysis Contract & Validator):** Zod schemas, deterministic quote validator with Unicode grapheme mapping, overclaiming guardrails, four synthetic test examples, and test plan.
-- **Phase 3 (Gemini Endpoint):** Server-side `/api/analyze` route powered by `@google/genai` (using `gemini-3.8-flash`), injection-resistant prompt structure, schema filtering, abort timeouts, automatic single retry on malformed outputs, and strict error mapping with zero leakage of keys, user text, or stack traces.
+- **Phase 3 (Gemini Endpoint):** Server-side `/api/analyze` route powered by `@google/genai` Interactions API with multi-model fallback chain (`gemini-3.8-flash`, `gemini-3.6-flash`, `gemini-3.5-flash-lite`), lowest documented thinking levels, 55s shared deadline, 20s per-attempt timeout cap, and zero logging of user text or credentials.
+- **Phase 4 (Results UI):** Complete client interface with input panel above the fold, live elapsed timer, request cancellation via AbortController, synthetic sample picker with overwrite confirmation, calm error recovery, four output sections (Potential Concerns, Missing Info, Questions to Verify, Limits), interactive highlighted text viewer, and one-click summary clipboard export.
 
 ---
 
@@ -49,8 +50,12 @@ Implemented so far:
    Add your Gemini API key to `.env.local`:
    ```bash
    GEMINI_API_KEY="your-gemini-api-key-here"
-   # Optional model override:
-   # GEMINI_MODEL="gemini-3.8-flash"
+
+   # Optional model fallback chain (default: gemini-3.8-flash,gemini-3.6-flash,gemini-3.5-flash-lite)
+   # GEMINI_MODELS="gemini-3.8-flash,gemini-3.6-flash,gemini-3.5-flash-lite"
+
+   # Optional thinking level override (default: lowest documented level per model: "low" for 3.8, "minimal" for 3.6/3.5)
+   # GEMINI_THINKING_LEVEL="low"
    ```
    *(Note: Offline tests run with injected mock clients and do NOT require an API key or network access.)*
 
@@ -65,11 +70,11 @@ Implemented so far:
 ## Testing
 
 ### Running Offline Unit Tests
-Run the comprehensive Vitest test suite (includes quote validation, schema parsing, guardrails, synthetic examples, and mock endpoint execution):
+Run the comprehensive Vitest test suite (includes quote validation, schema parsing, guardrails, synthetic examples, model fallback chain, shared deadline, and mock endpoint execution):
 ```bash
 npm run test
 ```
-*(All 68 unit tests run entirely offline with zero network calls).*
+*(All 78 unit tests run entirely offline with zero network calls).*
 
 ### Running Live Analysis Tests
 To run live end-to-end evaluations against the Gemini API using synthetic examples and prompt-injection fixtures:

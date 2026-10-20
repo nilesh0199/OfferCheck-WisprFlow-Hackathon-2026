@@ -58,15 +58,24 @@ This document tracks all implemented, live, and planned automated tests for Offe
 | `fixtures: ensures mock claiming 'verified safe' is dropped` | Verifies mock output generated from injection attempt is dropped by guardrails | Implemented |
 | `gemini-wrapper: cleanJsonSchemaForGemini removes unsupported keywords` | Verifies `$schema`, `minLength`, `maxLength`, and `pattern` are stripped from JSON schema | Implemented |
 | `gemini-wrapper: GEMINI_RESPONSE_SCHEMA is valid without $schema` | Verifies exported schema has no `$schema` keyword | Implemented |
+| `gemini-wrapper: parseModelChain returns default chain when env vars unset` | Verifies `DEFAULT_MODEL_CHAIN` is returned when `GEMINI_MODELS` and `GEMINI_MODEL` are undefined | Implemented |
+| `gemini-wrapper: parseModelChain parses comma-separated GEMINI_MODELS capped at 3` | Verifies comma-separated chain is parsed, trimmed, empty items dropped, and capped at 3 | Implemented |
+| `gemini-wrapper: parseModelChain falls back to legacy GEMINI_MODEL` | Verifies legacy single-model env var is parsed as a single-item array | Implemented |
+| `gemini-wrapper: resolveThinkingLevel resolves lowest documented level per model` | Verifies default thinking level is "low" for 3.8-flash and "minimal" for 3.6-flash and 3.5-flash-lite | Implemented |
+| `gemini-wrapper: resolveThinkingLevel applies override only when supported` | Verifies `GEMINI_THINKING_LEVEL` override is validated against model allowed specs; unlisted models return undefined | Implemented |
 | `gemini-wrapper: returns EMPTY_INPUT on empty/whitespace text` | Verifies empty/whitespace inputs return `EMPTY_INPUT` (422) without calling model | Implemented |
 | `gemini-wrapper: returns TOO_SHORT under 40 chars` | Verifies input under 40 characters returns `TOO_SHORT` (422) without calling model | Implemented |
 | `gemini-wrapper: returns TOO_LONG over 8000 chars` | Verifies input over 8,000 characters returns `TOO_LONG` (413) without calling model | Implemented |
 | `gemini-wrapper: returns NOT_CONFIGURED on missing API key` | Verifies missing `GEMINI_API_KEY` returns `NOT_CONFIGURED` (500) | Implemented |
-| `gemini-wrapper: returns RATE_LIMITED on 429` | Verifies upstream 429 / RESOURCE_EXHAUSTED maps to `RATE_LIMITED` (429) | Implemented |
-| `gemini-wrapper: returns TIMEOUT on abort / timeout` | Verifies request timeout maps to `TIMEOUT` (504) | Implemented |
-| `gemini-wrapper: returns UPSTREAM_ERROR on generic upstream failure` | Verifies network / server errors map to `UPSTREAM_ERROR` (502) | Implemented |
-| `gemini-wrapper: a second invalid model response produces INVALID_MODEL_OUTPUT after exactly 2 attempts and not more` | Verifies model call is retried once on unparseable output, returning `INVALID_MODEL_OUTPUT` after exactly 2 attempts and not more | Implemented |
-| `gemini-wrapper: retries once on invalid output and succeeds if attempt 2 returns valid JSON` | Verifies recovery when second attempt produces valid structured JSON | Implemented |
+| `gemini-wrapper: 400/401/403 fails immediately with no fallback and exactly one call` | Verifies non-retryable configuration errors (400, 401, 403) fail immediately without fallback calls | Implemented |
+| `gemini-wrapper: primary 429 -> secondary used and modelUsed reported` | Verifies rate-limited primary model falls back to secondary model and reports `modelUsed` | Implemented |
+| `gemini-wrapper: primary 503 overloaded -> falls back to next model` | Verifies 503 overloaded primary model falls back to secondary model | Implemented |
+| `gemini-wrapper: primary timeout -> falls back to next model within deadline` | Verifies timeout on primary falls back to secondary without retrying the same model | Implemented |
+| `gemini-wrapper: all three fail with 429 -> returns RATE_LIMITED after exactly 3 attempts` | Verifies when all models in chain fail with 429, returns `RATE_LIMITED` after exactly 3 attempts | Implemented |
+| `gemini-wrapper: invalid output on the first model -> valid output on the next model succeeds` | Verifies unparseable model response triggers fallback to next model | Implemented |
+| `gemini-wrapper: never makes more than 3 attempts even if chain has more models` | Verifies maximum attempt budget is strictly capped at 3 | Implemented |
+| `gemini-wrapper: shared deadline stops further attempts when little time remains` | Verifies remaining deadline under threshold skips further attempts and returns `TIMEOUT` | Implemented |
+| `gemini-wrapper: passes correct thinking_level and max_output_tokens in generation_config` | Verifies `generation_config` contains resolved `thinking_level` and `max_output_tokens = 2500` | Implemented |
 | `gemini-wrapper: runs validateAnalysis and returns structured validated analysis on valid model output` | Verifies end-to-end processing with quote validation on valid response | Implemented |
 | `gemini-wrapper: a concern with a fabricated quote is dropped and droppedCount increments through analyzeOfferText` | Verifies hallucinated quotes are dropped and increment `droppedCount` when run through `analyzeOfferText` | Implemented |
 | `gemini-wrapper: console spies prove no logged call ever contains the offer text, even when the model call fails` | Verifies console spies prove no logged call ever contains offer text or secrets on error or success | Implemented |
@@ -79,20 +88,53 @@ This document tracks all implemented, live, and planned automated tests for Offe
 | `api-route: the route returns 400 for a non-string text field` | Verifies non-string "text" property (numbers, booleans, arrays) returns 400 Bad Request | Implemented |
 | `api-route: returns 200 with { ok: true, analysis } on successful analysis` | Verifies valid POST returns 200 with `{ ok: true, analysis }` and `Cache-Control: no-store` | Implemented |
 | `api-route: maps wrapper error codes to appropriate status codes and error shape` | Verifies downstream error status codes and error payload shape | Implemented |
+| `api-route: route response never contains model names or attempts list in success or error bodies` | Verifies HTTP route response never leaks internal model names or attempts list | Implemented |
+| `labels: covers every concern category in ConcernCategoryEnum` | Verifies that all concern categories in the schema have non-empty human-readable labels | Implemented |
+| `labels: covers every topic in MissingInfoTopicEnum` | Verifies that all missing info topics in the schema have non-empty human-readable labels | Implemented |
+| `labels: getConcernCategoryLabel returns mapped label or fallback` | Verifies category label lookup returns mapped name and falls back gracefully for unknown values | Implemented |
+| `labels: getMissingInfoTopicLabel returns mapped label or fallback` | Verifies topic label lookup returns mapped name and falls back gracefully for unknown values | Implemented |
+| `api-response: recognizes a valid success response` | Verifies valid success shape { ok: true, analysis } passes type guard | Implemented |
+| `api-response: recognizes a valid error response` | Verifies valid error shape { ok: false, error: { code, message } } passes type guard | Implemented |
+| `api-response: validates zero-concern valid analysis` | Verifies analysis with empty concerns passes defensive schema check | Implemented |
+| `api-response: rejects non-object and null values` | Verifies null, undefined, strings, numbers, arrays fail response type guards | Implemented |
+| `api-response: rejects malformed success responses` | Verifies missing fields, malformed spans, negative dropped counts fail type guards | Implemented |
+| `api-response: rejects malformed error responses` | Verifies missing error object, empty code, or non-string message fail type guards | Implemented |
+| `highlights: returns empty array for empty or non-string text` | Verifies buildHighlightSegments returns [] on empty or invalid text | Implemented |
+| `highlights: returns single unhighlighted segment when spans array is empty` | Verifies text with no spans returns a single unhighlighted segment preserving text | Implemented |
+| `highlights: handles a single span in the middle of text` | Verifies single quotation span splits text into before, highlighted, and after segments | Implemented |
+| `highlights: handles a span spanning the entire text` | Verifies full-string span produces a single highlighted segment | Implemented |
+| `highlights: handles adjacent spans cleanly` | Verifies touching spans without gap are segmented into distinct highlighted chunks | Implemented |
+| `highlights: handles overlapping spans and retains matching concernIds` | Verifies overlapping spans split into non-overlapping segments with composite concern IDs | Implemented |
+| `highlights: clamps out-of-range spans and ignores invalid/reversed spans` | Verifies negative starts clamped to 0, over-length ends clamped to text length, reversed spans ignored | Implemented |
+| `highlights: preserves exact character offsets with emoji and Devanagari text before spans` | Verifies multi-byte UTF-16 character offsets correctly slice matching text | Implemented |
+| `highlights: handles out-of-order spans and sorts them` | Verifies unordered input spans are processed in ascending offset order | Implemented |
+| `summary: contains the disclaimer and title` | Verifies generated summary contains 'OfferCheck Review Summary' and the exact standard disclaimer | Implemented |
+| `summary: contains quotes copied exactly character-for-character` | Verifies concern quotes and observations appear character-for-character in the summary | Implemented |
+| `summary: contains missing information and verification questions` | Verifies missing info topics and numbered verification questions appear in summary | Implemented |
+| `summary: contains limits and note on dropped unverified items` | Verifies review limits and dropped item warnings appear in the plain-text summary | Implemented |
+| `summary: contains NO model names, attempt logs, or verdict words` | Verifies summary text never leaks model identifiers, attempt logs, or verdict terms | Implemented |
+| `summary: handles zero concerns calmly without declaring safety` | Verifies zero-concern analysis produces calm disclaimer without proclaiming safety | Implemented |
 | `live-analysis: evaluates Synthetic Example 1 (Urgent payment request) via Gemini Interactions API` | Live execution asserting verified quotes, no overclaiming, and source offset slice match | Manual / live |
 | `live-analysis: evaluates Synthetic Example 2 (Incomplete offer) via Gemini Interactions API` | Live execution asserting verified quotes, no overclaiming, and source offset slice match | Manual / live |
 | `live-analysis: evaluates Synthetic Example 3 (Detailed offer) via Gemini Interactions API` | Live execution asserting verified quotes, no overclaiming, and source offset slice match | Manual / live |
 | `live-analysis: evaluates Synthetic Example 4 (Ambiguous offer) via Gemini Interactions API` | Live execution asserting verified quotes, no overclaiming, and source offset slice match | Manual / live |
 | `live-analysis: evaluates prompt-injection fixture against Gemini API` | Live execution asserting prompt injection does not suppress concerns or trip guardrails | Manual / live |
+| `UI: Sample picker loads synthetic offer into textarea` | Manual check that selecting a sample and clicking 'Load example' populates the textarea | Manual |
+| `UI: Sample picker shows synthetic offer badge` | Manual check that badge 'Synthetic example, not a real offer' appears when textarea matches sample | Manual |
+| `UI: Inline confirmation on custom text replacement` | Manual check that 'Replace your text?' confirmation appears before overwriting custom text | Manual |
+| `UI: Loading state shows elapsed timer and cancel button` | Manual check that timer ticks, button shows 'Analyzing...', and cancel button aborts | Manual |
+| `UI: Outdated banner appears after editing analyzed text` | Manual check that banner appears when user edits textarea after a review | Manual |
+| `UI: Show in text scrolls to highlight` | Manual check that clicking 'Show in text' scrolls text viewer and emphasizes highlight | Manual |
+| `UI: Copy buttons provide user feedback` | Manual check that clicking copy buttons shows 'Copied!' feedback | Manual |
+| `UI: Mobile responsiveness at 360px` | Manual check that page exhibits no horizontal scroll and tap targets >= 44px at 360px width | Manual |
 | `Research ambiguity` | Verifies behavior when company name is generic, missing, or produces ambiguous search results | Planned |
-| `Verification question copy buttons` | Verifies clipboard copying functionality and user feedback state in Results UI | Planned |
 | `Mobile layout and responsiveness` | Tests responsive layout, tap targets, and typography down to ~360px viewport | Planned |
 
 ---
 
 ## Test Execution Summary
 
-- **Total Implemented Automated Tests (Offline)**: 68 tests across 7 test files in `tests/`.
-- **Manual / Live Tests**: 5 sequential live test cases in `tests-live/analyze.live.test.ts` (run via `npm run test:live`).
+- **Total Implemented Automated Tests (Offline)**: 103 tests across 11 test files in `tests/`.
+- **Manual / Live Tests**: 5 sequential live test cases in `tests-live/analyze.live.test.ts` (run via `npm run test:live`), plus manual UI verification checks.
 - **Offline Test Command**: `npm run test` (fast, deterministic, zero external network dependency).
 - **Live Test Command**: `npm run test:live` (loads `.env.local`; skips cleanly if `GEMINI_API_KEY` is not present; does not fake results).

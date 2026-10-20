@@ -51,7 +51,7 @@ This phased build plan outlines the implementation roadmap for OfferCheck, an in
 ---
 
 ## Phase 4: Results UI
-- **Status:** Not started
+- **Status:** Completed
 - **Goal:** Connect the frontend form to the analysis endpoint, displaying structured findings across the four required sections with quotation highlights and verification question export. Reorganize layout so input is higher on the page.
 - **Acceptance Criteria:**
   - Input form moved higher on the page so users can immediately reach and paste text without scrolling past explanatory cards.

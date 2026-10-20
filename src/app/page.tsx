@@ -1,224 +1,223 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { Header } from "@/components/Header";
+import { OfferInputForm } from "@/components/OfferInputForm";
+import { AnalysisResults } from "@/components/AnalysisResults";
+import { OutdatedBanner } from "@/components/OutdatedBanner";
+import { ErrorAlert, ErrorType } from "@/components/ErrorAlert";
+import { AboutTool } from "@/components/AboutTool";
 import {
-  APP_NAME,
-  TAGLINE,
-  MAX_INPUT_CHARS,
-  AI_DATA_NOTICE,
-} from "@/lib/config";
+  isAnalyzeSuccessResponse,
+  isAnalyzeErrorResponse,
+} from "@/lib/analysis/api-response";
+import { ValidatedAnalysis } from "@/lib/analysis/schema";
+import { APP_NAME } from "@/lib/config";
+
+const CLIENT_TIMEOUT_MS = 65000; // 65-second client-side timeout cap
 
 export default function Home() {
   const [offerText, setOfferText] = useState("");
+  const [analyzedSnapshotText, setAnalyzedSnapshotText] = useState("");
+  const [analysis, setAnalysis] = useState<ValidatedAnalysis | null>(null);
 
-  const charCount = offerText.length;
-  const isOverLimit = charCount > MAX_INPUT_CHARS;
-  const charsRemaining = MAX_INPUT_CHARS - charCount;
+  // Loading & Timer state
+  const [isLoading, setIsLoading] = useState(false);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+  // Error state
+  const [errorState, setErrorState] = useState<{
+    type: ErrorType;
+    message?: string;
+  } | null>(null);
+
+  // Active abort controller ref
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const timeoutHandleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Clean up timers on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutHandleRef.current) clearTimeout(timeoutHandleRef.current);
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+      if (abortControllerRef.current) abortControllerRef.current.abort();
+    };
+  }, []);
+
+  const handleClear = () => {
+    if (isLoading) return;
+    setOfferText("");
+    setAnalyzedSnapshotText("");
+    setAnalysis(null);
+    setErrorState(null);
+  };
+
+  const handleCancel = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort("user_cancelled");
+    }
+  };
+
+  const handleAnalyze = async () => {
+    if (isLoading) return;
+
+    const trimmed = offerText.trim();
+    if (!trimmed) {
+      setErrorState({
+        type: "TOO_SHORT",
+        message: "Please paste offer text to review.",
+      });
+      return;
+    }
+
+    if (trimmed.length < 40) {
+      setErrorState({
+        type: "TOO_SHORT",
+        message:
+          "Offer text is too short (minimum 40 characters). Please provide more context from the offer.",
+      });
+      return;
+    }
+
+    // Reset error state for new submission
+    setErrorState(null);
+    setIsLoading(true);
+    setElapsedSeconds(0);
+
+    // Snapshot current text being submitted for deterministic quotation validation
+    const currentSnapshot = offerText;
+
+    // Start elapsed-seconds timer
+    const startTime = Date.now();
+    timerIntervalRef.current = setInterval(() => {
+      setElapsedSeconds(Math.floor((Date.now() - startTime) / 1000));
+    }, 1000);
+
+    // Setup AbortController and 65s client timeout
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    let timedOut = false;
+    timeoutHandleRef.current = setTimeout(() => {
+      timedOut = true;
+      controller.abort("client_timeout");
+    }, CLIENT_TIMEOUT_MS);
+
+    try {
+      const response = await fetch("/api/analyze", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text: currentSnapshot }),
+        signal: controller.signal,
+      });
+
+      // Clear client timeout and elapsed timer
+      if (timeoutHandleRef.current) clearTimeout(timeoutHandleRef.current);
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+
+      let data: unknown;
+      try {
+        data = await response.json();
+      } catch {
+        setErrorState({
+          type: "MALFORMED_RESPONSE",
+          message: "Could not parse server response.",
+        });
+        return;
+      }
+
+      // Check defensive response shape
+      if (response.ok && isAnalyzeSuccessResponse(data)) {
+        setAnalyzedSnapshotText(currentSnapshot);
+        setAnalysis(data.analysis);
+        setErrorState(null);
+      } else if (isAnalyzeErrorResponse(data)) {
+        const code = data.error.code;
+        const status = response.status;
+
+        if (status === 429 || code === "RATE_LIMITED") {
+          setErrorState({ type: "RATE_LIMITED" });
+        } else if (status === 504 || code === "TIMEOUT") {
+          setErrorState({ type: "TIMEOUT" });
+        } else if (code === "NOT_CONFIGURED" || status >= 500) {
+          setErrorState({ type: "UNAVAILABLE" });
+        } else if (code === "TOO_SHORT") {
+          setErrorState({ type: "TOO_SHORT", message: data.error.message });
+        } else if (code === "TOO_LONG") {
+          setErrorState({ type: "TOO_LONG", message: data.error.message });
+        } else {
+          setErrorState({ type: "GENERIC", message: data.error.message });
+        }
+      } else {
+        setErrorState({ type: "MALFORMED_RESPONSE" });
+      }
+    } catch (err: unknown) {
+      if (timeoutHandleRef.current) clearTimeout(timeoutHandleRef.current);
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+
+      if (timedOut) {
+        setErrorState({ type: "TIMEOUT" });
+      } else if (
+        err instanceof Error &&
+        (err.name === "AbortError" || controller.signal.aborted)
+      ) {
+        setErrorState({ type: "CANCELLED" });
+      } else {
+        setErrorState({ type: "NETWORK_ERROR" });
+      }
+    } finally {
+      setIsLoading(false);
+      abortControllerRef.current = null;
+    }
+  };
+
+  // Determine if the user has changed the text in the textarea after an analysis result was rendered
+  const isResultOutdated =
+    Boolean(analysis) &&
+    offerText.trim() !== analyzedSnapshotText.trim();
 
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 flex flex-col justify-between">
-      <main className="w-full max-w-3xl mx-auto px-4 py-8 sm:px-6 sm:py-12">
-        {/* Header */}
-        <header className="mb-8 text-center sm:text-left">
-          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-200/70 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 mb-3">
-            <span>Solo Hackathon Prototype</span>
-            <span aria-hidden="true">•</span>
-            <span>Phase 1 Shell</span>
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-            {APP_NAME}
-          </h1>
-          <p className="mt-2 text-lg text-zinc-600 dark:text-zinc-400">
-            {TAGLINE}
-          </p>
-        </header>
+    <div className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 flex flex-col justify-between overflow-x-hidden">
+      <main className="w-full max-w-3xl mx-auto px-4 py-8 sm:px-6 sm:py-12 space-y-8">
+        {/* Top Header */}
+        <Header />
 
-        {/* Status Notice */}
-        <div
-          role="status"
-          className="mb-8 rounded-lg border border-blue-200 bg-blue-50/70 p-4 text-blue-900 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-200"
-        >
-          <div className="flex items-start gap-3">
-            <span
-              className="mt-0.5 inline-block text-base select-none"
-              aria-hidden="true"
-            >
-              ℹ️
-            </span>
-            <div>
-              <p className="font-semibold text-sm">Development Status</p>
-              <p className="text-sm mt-0.5">
-                Analysis is not built yet - this is the Phase 1 shell.
-              </p>
-            </div>
-          </div>
-        </div>
+        {/* Input panel (Above the fold) */}
+        <OfferInputForm
+          offerText={offerText}
+          setOfferText={setOfferText}
+          onAnalyze={handleAnalyze}
+          onCancel={handleCancel}
+          onClear={handleClear}
+          isLoading={isLoading}
+          elapsedSeconds={elapsedSeconds}
+        />
 
-        {/* Explanation of What It Does and Does Not Do */}
-        <section
-          aria-labelledby="about-heading"
-          className="mb-8 grid gap-4 sm:grid-cols-2"
-        >
-          <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
-            <h2
-              id="about-heading"
-              className="text-base font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2"
-            >
-              <span className="text-emerald-600 dark:text-emerald-400">✓</span>
-              What this tool does
-            </h2>
-            <p className="mt-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-              Helps students review internship offers by highlighting
-              questionable requests (such as training fees or equipment
-              deposits), spotting missing or ambiguous terms, and drafting
-              concrete verification questions before you pay money or share
-              sensitive documents.
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
-            <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-              <span className="text-rose-600 dark:text-rose-400">✕</span>
-              What this tool does NOT do
-            </h2>
-            <p className="mt-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-              This is <strong>not</strong> a scam detector, company
-              authentication service, legal review, or safety guarantee. It
-              cannot verify whether a sender legitimately represents a company
-              or whether an opportunity is risk-free.
-            </p>
-          </div>
-        </section>
-
-        {/* Privacy Notice */}
-        <aside
-          id="privacy-notice"
-          aria-label="Privacy advice before submitting text"
-          className="mb-4 rounded-xl border border-amber-300 bg-amber-50/80 p-4 text-amber-950 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200"
-        >
-          <div className="flex items-start gap-3">
-            <span
-              className="mt-0.5 text-base select-none"
-              aria-hidden="true"
-            >
-              🔒
-            </span>
-            <div className="space-y-1">
-              <h3 className="text-sm font-semibold text-amber-900 dark:text-amber-100">
-                Privacy Notice — Redact before pasting
-              </h3>
-              <p className="text-xs sm:text-sm leading-relaxed text-amber-900/90 dark:text-amber-200/90">
-                Please remove personal details from the text before pasting:
-                your full name, phone number, physical address, bank account or
-                payment details, and government identity numbers (such as
-                Aadhaar, PAN, or SSN). Do not submit passwords or sensitive
-                personal credentials.
-              </p>
-              <p className="text-xs sm:text-sm leading-relaxed text-amber-900/90 dark:text-amber-200/90 pt-1.5 border-t border-amber-200/80 dark:border-amber-900/50">
-                {AI_DATA_NOTICE}
-              </p>
-            </div>
-          </div>
-        </aside>
-
-        {/* Offer Input Area */}
-        <section aria-labelledby="input-heading" className="space-y-2">
-          <div className="flex items-center justify-between">
-            <label
-              id="input-heading"
-              htmlFor="offer-text"
-              className="text-sm font-semibold text-zinc-900 dark:text-zinc-100"
-            >
-              Paste internship offer or communication text
-            </label>
-            <span
-              aria-live="polite"
-              aria-atomic="true"
-              className={`text-xs font-medium tabular-nums ${
-                isOverLimit
-                  ? "text-rose-600 dark:text-rose-400 font-bold"
-                  : charsRemaining < 500
-                  ? "text-amber-600 dark:text-amber-400"
-                  : "text-zinc-500 dark:text-zinc-400"
-              }`}
-            >
-              {charCount.toLocaleString()} / {MAX_INPUT_CHARS.toLocaleString()}{" "}
-              characters
-            </span>
-          </div>
-
-          <textarea
-            id="offer-text"
-            name="offer-text"
-            rows={10}
-            value={offerText}
-            onChange={(e) => setOfferText(e.target.value)}
-            aria-describedby="privacy-notice char-count-status"
-            aria-invalid={isOverLimit}
-            placeholder="Paste the email, message, or written offer letter text here (without personal identity details)..."
-            className={`w-full rounded-xl border p-3.5 text-sm font-mono leading-relaxed transition-colors focus:outline-none focus:ring-2 bg-white dark:bg-zinc-900 ${
-              isOverLimit
-                ? "border-rose-500 focus:border-rose-500 focus:ring-rose-200 dark:focus:ring-rose-950/50"
-                : "border-zinc-300 focus:border-zinc-900 focus:ring-zinc-200 dark:border-zinc-700 dark:focus:border-zinc-300 dark:focus:ring-zinc-800"
-            }`}
+        {/* Error notification (if error state active) */}
+        {errorState && (
+          <ErrorAlert
+            errorType={errorState.type}
+            customMessage={errorState.message}
+            onTryAgain={handleAnalyze}
           />
+        )}
 
-          <div
-            id="char-count-status"
-            className="flex items-center justify-between text-xs"
-          >
-            {isOverLimit ? (
-              <p
-                role="alert"
-                className="text-rose-600 dark:text-rose-400 font-medium"
-              >
-                Text exceeds the maximum limit by{" "}
-                {(charCount - MAX_INPUT_CHARS).toLocaleString()} characters.
-                Please shorten the text.
-              </p>
-            ) : (
-              <p className="text-zinc-500 dark:text-zinc-400">
-                Plain-text review only. PDF, images, and external links are not
-                processed.
-              </p>
-            )}
-          </div>
-        </section>
+        {/* Outdated review warning if user modified textarea text after review */}
+        {isResultOutdated && <OutdatedBanner />}
 
-        {/* Limits of this Tool */}
-        <section
-          aria-labelledby="limits-heading"
-          className="mt-10 rounded-xl border border-zinc-200 bg-white p-5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900"
-        >
-          <h2
-            id="limits-heading"
-            className="text-sm font-semibold uppercase tracking-wider text-zinc-700 dark:text-zinc-300"
-          >
-            Limits of this tool
-          </h2>
-          <ul className="mt-3 space-y-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed list-disc list-inside">
-            <li>
-              <strong>Text-only review:</strong> Assessments are based solely
-              on the words provided in the box above. Unmentioned terms are not
-              evaluated.
-            </li>
-            <li>
-              <strong>Cannot verify identity:</strong> This tool cannot confirm
-              whether the sender genuinely represents the claimed company or
-              organization.
-            </li>
-            <li>
-              <strong>Absence of red flags is not proof of safety:</strong> An
-              offer without identified warnings may still be questionable or
-              inaccurate.
-            </li>
-            <li>
-              <strong>Tone is not evidence:</strong> Polished language does not
-              guarantee legitimacy, and minor grammatical mistakes do not
-              inherently mean an offer is fraudulent.
-            </li>
-          </ul>
-        </section>
+        {/* Structured Results Display */}
+        {analysis && (
+          <AnalysisResults
+            analysis={analysis}
+            analyzedSnapshotText={analyzedSnapshotText}
+          />
+        )}
+
+        {/* Collapsed "About this tool" details section below results */}
+        <AboutTool />
       </main>
 
       {/* Footer */}
@@ -228,7 +227,7 @@ export default function Home() {
             {APP_NAME} — Student hackathon prototype for No Hands: The Wispr
             Challenge.
           </p>
-          <p>Phase 1 Deployable Shell</p>
+          <p>Phase 4 Results UI</p>
         </div>
       </footer>
     </div>

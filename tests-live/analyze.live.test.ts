@@ -2,7 +2,12 @@ import { describe, it, expect } from "vitest";
 import fs from "node:fs";
 import { SYNTHETIC_EXAMPLES } from "@/data/examples";
 import { PROMPT_INJECTION_FIXTURE } from "@/data/test-fixtures";
-import { analyzeOfferText, AnalyzeOfferResult } from "@/lib/analysis/gemini";
+import {
+  analyzeOfferText,
+  AnalyzeOfferResult,
+  resolveThinkingLevel,
+} from "@/lib/analysis/gemini";
+import { MAX_OUTPUT_TOKENS, DEFAULT_MODEL_CHAIN } from "@/lib/config";
 import { detectOverclaiming } from "@/lib/analysis/guardrails";
 import { validateQuote } from "@/lib/analysis/quote-validator";
 import { ValidatedAnalysis } from "@/lib/analysis/schema";
@@ -57,6 +62,20 @@ describe.skipIf(!hasApiKey)("Live Gemini API Analysis Suite", () => {
 
         let analysis: ValidatedAnalysis;
         let rawOutputForDebug: string | null | undefined;
+        let result: AnalyzeOfferResult | undefined;
+
+        console.log(`\n======================================================`);
+        console.log(`[LIVE TEST RUN] Case: ${tc.name}`);
+        console.log(`Configured Models & Speed Settings:`);
+        for (const model of DEFAULT_MODEL_CHAIN) {
+          const thinkingLevel = resolveThinkingLevel(
+            model,
+            process.env.GEMINI_THINKING_LEVEL
+          );
+          console.log(
+            `  - Model: ${model} | thinking_level: "${thinkingLevel ?? "none"}" | max_output_tokens: ${MAX_OUTPUT_TOKENS}`
+          );
+        }
 
         if (liveBaseUrl) {
           // If LIVE_BASE_URL is set, POST to LIVE_BASE_URL + "/api/analyze"
@@ -73,7 +92,15 @@ describe.skipIf(!hasApiKey)("Live Gemini API Analysis Suite", () => {
           analysis = data.analysis;
         } else {
           // Direct call to analyzeOfferText
-          const result: AnalyzeOfferResult = await analyzeOfferText(tc.text);
+          result = await analyzeOfferText(tc.text);
+
+          console.log(`Attempts History:`);
+          for (const [idx, att] of result.attempts.entries()) {
+            console.log(
+              `  [Attempt ${idx + 1}] Model: ${att.model} | Outcome: ${att.outcome} | Status: ${att.httpStatus ?? "N/A"} | Elapsed: ${att.elapsedMs}ms${att.error ? ` | Error: ${att.error}` : ""}`
+            );
+          }
+
           expect(result.ok).toBe(true);
           if (!result.ok) {
             throw new Error(
@@ -82,11 +109,10 @@ describe.skipIf(!hasApiKey)("Live Gemini API Analysis Suite", () => {
           }
           analysis = result.analysis;
           rawOutputForDebug = result.rawOutputForDebug;
+          console.log(`Successful Model Used: ${result.modelUsed}`);
         }
 
         // Print breakdown for each case
-        console.log(`\n======================================================`);
-        console.log(`[LIVE TEST RESULT] Case: ${tc.name}`);
         console.log(`Counts:`);
         console.log(`  - Concerns: ${analysis.concerns.length}`);
         console.log(`  - Missing Info: ${analysis.missingInfo.length}`);
@@ -153,7 +179,7 @@ describe.skipIf(!hasApiKey)("Live Gemini API Analysis Suite", () => {
         }
         console.log(`======================================================\n`);
       },
-      60000
+      150000 // 150s per-case timeout (FIX 5)
     );
   }
 });

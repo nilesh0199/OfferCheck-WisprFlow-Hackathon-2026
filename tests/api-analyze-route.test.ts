@@ -128,6 +128,15 @@ describe("/api/analyze Route Handler", () => {
     vi.spyOn(geminiModule, "analyzeOfferText").mockResolvedValue({
       ok: true,
       analysis: mockAnalysis,
+      modelUsed: "gemini-3.8-flash",
+      attempts: [
+        {
+          model: "gemini-3.8-flash",
+          outcome: "SUCCESS",
+          httpStatus: 200,
+          elapsedMs: 850,
+        },
+      ],
     });
 
     const validOffer =
@@ -152,6 +161,14 @@ describe("/api/analyze Route Handler", () => {
       code: "RATE_LIMITED",
       message: "The review service is currently busy.",
       httpStatus: 429,
+      attempts: [
+        {
+          model: "gemini-3.8-flash",
+          outcome: "RATE_LIMITED",
+          httpStatus: 429,
+          elapsedMs: 250,
+        },
+      ],
     });
 
     const req = new NextRequest("http://localhost:3000/api/analyze", {
@@ -169,5 +186,72 @@ describe("/api/analyze Route Handler", () => {
       code: "RATE_LIMITED",
       message: "The review service is currently busy.",
     });
+  });
+
+  it("route response never contains model names or attempts list in success or error bodies", async () => {
+    // 1. Success check
+    vi.spyOn(geminiModule, "analyzeOfferText").mockResolvedValue({
+      ok: true,
+      analysis: {
+        concerns: [],
+        missingInfo: [],
+        verificationQuestions: [],
+        droppedCount: 0,
+        limits: ["Reviews supplied text only."],
+      },
+      modelUsed: "gemini-3.8-flash",
+      attempts: [
+        {
+          model: "gemini-3.8-flash",
+          outcome: "SUCCESS",
+          httpStatus: 200,
+          elapsedMs: 900,
+        },
+      ],
+    });
+
+    const reqSuccess = new NextRequest("http://localhost:3000/api/analyze", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ text: "Valid offer text with sufficient characters..." }),
+    });
+    const resSuccess = await POST(reqSuccess);
+    const bodySuccess = await resSuccess.json();
+    const rawSuccessStr = JSON.stringify(bodySuccess);
+
+    expect(bodySuccess.modelUsed).toBeUndefined();
+    expect(bodySuccess.attempts).toBeUndefined();
+    expect(rawSuccessStr).not.toContain("gemini");
+    expect(rawSuccessStr).not.toContain("flash");
+
+    // 2. Error check
+    vi.spyOn(geminiModule, "analyzeOfferText").mockResolvedValue({
+      ok: false,
+      code: "UPSTREAM_ERROR",
+      message: "An upstream service error occurred while analyzing the offer. Please try again shortly.",
+      httpStatus: 502,
+      attempts: [
+        {
+          model: "gemini-3.8-flash",
+          outcome: "UPSTREAM_ERROR",
+          httpStatus: 502,
+          elapsedMs: 400,
+        },
+      ],
+    });
+
+    const reqError = new NextRequest("http://localhost:3000/api/analyze", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ text: "Valid offer text with sufficient characters..." }),
+    });
+    const resError = await POST(reqError);
+    const bodyError = await resError.json();
+    const rawErrorStr = JSON.stringify(bodyError);
+
+    expect(bodyError.modelUsed).toBeUndefined();
+    expect(bodyError.attempts).toBeUndefined();
+    expect(rawErrorStr).not.toContain("gemini");
+    expect(rawErrorStr).not.toContain("flash");
   });
 });

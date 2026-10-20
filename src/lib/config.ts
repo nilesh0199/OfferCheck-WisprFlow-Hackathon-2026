@@ -55,5 +55,46 @@ export const CIRCUIT_BREAKER_TIMEOUT_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes o
 export const CIRCUIT_BREAKER_RATE_LIMIT_COOLDOWN_MS = 15 * 60 * 1000; // 15 minutes on 429/RESOURCE_EXHAUSTED
 export const CIRCUIT_BREAKER_SERVER_ERROR_COOLDOWN_MS = 1 * 60 * 1000; // 1 minute on 503/5xx
 
+/** File upload & transcription constraints (Phase 8) */
+export const MAX_UPLOAD_FILES = 5;
+export const MAX_UPLOAD_TOTAL_BYTES = 4_000_000; // 4 MB raw bytes (under Vercel Functions 4.5 MB body limit)
+export const ALLOWED_IMAGE_TYPES = [
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+] as const;
+export const ALLOWED_PDF_TYPE = "application/pdf" as const;
+export const ALLOWED_UPLOAD_TYPES = [
+  ...ALLOWED_IMAGE_TYPES,
+  ALLOWED_PDF_TYPE,
+] as const;
+
+export const TRANSCRIBE_PER_ATTEMPT_TIMEOUT_MS = 25000; // 25s per-attempt timeout cap for multimodal transcription
+export const TRANSCRIBE_MAX_OUTPUT_TOKENS = 4000; // Enough for ~5 pages of text
+export const MAX_TRANSCRIPT_CHARS = 40000; // Hard server cap for combined transcript
+
+/** Separate rate limiting defaults for file transcription */
+export const DEFAULT_TRANSCRIBE_RATE_LIMIT_PER_WINDOW = 6; // 6 transcriptions per 15 minutes
+export const DEFAULT_TRANSCRIBE_RATE_LIMIT_PER_DAY = 20; // 20 transcriptions per 24 hours
+
+export function getTranscribeRateLimitPerWindow(): number {
+  if (process.env.TRANSCRIBE_LIMIT_PER_WINDOW) {
+    const parsed = parseInt(process.env.TRANSCRIBE_LIMIT_PER_WINDOW, 10);
+    if (!isNaN(parsed) && parsed > 0) return parsed;
+  }
+  return DEFAULT_TRANSCRIBE_RATE_LIMIT_PER_WINDOW;
+}
+
+export function getTranscribeRateLimitPerDay(): number {
+  if (process.env.TRANSCRIBE_LIMIT_PER_DAY) {
+    const parsed = parseInt(process.env.TRANSCRIBE_LIMIT_PER_DAY, 10);
+    if (!isNaN(parsed) && parsed > 0) return parsed;
+  }
+  return DEFAULT_TRANSCRIBE_RATE_LIMIT_PER_DAY;
+}
+
+export const AI_FILE_NOTICE =
+  "Files you upload are sent to Google's Gemini API to read the text in them. OfferCheck uses Google's free tier, where Google states that submitted content may be used to improve its products. Anything visible in an image or PDF is sent too, so crop or cover personal details first, or paste the text instead. OfferCheck does not store your files.";
+
 export const AI_DATA_NOTICE =
   "The text you submit is sent to Google's Gemini API for analysis. OfferCheck uses Google's free tier, where Google states that submitted content may be used to improve its products. Do not submit anything you would not want processed this way.";

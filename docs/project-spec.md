@@ -38,12 +38,13 @@ OfferCheck strictly limits its core MVP scope to keep complexity low, eliminate 
 - Client-side quotation verification to ensure no fabricated quotes appear.
 - Plain-language verification questions tailored to the provided offer.
 
-### Planned Document Input Feature (Phase 5)
-- Users may upload one PDF or up to three screenshots.
-- **Transcription Only:** The multimodal model is used solely to transcribe the uploaded document/images into raw text.
-- **User Review & Redaction Step:** The user reviews and can freely edit the generated transcript to remove personal details (names, phone numbers, addresses, financial data).
+### Document Input Feature (Phase 8 - Implemented)
+- Users may upload up to 5 files (screenshots: PNG, JPEG, WebP; and/or PDF documents) up to 4 MB total.
+- **Transcription Only:** Gemini multimodal Interactions API is used solely to transcribe the uploaded document/images into raw text.
+- **Client Canvas Downscaling:** Large screenshots are downscaled in the browser (max 1600 px width, 6000 px height, 12 MP cap) to respect payload limits.
+- **User Review & Redaction Step:** The user reviews and can freely edit the generated transcript in the textarea to remove personal details (names, phone numbers, addresses, financial data).
 - **Single Pipeline Integrity:** Analysis then runs through the exact same text-based pipeline, ensuring quotation validation works deterministically against the user-confirmed transcript.
-- **Verification of Limits:** Upload constraints (page count limits, file size caps, and request-body size thresholds) must be verified directly against current Vercel and Gemini documentation when building that phase, never assumed.
+- **Strict Ephemeral In-Memory Processing:** Zero files written to server disk or cloud storage; zero filenames or file contents logged; volatile browser RAM only.
 
 ### Out of Scope (Non-Goals for MVP)
 - **No Video Upload:** Video ingestion/processing is NOT planned (listed as potential future work).

@@ -5,6 +5,8 @@ import {
   MAX_RATE_LIMIT_KEYS,
   getRateLimitPerWindow,
   getRateLimitPerDay,
+  getTranscribeRateLimitPerWindow,
+  getTranscribeRateLimitPerDay,
 } from "./config";
 
 /** Per-process random salt so client hashes change on each server boot and cannot be precomputed. */
@@ -197,3 +199,9 @@ export class RateLimiter {
 
 /** Default singleton instance used by the analysis route handler */
 export const defaultRateLimiter = new RateLimiter();
+
+/** Default singleton instance used by the transcription route handler */
+export const defaultTranscribeRateLimiter = new RateLimiter({
+  limitPerWindow: getTranscribeRateLimitPerWindow(),
+  limitPerDay: getTranscribeRateLimitPerDay(),
+});

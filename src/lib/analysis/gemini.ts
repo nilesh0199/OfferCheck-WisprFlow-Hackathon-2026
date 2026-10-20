@@ -9,7 +9,7 @@ import {
   MIN_REMAINING_TIME_FOR_ATTEMPT_MS,
   MAX_OUTPUT_TOKENS,
 } from "@/lib/config";
-import { ModelOutputSchema, ValidatedAnalysis } from "./schema";
+import { ModelOutput, ModelOutputSchema, ValidatedAnalysis } from "./schema";
 import { parseModelOutput } from "./validate-result";
 import { validateAnalysis } from "./validate-result";
 import { SYSTEM_INSTRUCTION, buildUserContent } from "./prompt";
@@ -55,7 +55,7 @@ export interface GeminiInteractionClient {
   create: (
     params: {
       model: string;
-      input: string;
+      input: string | unknown[];
       system_instruction?: string;
       response_format?: {
         type?: string;
@@ -259,14 +259,17 @@ function isRateLimitError(err: unknown, status?: number): boolean {
 
 function determineFinalErrorCode(
   attempts: ModelAttemptRecord[],
-  deadlineExhausted: boolean
+  deadlineExhausted: boolean,
+  actionNoun = "review"
 ): { code: AnalyzeErrorCode; httpStatus: number; message: string } {
   if (deadlineExhausted) {
     return {
       code: "TIMEOUT",
       httpStatus: 504,
       message:
-        "The review request timed out. Please try again with a shorter excerpt or check your connection.",
+        actionNoun === "review"
+          ? "The review request timed out. Please try again with a shorter excerpt or check your connection."
+          : "The transcription request timed out. Please try again with fewer or smaller files, or paste the text directly.",
     };
   }
 
@@ -277,7 +280,9 @@ function determineFinalErrorCode(
       code: "RATE_LIMITED",
       httpStatus: 429,
       message:
-        "The review service is currently busy. Please wait a moment and try again.",
+        actionNoun === "review"
+          ? "The review service is currently busy. Please wait a moment and try again."
+          : "The transcription service is currently busy. Please wait a moment and try again.",
     };
   }
 
@@ -286,7 +291,9 @@ function determineFinalErrorCode(
       code: "INVALID_MODEL_OUTPUT",
       httpStatus: 502,
       message:
-        "Unable to process the offer review due to an invalid model response. Please try again.",
+        actionNoun === "review"
+          ? "Unable to process the offer review due to an invalid model response. Please try again."
+          : "Unable to process the files due to an invalid model response. Please try again.",
     };
   }
 
@@ -295,7 +302,9 @@ function determineFinalErrorCode(
       code: "TIMEOUT",
       httpStatus: 504,
       message:
-        "The review request timed out. Please try again with a shorter excerpt or check your connection.",
+        actionNoun === "review"
+          ? "The review request timed out. Please try again with a shorter excerpt or check your connection."
+          : "The transcription request timed out. Please try again with fewer or smaller files, or paste the text directly.",
     };
   }
 
@@ -303,7 +312,286 @@ function determineFinalErrorCode(
     code: "UPSTREAM_ERROR",
     httpStatus: 502,
     message:
-      "An upstream service error occurred while analyzing the offer. Please try again shortly.",
+      actionNoun === "review"
+        ? "An upstream service error occurred while analyzing the offer. Please try again shortly."
+        : "An upstream service error occurred while transcribing the files. Please try again shortly.",
+  };
+}
+
+export interface FallbackChainParams<T> {
+  client: GeminiModelClient;
+  models: string[];
+  overallDeadlineMs: number;
+  perAttemptTimeoutCap: number;
+  thinkingLevelEnv?: string;
+  circuitBreaker: ModelCircuitBreaker;
+  maxOutputTokens: number;
+  systemInstruction?: string;
+  responseSchema?: unknown;
+  buildInput: (model: string) => unknown;
+  parseOutput: (rawOutput: string | null | undefined) => { ok: true; data: T } | { ok: false; error: string };
+  actionNoun?: string;
+}
+
+export type FallbackChainResult<T> =
+  | {
+      ok: true;
+      data: T;
+      modelUsed: string;
+      attempts: ModelAttemptRecord[];
+      rawOutputForDebug?: string | null;
+    }
+  | {
+      ok: false;
+      code: AnalyzeErrorCode;
+      message: string;
+      httpStatus: number;
+      attempts: ModelAttemptRecord[];
+    };
+
+/**
+ * Shared fallback chain loop for Gemini model calls.
+ * Enforces overall deadline, per-attempt timeout, cancellation via AbortSignal,
+ * circuit breaker integration, immediate exit on 400/401/403, and fallback on 429/5xx/timeout.
+ */
+export async function runModelFallbackChain<T>({
+  client,
+  models,
+  overallDeadlineMs,
+  perAttemptTimeoutCap,
+  thinkingLevelEnv,
+  circuitBreaker,
+  maxOutputTokens,
+  systemInstruction,
+  responseSchema,
+  buildInput,
+  parseOutput,
+  actionNoun = "review",
+}: FallbackChainParams<T>): Promise<FallbackChainResult<T>> {
+  const startTime = Date.now();
+  const deadlineTimestamp = startTime + overallDeadlineMs;
+  const attempts: ModelAttemptRecord[] = [];
+  let deadlineExhausted = false;
+
+  for (let i = 0; i < models.length; i++) {
+    if (attempts.length >= MAX_MODEL_ATTEMPTS) {
+      break;
+    }
+
+    const currentModel = models[i];
+    const now = Date.now();
+    const timeRemaining = deadlineTimestamp - now;
+
+    // Check shared deadline before launching attempt
+    if (timeRemaining <= MIN_REMAINING_TIME_FOR_ATTEMPT_MS) {
+      deadlineExhausted = true;
+      break;
+    }
+
+    // Per-attempt timeout = min(cap, time remaining minus safety margin)
+    const perAttemptTimeout = Math.min(
+      perAttemptTimeoutCap,
+      Math.max(0, timeRemaining - 1500)
+    );
+
+    if (perAttemptTimeout < 1000) {
+      deadlineExhausted = true;
+      break;
+    }
+
+    const controller = new AbortController();
+    const attemptStart = Date.now();
+    let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
+
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timeoutHandle = setTimeout(() => {
+        try {
+          controller.abort();
+        } catch {
+          // Ignore if controller already aborted
+        }
+        const err = new Error("Request timed out");
+        err.name = "TimeoutError";
+        reject(err);
+      }, perAttemptTimeout);
+    });
+
+    const thinkingLevel = resolveThinkingLevel(currentModel, thinkingLevelEnv);
+    const generationConfig: Record<string, unknown> = {
+      max_output_tokens: maxOutputTokens,
+    };
+    if (thinkingLevel) {
+      generationConfig.thinking_level = thinkingLevel;
+    }
+
+    let rawOutput: string | null | undefined;
+
+    try {
+      const createFn =
+        client.interactions?.create?.bind(client.interactions) ??
+        client.create?.bind(client);
+
+      if (!createFn) {
+        throw new Error("Client does not provide an interactions.create method.");
+      }
+
+      const input = buildInput(currentModel);
+
+      const interactionPromise = createFn(
+        {
+          model: currentModel,
+          input: input as string | unknown[],
+          system_instruction: systemInstruction,
+          response_format: responseSchema
+            ? {
+                type: "text",
+                mime_type: "application/json",
+                schema: responseSchema,
+              }
+            : undefined,
+          generation_config: generationConfig,
+        },
+        {
+          signal: controller.signal,
+          timeout_ms: perAttemptTimeout,
+          maxRetries: 0,
+        }
+      );
+
+      const interaction = await Promise.race([
+        interactionPromise,
+        timeoutPromise,
+      ]);
+      rawOutput = interaction.output_text;
+    } catch (err: unknown) {
+      if (timeoutHandle) {
+        clearTimeout(timeoutHandle);
+      }
+      const elapsedMs = Date.now() - attemptStart;
+      const status = getErrorStatus(err);
+
+      // 400, 401, 403: Configuration or request errors; FAIL IMMEDIATELY (no fallback)
+      if (isNonRetryableStatus(status)) {
+        const isAuth = status === 401 || status === 403;
+        const code: AnalyzeErrorCode = isAuth ? "NOT_CONFIGURED" : "UPSTREAM_ERROR";
+        const finalStatus = isAuth ? 500 : 400;
+        const message = isAuth
+          ? "Offer review service is currently unavailable. Please try again later."
+          : "Unable to process the offer review due to an invalid request format.";
+
+        logSafeAttemptError(
+          code,
+          status ?? finalStatus,
+          attempts.length + 1,
+          currentModel,
+          elapsedMs
+        );
+        attempts.push({
+          model: currentModel,
+          outcome: code,
+          httpStatus: status ?? finalStatus,
+          elapsedMs,
+          error: String((err as Error)?.message || err),
+        });
+
+        return {
+          ok: false,
+          code,
+          message,
+          httpStatus: finalStatus,
+          attempts,
+        };
+      }
+
+      // Retryable errors: Rate limits (429), timeouts, 503, or upstream network errors
+      let outcomeCode: AnalyzeErrorCode;
+      let httpStatus = status ?? 502;
+
+      if (isTimeoutError(err)) {
+        outcomeCode = "TIMEOUT";
+        httpStatus = 504;
+      } else if (isRateLimitError(err, status)) {
+        outcomeCode = "RATE_LIMITED";
+        httpStatus = 429;
+      } else {
+        outcomeCode = "UPSTREAM_ERROR";
+        httpStatus = status ?? 502;
+      }
+
+      logSafeAttemptError(
+        outcomeCode,
+        httpStatus,
+        attempts.length + 1,
+        currentModel,
+        elapsedMs
+      );
+      circuitBreaker.recordFailure(currentModel, outcomeCode, httpStatus);
+      attempts.push({
+        model: currentModel,
+        outcome: outcomeCode,
+        httpStatus,
+        elapsedMs,
+        error: String((err as Error)?.message || err),
+      });
+
+      // Fall back to next model in the chain
+      continue;
+    } finally {
+      if (timeoutHandle) {
+        clearTimeout(timeoutHandle);
+      }
+    }
+
+    const elapsedMs = Date.now() - attemptStart;
+
+    // Parse model output into structured schema
+    const parseResult = parseOutput(rawOutput);
+    if (!parseResult.ok) {
+      logSafeAttemptError(
+        "INVALID_MODEL_OUTPUT",
+        502,
+        attempts.length + 1,
+        currentModel,
+        elapsedMs
+      );
+      circuitBreaker.recordFailure(currentModel, "INVALID_MODEL_OUTPUT", 502);
+      attempts.push({
+        model: currentModel,
+        outcome: "INVALID_MODEL_OUTPUT",
+        httpStatus: 502,
+        elapsedMs,
+        error: parseResult.error,
+      });
+      // Fall back to next model in the chain
+      continue;
+    }
+
+    // Success
+    circuitBreaker.recordSuccess(currentModel);
+    attempts.push({
+      model: currentModel,
+      outcome: "SUCCESS",
+      httpStatus: 200,
+      elapsedMs,
+    });
+
+    return {
+      ok: true,
+      data: parseResult.data,
+      modelUsed: currentModel,
+      attempts,
+      rawOutputForDebug: rawOutput,
+    };
+  }
+
+  // All attempts failed or deadline was exhausted
+  const finalError = determineFinalErrorCode(attempts, deadlineExhausted, actionNoun);
+  return {
+    ok: false,
+    code: finalError.code,
+    message: finalError.message,
+    httpStatus: finalError.httpStatus,
+    attempts,
   };
 }
 
@@ -388,230 +676,34 @@ export async function analyzeOfferText(
   } else {
     const { GoogleGenAI } = await import("@google/genai");
     const ai = new GoogleGenAI({ apiKey });
-    client = ai;
+    client = ai as unknown as GeminiModelClient;
   }
 
-  const startTime = Date.now();
-  const deadlineTimestamp = startTime + overallDeadlineMs;
-  const attempts: ModelAttemptRecord[] = [];
-  let deadlineExhausted = false;
+  const chainResult = await runModelFallbackChain<ModelOutput>({
+    client,
+    models,
+    overallDeadlineMs,
+    perAttemptTimeoutCap,
+    thinkingLevelEnv,
+    circuitBreaker: breaker,
+    maxOutputTokens: MAX_OUTPUT_TOKENS,
+    systemInstruction: SYSTEM_INSTRUCTION,
+    responseSchema: GEMINI_RESPONSE_SCHEMA,
+    buildInput: () => buildUserContent(trimmed),
+    parseOutput: parseModelOutput,
+    actionNoun: "review",
+  });
 
-  // 3. Fallback execution loop (up to MAX_MODEL_ATTEMPTS models)
-  for (let i = 0; i < models.length; i++) {
-    if (attempts.length >= MAX_MODEL_ATTEMPTS) {
-      break;
-    }
-
-    const currentModel = models[i];
-    const now = Date.now();
-    const timeRemaining = deadlineTimestamp - now;
-
-    // Check shared deadline before launching attempt
-    if (timeRemaining <= MIN_REMAINING_TIME_FOR_ATTEMPT_MS) {
-      deadlineExhausted = true;
-      break;
-    }
-
-    // Per-attempt timeout = min(cap, time remaining minus safety margin)
-    const perAttemptTimeout = Math.min(
-      perAttemptTimeoutCap,
-      Math.max(0, timeRemaining - 1500)
-    );
-
-    if (perAttemptTimeout < 1000) {
-      deadlineExhausted = true;
-      break;
-    }
-
-    const controller = new AbortController();
-    const attemptStart = Date.now();
-    let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
-
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      timeoutHandle = setTimeout(() => {
-        try {
-          controller.abort();
-        } catch {
-          // Ignore if controller already aborted
-        }
-        const err = new Error("Request timed out");
-        err.name = "TimeoutError";
-        reject(err);
-      }, perAttemptTimeout);
-    });
-
-    const thinkingLevel = resolveThinkingLevel(currentModel, thinkingLevelEnv);
-    const generationConfig: Record<string, unknown> = {
-      max_output_tokens: MAX_OUTPUT_TOKENS,
-    };
-    if (thinkingLevel) {
-      generationConfig.thinking_level = thinkingLevel;
-    }
-
-    let rawOutput: string | null | undefined;
-
-    try {
-      const createFn =
-        client.interactions?.create?.bind(client.interactions) ??
-        client.create?.bind(client);
-
-      if (!createFn) {
-        throw new Error("Client does not provide an interactions.create method.");
-      }
-
-      const interactionPromise = createFn(
-        {
-          model: currentModel,
-          input: buildUserContent(trimmed),
-          system_instruction: SYSTEM_INSTRUCTION,
-          response_format: {
-            type: "text",
-            mime_type: "application/json",
-            schema: GEMINI_RESPONSE_SCHEMA,
-          },
-          generation_config: generationConfig,
-        },
-        {
-          signal: controller.signal,
-          timeout_ms: perAttemptTimeout,
-          maxRetries: 0,
-        }
-      );
-
-      const interaction = await Promise.race([
-        interactionPromise,
-        timeoutPromise,
-      ]);
-      rawOutput = interaction.output_text;
-    } catch (err: unknown) {
-      if (timeoutHandle) {
-        clearTimeout(timeoutHandle);
-      }
-      const elapsedMs = Date.now() - attemptStart;
-      const status = getErrorStatus(err);
-
-      // 400, 401, 403: Configuration or request errors; FAIL IMMEDIATELY (no fallback)
-      if (isNonRetryableStatus(status)) {
-        const isAuth = status === 401 || status === 403;
-        const code: AnalyzeErrorCode = isAuth ? "NOT_CONFIGURED" : "UPSTREAM_ERROR";
-        const finalStatus = isAuth ? 500 : 400;
-        const message = isAuth
-          ? "Offer review service is currently unavailable. Please try again later."
-          : "Unable to process the offer review due to an invalid request format.";
-
-        logSafeAttemptError(
-          code,
-          status ?? finalStatus,
-          attempts.length + 1,
-          currentModel,
-          elapsedMs
-        );
-        attempts.push({
-          model: currentModel,
-          outcome: code,
-          httpStatus: status ?? finalStatus,
-          elapsedMs,
-          error: String((err as Error)?.message || err),
-        });
-
-        return {
-          ok: false,
-          code,
-          message,
-          httpStatus: finalStatus,
-          attempts,
-        };
-      }
-
-      // Retryable errors: Rate limits (429), timeouts, 503, or upstream network errors
-      let outcomeCode: AnalyzeErrorCode;
-      let httpStatus = status ?? 502;
-
-      if (isTimeoutError(err)) {
-        outcomeCode = "TIMEOUT";
-        httpStatus = 504;
-      } else if (isRateLimitError(err, status)) {
-        outcomeCode = "RATE_LIMITED";
-        httpStatus = 429;
-      } else {
-        outcomeCode = "UPSTREAM_ERROR";
-        httpStatus = status ?? 502;
-      }
-
-      logSafeAttemptError(
-        outcomeCode,
-        httpStatus,
-        attempts.length + 1,
-        currentModel,
-        elapsedMs
-      );
-      breaker.recordFailure(currentModel, outcomeCode, httpStatus);
-      attempts.push({
-        model: currentModel,
-        outcome: outcomeCode,
-        httpStatus,
-        elapsedMs,
-        error: String((err as Error)?.message || err),
-      });
-
-      // Fall back to next model in the chain
-      continue;
-    } finally {
-      if (timeoutHandle) {
-        clearTimeout(timeoutHandle);
-      }
-    }
-
-    const elapsedMs = Date.now() - attemptStart;
-
-    // 4. Parse model output into structured schema
-    const parseResult = parseModelOutput(rawOutput);
-    if (!parseResult.ok) {
-      logSafeAttemptError(
-        "INVALID_MODEL_OUTPUT",
-        502,
-        attempts.length + 1,
-        currentModel,
-        elapsedMs
-      );
-      breaker.recordFailure(currentModel, "INVALID_MODEL_OUTPUT", 502);
-      attempts.push({
-        model: currentModel,
-        outcome: "INVALID_MODEL_OUTPUT",
-        httpStatus: 502,
-        elapsedMs,
-        error: parseResult.error,
-      });
-      // Fall back to next model in the chain
-      continue;
-    }
-
-    // 5. Success: Validate analysis quotes against original source text
-    breaker.recordSuccess(currentModel);
-    attempts.push({
-      model: currentModel,
-      outcome: "SUCCESS",
-      httpStatus: 200,
-      elapsedMs,
-    });
-
-    const analysis = validateAnalysis(parseResult.data, text);
-    return {
-      ok: true,
-      analysis,
-      modelUsed: currentModel,
-      attempts,
-      rawOutputForDebug: rawOutput,
-    };
+  if (!chainResult.ok) {
+    return chainResult;
   }
 
-  // All attempts failed or deadline was exhausted
-  const finalError = determineFinalErrorCode(attempts, deadlineExhausted);
+  const analysis = validateAnalysis(chainResult.data, text);
   return {
-    ok: false,
-    code: finalError.code,
-    message: finalError.message,
-    httpStatus: finalError.httpStatus,
-    attempts,
+    ok: true,
+    analysis,
+    modelUsed: chainResult.modelUsed,
+    attempts: chainResult.attempts,
+    rawOutputForDebug: chainResult.rawOutputForDebug,
   };
 }

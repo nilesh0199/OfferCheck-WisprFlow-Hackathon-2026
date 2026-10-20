@@ -94,16 +94,19 @@ This phased build plan outlines the implementation roadmap for OfferCheck, an in
 
 ---
 
-## Phase 5: Document Input (PDF + Screenshots)
-- **Status:** Not started
-- **Goal:** Enable users to submit offers via one PDF or up to three screenshots, using multimodal transcription followed by explicit user review and redaction before running the unified text analysis pipeline.
+## Phase 8: Document Input (PDF + Screenshots Multimodal Transcription)
+- **Status:** Complete
+- **Goal:** Enable users to submit offers via up to 5 files (screenshots: PNG, JPEG, WebP; and/or PDFs, up to 4 MB total), using Gemini multimodal Interactions API solely for plain text transcription, followed by mandatory candidate review and redaction in the editor before running the unified text analysis pipeline.
 - **Acceptance Criteria:**
-  - File upload component accepts 1 PDF or up to 3 image screenshots.
-  - AI model only performs transcription to plain text; no direct analysis occurs during document intake.
-  - User reviews, verifies, and edits the transcription in the textarea to redact personal information.
-  - Verified transcript feeds directly into the standard Phase 3 text pipeline, preserving quotation validation against confirmed text.
-  - Strict file size and page count limits enforced and verified against current Vercel and Gemini documentation.
-  - Video upload explicitly disallowed and documented as future work.
+  - File upload component accepts up to 5 screenshots or PDF documents up to 4 MB total with drag-and-drop, native file browser, and Ctrl+V clipboard paste.
+  - Binary magic-byte inspection verifies genuine file headers (PNG, JPEG, WebP, PDF) and rejects spoofed files with HTTP 400.
+  - Client-side canvas compression downscales large screenshots (max 1600 px width, 6000 px height, 12 MP cap) to stay under Vercel limits without degrading legibility.
+  - Interactions API multimodal pipeline transcribes files with model fallback chain, shared deadline, and circuit-breaker integration.
+  - System instructions treat file contents as untrusted data, preventing prompt injection from executing.
+  - Extracted text is sanitized, joined with `[File N of M]` headers, and loaded into the textarea for candidate review and redaction.
+  - Separate transcribe rate limiter (default 6/15m, 20/24h) protects upstream multimodal quotas without impacting text analysis limits.
+  - Single pipeline integrity: analysis executes strictly on confirmed text, preserving deterministic quotation validation.
+  - Ephemeral state: zero files saved to server disk or cloud storage; zero file contents or filenames logged; volatile browser RAM only.
 
 ---
 

@@ -52,7 +52,7 @@ export function PrivacySection() {
                 Zero server-side persistence
               </strong>
               <p>
-                Our server never saves offer text to databases or log files. We log only anonymized status codes and attempt response times for reliability.
+                Our server never saves offer text or uploaded files to databases, disk, or log files. We log only anonymized status codes and attempt response times for reliability.
               </p>
             </div>
             <div className="space-y-1">

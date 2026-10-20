@@ -257,13 +257,34 @@ This document tracks all implemented, live, and planned automated tests for Offe
 | `UI: Research prompt copy feedback and clipboard fallback` | Manual check that Copy button announces copied state and falls back to selectable textarea | Manual |
 | `UI: Open Perplexity link attributes` | Manual check that Perplexity link opens in new tab with rel=noopener noreferrer | Manual |
 | `UI: Claimed website displayed as plain text and never as a clickable link` | Manual check that claimed website is rendered strictly as plain text | Manual |
+| `upload-helpers: detects PNG, JPEG, WebP, PDF from magic bytes` | Verifies binary magic header inspection for all allowed image and document types | Implemented |
+| `upload-helpers: rejects truncated or spoofed headers cleanly` | Verifies non-throwing null return on truncated or non-matching byte arrays | Implemented |
+| `upload-helpers: validates healthy mixed upload set` | Verifies valid sets of images and PDFs pass upload validation | Implemented |
+| `upload-helpers: rejects empty file set, >5 files, 0-byte file, unsupported types, >4MB total` | Verifies boundary validation for count, empty file, total bytes, and types | Implemented |
+| `upload-helpers: plans image compression downscaling and quality ladder` | Verifies target dimensions max 1600x6000 and quality ladder planning | Implemented |
+| `upload-helpers: joinTranscripts inserts [File N of M] headers in order` | Verifies file index sorting and multi-file section formatting | Implemented |
+| `upload-helpers: sanitizeTranscript strips NUL/control characters and caps at 40k chars` | Verifies NUL stripping, control character removal, and max transcript truncation | Implemented |
+| `transcribe: clean schema and verbatim untrusted data system instructions` | Verifies clean schema without $schema and security instructions against prompt injection | Implemented |
+| `transcribe: validates input constraints and checks API key before model calls` | Verifies early rejection of empty sets, >5 files, zero-byte files, and missing key | Implemented |
+| `transcribe: transcribes multiple files with ordered headers and extracts text parts` | Verifies multimodal payload construction, Interactions API call, and header formatting | Implemented |
+| `transcribe: handles unreadable files with readable flags and calm warnings` | Verifies unreadable file flagging without crashing or failing whole transcript | Implemented |
+| `transcribe: flags exceedsInputLimit when transcript length exceeds 8,000 characters` | Verifies length boundary check and review limit warning | Implemented |
+| `transcribe: falls back to secondary model on 429` | Verifies rate-limited primary model falls back to secondary model in chain | Implemented |
+| `transcribe: aborts immediately on 401/403 with NOT_CONFIGURED without fallback` | Verifies non-retryable auth errors fail immediately | Implemented |
+| `api-transcribe: rejects non-POST methods with 405 Method Not Allowed` | Verifies GET, PUT, DELETE, PATCH return 405 with Allow: POST | Implemented |
+| `api-transcribe: rejects non-multipart requests with 415 Unsupported Media Type` | Verifies application/json rejected with 415 | Implemented |
+| `api-transcribe: rejects payloads over 4 MB with 413 TOTAL_TOO_LARGE` | Verifies early rejection on Content-Length header | Implemented |
+| `api-transcribe: rejects spoofed files failing magic-byte inspection with 400` | Verifies binary inspection catches spoofed extensions | Implemented |
+| `api-transcribe: enforces separate transcribe rate limiter (429 with Retry-After)` | Verifies isolated sliding-window rate limit without impacting analysis quota | Implemented |
+| `api-transcribe: enforces concurrency guard (503 BUSY)` | Verifies server instance concurrency bound | Implemented |
+| `api-transcribe: returns 200 with transcript on valid upload` | Verifies end-to-end route success and no-store headers | Implemented |
 | `Mobile layout and responsiveness` | Tests responsive layout, tap targets, and typography down to ~360px viewport | Planned |
 
 ---
 
 ## Test Execution Summary
 
-- **Total Implemented Automated Tests (Offline)**: 215 tests across 26 test files in `tests/`.
+- **Total Implemented Automated Tests (Offline)**: 258 tests across 29 test files in `tests/`.
 - **Manual / Live Tests**: 5 sequential live test cases in `tests-live/analyze.live.test.ts` (run via `npm run test:live`), plus manual UI verification checks.
 - **Offline Test Command**: `npm run test` (fast, deterministic, zero external network dependency).
 - **Live Test Command**: `npm run test:live` (loads `.env.local`; skips cleanly if `GEMINI_API_KEY` is not present; does not fake results).

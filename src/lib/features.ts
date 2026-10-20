@@ -8,7 +8,7 @@
 export interface FeatureFlags {
   /** Text analysis of pasted offer content (live today) */
   readonly textAnalysis: boolean;
-  /** File/PDF/document upload (planned for later phase) */
+  /** File/PDF/document upload (live today) */
   readonly documentUpload: boolean;
   /** Automated in-app company web/registry research (not planned) */
   readonly companyResearch: boolean;
@@ -20,7 +20,7 @@ export interface FeatureFlags {
 
 export const FEATURES: FeatureFlags = {
   textAnalysis: true,
-  documentUpload: false,
+  documentUpload: true,
   companyResearch: false,
   companyResearchPrompt: true,
   officialResources: true,

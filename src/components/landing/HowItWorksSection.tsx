@@ -39,9 +39,9 @@ export function HowItWorksSection() {
   const steps = [
     {
       num: "01",
-      title: "Paste the offer text",
+      title: hasUpload ? "Paste or upload the offer" : "Paste the offer text",
       description: hasUpload
-        ? "Paste offer text or upload an offer document to begin analysis."
+        ? "Paste offer text or upload up to 5 screenshots or PDFs to transcribe and review."
         : "Copy and paste the email, message, or offer letter into the review tool. No registration, login, or document upload required.",
       icon: <FileTextIcon className="w-5 h-5 text-[var(--accent)]" />,
     },

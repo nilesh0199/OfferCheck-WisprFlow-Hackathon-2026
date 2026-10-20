@@ -38,6 +38,13 @@ describe("Session Reducer (In-Memory Tab State)", () => {
       status: "idle",
       errorState: null,
       elapsedSeconds: 0,
+      activeTab: "paste",
+      selectedFiles: [],
+      transcribeStatus: "idle",
+      transcribeError: null,
+      transcribeWarnings: [],
+      transcribeElapsedSeconds: 0,
+      transcriptBannerDismissed: false,
     });
   });
 
@@ -140,6 +147,7 @@ describe("Session Reducer (In-Memory Tab State)", () => {
 
   it("resets to initial state on CLEAR_SESSION", () => {
     const stateWithData: OfferSessionState = {
+      ...INITIAL_SESSION_STATE,
       offerText: "Some text",
       analyzedSnapshotText: "Some text",
       analysis: mockAnalysis,
@@ -153,5 +161,62 @@ describe("Session Reducer (In-Memory Tab State)", () => {
     });
 
     expect(nextState).toEqual(INITIAL_SESSION_STATE);
+  });
+
+  it("handles tab switching and file selection actions", () => {
+    let state = offerSessionReducer(INITIAL_SESSION_STATE, {
+      type: "SET_ACTIVE_TAB",
+      payload: "upload",
+    });
+    expect(state.activeTab).toBe("upload");
+
+    const dummyFile = new File(["dummy"], "offer.png", { type: "image/png" });
+    const items = [
+      { id: "1", file: dummyFile },
+      { id: "2", file: dummyFile },
+    ];
+    state = offerSessionReducer(state, {
+      type: "ADD_SELECTED_FILES",
+      payload: items,
+    });
+    expect(state.selectedFiles.length).toBe(2);
+
+    state = offerSessionReducer(state, {
+      type: "REMOVE_SELECTED_FILE",
+      payload: "1",
+    });
+    expect(state.selectedFiles.length).toBe(1);
+    expect(state.selectedFiles[0].id).toBe("2");
+  });
+
+  it("handles transcribe lifecycle (start -> success -> switch tab)", () => {
+    let state = offerSessionReducer(INITIAL_SESSION_STATE, {
+      type: "START_TRANSCRIBE",
+    });
+    expect(state.transcribeStatus).toBe("loading");
+    expect(state.transcribeElapsedSeconds).toBe(0);
+
+    state = offerSessionReducer(state, {
+      type: "TICK_TRANSCRIBE_ELAPSED",
+      payload: 4,
+    });
+    expect(state.transcribeElapsedSeconds).toBe(4);
+
+    state = offerSessionReducer(state, {
+      type: "TRANSCRIBE_SUCCESS",
+      payload: {
+        transcript: "Extracted offer details",
+        warnings: ["File 1 was clear"],
+      },
+    });
+    expect(state.transcribeStatus).toBe("success");
+    expect(state.offerText).toBe("Extracted offer details");
+    expect(state.activeTab).toBe("paste");
+    expect(state.transcriptBannerDismissed).toBe(false);
+
+    state = offerSessionReducer(state, {
+      type: "DISMISS_TRANSCRIPT_BANNER",
+    });
+    expect(state.transcriptBannerDismissed).toBe(true);
   });
 });

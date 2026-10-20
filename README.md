@@ -28,6 +28,7 @@ When you are starting out, an offer can feel like a rare chance, and you may not
 ### What It Does
 
 - Evaluates pasted offer communications (up to 8,000 characters) across emails, chat messages, and letters.
+- Transcribes up to 5 uploaded screenshots or PDF documents (up to 4 MB total) via Gemini's multimodal Interactions API, placing the extracted text in the editor for the candidate to review, redact, and edit before analysis.
 - Highlights potential concerns linked strictly to verbatim quotations found in the text.
 - Checks for foundational employment terms that standard offers usually include (stipend/salary, roles, schedule, location, official contact).
 - Formulates actionable, professionally worded verification questions for the student or job seeker to ask the sender.
@@ -59,7 +60,7 @@ When you are starting out, an offer can feel like a rare chance, and you may not
 | **Landing page and routes** | Implemented | Asymmetric landing page at `/` with an interactive annotated paper card; tool workspace at `/check`; in-memory session persistence across routes via `SessionProvider`. |
 | **Safeguards** | Implemented | Sliding-window rate limiting (8/15m, 30/24h) with salted SHA-256 IP hashing, model circuit breaker, in-memory concurrency guard (max 4), input hygiene (blocking NUL/control characters), and security headers. |
 | **Job-offer specifics** | In progress | The app analyses any pasted text, but prompt instructions, synthetic samples, and in-app copy are currently written around internships. Extending salary, probation, joining date, training or bond clauses, and job samples is in progress. |
-| **Screenshot and PDF input** | Planned | Document transcription via multimodal models followed by mandatory user review and redaction before running the text analysis pipeline. |
+| **Screenshot and PDF input** | Implemented | Multimodal transcription via Gemini Interactions API for up to 5 screenshots (PNG, JPEG, WebP) or PDFs (max 4 MB total); browser-side canvas downscaling; candidate reviews and edits extracted text before analysis. |
 
 ---
 

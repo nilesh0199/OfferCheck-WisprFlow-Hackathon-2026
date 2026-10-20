@@ -10,7 +10,11 @@ export function FaqSection() {
     },
     {
       q: "Is my offer stored on your servers?",
-      a: "No. OfferCheck stores zero offer text in any database, disk, or cookie. The offer text and results live strictly in your active browser tab's memory and are discarded when you refresh or close the tab.",
+      a: "No. OfferCheck stores zero offer text or uploaded files in any database, disk, or cookie. The files, transcribed text, and results live strictly in your active browser tab's memory and are discarded when you refresh or close the tab.",
+    },
+    {
+      q: "Can I upload screenshots or PDFs?",
+      a: "Yes. You can upload up to 5 screenshots (PNG, JPEG, WebP) or PDF documents up to 4 MB total. OfferCheck transcribes them to text with Gemini, lets you review and edit the extracted text in the editor, and analyzes only what you confirm.",
     },
     {
       q: "Can OfferCheck tell me whether a company is real?",

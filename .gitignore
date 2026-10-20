@@ -40,3 +40,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# live test fixtures
+tests-live/fixtures/*
+!tests-live/fixtures/.gitkeep

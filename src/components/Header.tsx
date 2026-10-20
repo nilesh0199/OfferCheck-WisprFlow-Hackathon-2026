@@ -1,6 +1,7 @@
 import React from "react";
 import { APP_NAME, TAGLINE } from "@/lib/config";
 import { LogoIcon, GitHubIcon, ExternalLinkIcon } from "./Icons";
+import { Container } from "./Container";
 
 export function Header() {
   return (
@@ -10,13 +11,13 @@ export function Header() {
         aria-label="Main navigation"
         className="sticky top-0 z-30 w-full border-b border-[var(--border)] bg-[var(--surface)]/95 backdrop-blur-md"
       >
-        <div className="max-w-[1152px] mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+        <Container className="h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <a
               href="#"
-              className="flex items-center gap-2 font-bold text-base tracking-tight text-[var(--text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded"
+              className="inline-flex items-center gap-2 font-bold text-base tracking-tight text-[var(--text)] py-1 px-2 -ml-2 rounded-lg outline-none hover:opacity-90 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)]"
             >
-              <LogoIcon className="w-5 h-5 text-[var(--accent)]" />
+              <LogoIcon className="w-5 h-5 text-[var(--accent)] shrink-0" />
               <span>{APP_NAME}</span>
             </a>
             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-medium bg-[var(--surface-muted)] text-[var(--text-muted)] border border-[var(--border)]">
@@ -49,43 +50,45 @@ export function Header() {
               <ExternalLinkIcon className="w-3 h-3 opacity-60" />
             </a>
           </div>
-        </div>
+        </Container>
       </nav>
 
-      {/* Hero section */}
-      <header className="pt-6 sm:pt-8 pb-4 text-left">
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text)]">
-          {TAGLINE}
-        </h1>
-        <p className="mt-2 text-sm sm:text-base text-[var(--text-muted)] max-w-3xl leading-relaxed">
-          Paste an internship offer, get evidence-linked observations and
-          questions to verify before you pay or share documents.
-        </p>
+      {/* Hero and steps section wrapped in shared Container */}
+      <header className="w-full">
+        <Container className="pt-6 sm:pt-8 pb-4 text-left">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text)]">
+            {TAGLINE}
+          </h1>
+          <p className="mt-2 text-sm sm:text-base text-[var(--text-muted)] max-w-[40rem] leading-relaxed">
+            Paste an internship offer, get evidence-linked observations and
+            questions to verify before you pay or share documents.
+          </p>
 
-        {/* Three-step strip */}
-        <div
-          id="how-it-works"
-          className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-4 border-t border-[var(--border)]"
-        >
-          <div className="flex items-center gap-2 text-xs font-medium text-[var(--text-muted)]">
-            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-[var(--surface-muted)] text-[var(--text)] font-semibold border border-[var(--border)] shrink-0">
-              1
-            </span>
-            <span>Paste the offer</span>
+          {/* Three-step strip */}
+          <div
+            id="how-it-works"
+            className="mt-6 pt-5 border-t border-[var(--border)] grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6"
+          >
+            <div className="flex items-center gap-2.5 text-xs font-medium text-[var(--text-muted)]">
+              <span className="flex items-center justify-center w-5 h-5 rounded-full bg-[var(--surface-muted)] text-[var(--text)] font-semibold border border-[var(--border)] shrink-0">
+                1
+              </span>
+              <span>Paste the offer</span>
+            </div>
+            <div className="flex items-center gap-2.5 text-xs font-medium text-[var(--text-muted)]">
+              <span className="flex items-center justify-center w-5 h-5 rounded-full bg-[var(--surface-muted)] text-[var(--text)] font-semibold border border-[var(--border)] shrink-0">
+                2
+              </span>
+              <span>Review the observations</span>
+            </div>
+            <div className="flex items-center gap-2.5 text-xs font-medium text-[var(--text-muted)]">
+              <span className="flex items-center justify-center w-5 h-5 rounded-full bg-[var(--surface-muted)] text-[var(--text)] font-semibold border border-[var(--border)] shrink-0">
+                3
+              </span>
+              <span>Verify with the sender</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2 text-xs font-medium text-[var(--text-muted)]">
-            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-[var(--surface-muted)] text-[var(--text)] font-semibold border border-[var(--border)] shrink-0">
-              2
-            </span>
-            <span>Review the observations</span>
-          </div>
-          <div className="flex items-center gap-2 text-xs font-medium text-[var(--text-muted)]">
-            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-[var(--surface-muted)] text-[var(--text)] font-semibold border border-[var(--border)] shrink-0">
-              3
-            </span>
-            <span>Verify with the sender</span>
-          </div>
-        </div>
+        </Container>
       </header>
     </>
   );

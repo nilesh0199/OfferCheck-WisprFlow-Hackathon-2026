@@ -58,8 +58,8 @@ export function OfferInputForm({
       onSubmit={handleSubmit}
       className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 shadow-xs space-y-4"
     >
-      {/* Header with Title and Sample Picker */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-[var(--border)]">
+      {/* Header with Title and Sample Picker on its own row below */}
+      <div className="space-y-3 pb-3 border-b border-[var(--border)]">
         <div>
           <h2
             id="offer-text-heading"
@@ -67,7 +67,7 @@ export function OfferInputForm({
           >
             Offer text
           </h2>
-          <p className="text-xs text-[var(--text-muted)]">
+          <p className="text-xs text-[var(--text-muted)] mt-0.5">
             Paste the raw message, email, or offer letter below.
           </p>
         </div>
@@ -94,7 +94,7 @@ export function OfferInputForm({
           aria-describedby="char-count-meta privacy-callout"
           aria-invalid={isTooLong || isTooShort}
           placeholder="Paste the written offer letter, email, or chat message here..."
-          className={`w-full rounded-lg border p-3.5 text-xs sm:text-sm font-mono leading-relaxed transition-colors custom-scrollbar focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] bg-[var(--surface-muted)] text-[var(--text)] ${
+          className={`w-full h-64 sm:h-72 min-h-[14rem] max-h-[22rem] resize-y rounded-lg border p-3.5 text-xs sm:text-sm font-mono leading-relaxed transition-colors custom-scrollbar overflow-y-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] bg-[var(--surface-muted)] text-[var(--text)] ${
             isLoading
               ? "opacity-60 cursor-not-allowed border-[var(--border)]"
               : isTooLong

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Header } from "@/components/Header";
+import { Container } from "@/components/Container";
 import { OfferInputForm } from "@/components/OfferInputForm";
 import { AnalysisResults } from "@/components/AnalysisResults";
 import { OutdatedBanner } from "@/components/OutdatedBanner";
@@ -193,7 +194,7 @@ export default function Home() {
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col justify-between overflow-x-hidden transition-colors">
       <Header />
 
-      <main className="w-full max-w-[1152px] mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8 flex-1">
+      <Container as="main" className="py-6 sm:py-8 space-y-8 flex-1">
         {/* Two-column workspace on screens >= 1024px; stacked below */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Left Column: Sticky Input Card */}
@@ -302,11 +303,11 @@ export default function Home() {
         <div className="pt-4 border-t border-[var(--border)]">
           <AboutTool />
         </div>
-      </main>
+      </Container>
 
       {/* Footer */}
       <footer className="w-full border-t border-[var(--border)] bg-[var(--surface)] py-6 mt-12 transition-colors">
-        <div className="max-w-[1152px] mx-auto px-4 sm:px-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs text-[var(--text-muted)]">
+        <Container className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs text-[var(--text-muted)]">
           <div className="space-y-1">
             <p>
               Reviews pasted text only. Cannot confirm that a sender is genuine.
@@ -321,7 +322,7 @@ export default function Home() {
               About this tool
             </a>
           </div>
-        </div>
+        </Container>
       </footer>
     </div>
   );

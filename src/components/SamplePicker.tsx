@@ -57,15 +57,15 @@ export function SamplePicker({
   };
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5 ml-auto">
-          <label
-            htmlFor="sample-select"
-            className="text-xs text-[var(--text-muted)]"
-          >
-            Try a sample:
-          </label>
+    <div className="space-y-2.5 w-full">
+      <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full">
+        <label
+          htmlFor="sample-select"
+          className="text-xs font-medium text-[var(--text-muted)] shrink-0"
+        >
+          Try a sample:
+        </label>
+        <div className="flex items-center gap-1.5 flex-1 min-w-0 w-full sm:w-auto">
           <select
             id="sample-select"
             value={selectedExampleId}
@@ -74,7 +74,7 @@ export function SamplePicker({
               setConfirmPending(false);
             }}
             disabled={disabled}
-            className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-1 text-xs text-[var(--text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[36px]"
+            className="flex-1 min-w-0 w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-xs text-[var(--text)] truncate focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[36px]"
           >
             {SYNTHETIC_EXAMPLES.map((ex) => (
               <option key={ex.id} value={ex.id}>
@@ -86,7 +86,7 @@ export function SamplePicker({
             type="button"
             onClick={handleLoadClick}
             disabled={disabled}
-            className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-xs font-medium text-[var(--text)] hover:bg-[var(--surface-muted)] active:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:opacity-50 min-h-[36px]"
+            className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs font-medium text-[var(--text)] hover:bg-[var(--surface-muted)] active:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:opacity-50 min-h-[36px] shrink-0"
           >
             Load
           </button>
@@ -95,7 +95,7 @@ export function SamplePicker({
 
       {/* Synthetic offer badge */}
       {isSyntheticBadgeVisible && (
-        <div className="flex justify-end">
+        <div className="flex justify-start">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--surface-muted)] px-2.5 py-0.5 text-2xs font-medium text-[var(--text-muted)] border border-[var(--border)]">
             <span
               className="h-1.5 w-1.5 rounded-full bg-[var(--text-muted)] opacity-60"
@@ -110,7 +110,7 @@ export function SamplePicker({
       {confirmPending && (
         <div
           role="alert"
-          className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-[var(--border)] bg-[var(--surface-muted)] p-2 text-xs text-[var(--text)]"
+          className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-[var(--border)] bg-[var(--surface-muted)] p-2.5 text-xs text-[var(--text)]"
         >
           <span className="font-medium">Replace your text?</span>
           <div className="flex items-center gap-1.5">

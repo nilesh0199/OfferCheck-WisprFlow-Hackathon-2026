@@ -129,8 +129,8 @@ function CybercrimeCard({ item, copiedValue, onCopy }: CardProps) {
           onCopy={onCopy}
         />
 
-        <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-2xs text-slate-400 dark:text-slate-500">
-          <span>Official portal: {item.resource.sourceUrl}</span>
+        <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-1 text-2xs text-slate-400 dark:text-slate-500">
+          <span className="break-all">Official portal: {item.resource.sourceUrl}</span>
           <span>Last checked 20 Oct 2026</span>
         </div>
       </div>
@@ -162,8 +162,8 @@ function StandardResourceCard({ item, copiedValue, onCopy }: CardProps) {
         onCopy={onCopy}
       />
 
-      <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-2xs text-slate-400 dark:text-slate-500">
-        <span>Official portal: {item.resource.sourceUrl}</span>
+      <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-1 text-2xs text-slate-400 dark:text-slate-500">
+        <span className="break-all">Official portal: {item.resource.sourceUrl}</span>
         <span>Last checked 20 Oct 2026</span>
       </div>
     </div>

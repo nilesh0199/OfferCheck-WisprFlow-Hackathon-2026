@@ -8,7 +8,7 @@ export function AboutTool() {
       className="group rounded-xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 transition-colors"
     >
       <summary className="cursor-pointer font-semibold text-sm text-slate-900 dark:text-slate-100 flex items-center justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:focus-visible:ring-slate-400 rounded-md min-h-[44px] list-none select-none">
-        <span id="how-it-works">About this tool</span>
+        <span>About this tool</span>
         <ChevronDownIcon className="w-4 h-4 text-slate-500 transition-transform duration-150 group-open:rotate-180" />
       </summary>
 

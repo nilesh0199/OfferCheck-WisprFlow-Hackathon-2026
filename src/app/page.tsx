@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { APP_NAME, TAGLINE, MAX_INPUT_CHARS } from "@/lib/config";
+import {
+  APP_NAME,
+  TAGLINE,
+  MAX_INPUT_CHARS,
+  AI_DATA_NOTICE,
+} from "@/lib/config";
 
 export default function Home() {
   const [offerText, setOfferText] = useState("");
@@ -108,6 +113,9 @@ export default function Home() {
                 payment details, and government identity numbers (such as
                 Aadhaar, PAN, or SSN). Do not submit passwords or sensitive
                 personal credentials.
+              </p>
+              <p className="text-xs sm:text-sm leading-relaxed text-amber-900/90 dark:text-amber-200/90 pt-1.5 border-t border-amber-200/80 dark:border-amber-900/50">
+                {AI_DATA_NOTICE}
               </p>
             </div>
           </div>

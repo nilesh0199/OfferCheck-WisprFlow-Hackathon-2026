@@ -1,10 +1,13 @@
 # Test Plan: OfferCheck
 
-This document tracks all implemented and planned automated tests for OfferCheck across the development phases. Tests marked **Implemented** are currently active in the Vitest test suite (`npm run test`). Tests marked **Planned** will be built during subsequent phases.
+This document tracks all implemented, live, and planned automated tests for OfferCheck across the development phases.
+- **Implemented**: Automated offline unit and integration tests active in Vitest (`npm run test`).
+- **Manual / live**: Live test cases in `tests-live/analyze.live.test.ts` executed via `npm run test:live` (requires `GEMINI_API_KEY`). These are defined and ready to execute when an API key is supplied, without claiming they have been run in continuous offline verification.
+- **Planned**: Tests scheduled for implementation in subsequent phases.
 
 ---
 
-## Implemented and Planned Tests
+## Test Inventory
 
 | Test Identifier | What It Checks | Status |
 | :--- | :--- | :--- |
@@ -53,10 +56,43 @@ This document tracks all implemented and planned automated tests for OfferCheck 
 | `examples: Example 3 contains NO payment-request words` | Verifies Example 3 contains NO payment-request words ("deposit", "fee", "pay", etc.) | Implemented |
 | `fixtures: prompt injection fixture storage & length` | Verifies injection fixture is stored, under `MAX_INPUT_CHARS`, and contains override pattern | Implemented |
 | `fixtures: ensures mock claiming 'verified safe' is dropped` | Verifies mock output generated from injection attempt is dropped by guardrails | Implemented |
-| `Live model prompt-injection fixture` | Evaluates that real Gemini API output under prompt-injection attacks does not output "verified safe" or suppress concerns | Planned |
-| `API failure handling` | Verifies `/api/analyze` handles upstream Gemini API 500 errors, network disconnection, and 503 capacity issues gracefully | Planned |
-| `Invalid model output at endpoint` | Tests that `/api/analyze` recovers and returns structured client errors when model produces corrupted or unparseable output | Planned |
+| `gemini-wrapper: cleanJsonSchemaForGemini removes unsupported keywords` | Verifies `$schema`, `minLength`, `maxLength`, and `pattern` are stripped from JSON schema | Implemented |
+| `gemini-wrapper: GEMINI_RESPONSE_SCHEMA is valid without $schema` | Verifies exported schema has no `$schema` keyword | Implemented |
+| `gemini-wrapper: returns EMPTY_INPUT on empty/whitespace text` | Verifies empty/whitespace inputs return `EMPTY_INPUT` (422) without calling model | Implemented |
+| `gemini-wrapper: returns TOO_SHORT under 40 chars` | Verifies input under 40 characters returns `TOO_SHORT` (422) without calling model | Implemented |
+| `gemini-wrapper: returns TOO_LONG over 8000 chars` | Verifies input over 8,000 characters returns `TOO_LONG` (413) without calling model | Implemented |
+| `gemini-wrapper: returns NOT_CONFIGURED on missing API key` | Verifies missing `GEMINI_API_KEY` returns `NOT_CONFIGURED` (500) | Implemented |
+| `gemini-wrapper: returns RATE_LIMITED on 429` | Verifies upstream 429 / RESOURCE_EXHAUSTED maps to `RATE_LIMITED` (429) | Implemented |
+| `gemini-wrapper: returns TIMEOUT on abort / timeout` | Verifies request timeout maps to `TIMEOUT` (504) | Implemented |
+| `gemini-wrapper: returns UPSTREAM_ERROR on generic upstream failure` | Verifies network / server errors map to `UPSTREAM_ERROR` (502) | Implemented |
+| `gemini-wrapper: a second invalid model response produces INVALID_MODEL_OUTPUT after exactly 2 attempts and not more` | Verifies model call is retried once on unparseable output, returning `INVALID_MODEL_OUTPUT` after exactly 2 attempts and not more | Implemented |
+| `gemini-wrapper: retries once on invalid output and succeeds if attempt 2 returns valid JSON` | Verifies recovery when second attempt produces valid structured JSON | Implemented |
+| `gemini-wrapper: runs validateAnalysis and returns structured validated analysis on valid model output` | Verifies end-to-end processing with quote validation on valid response | Implemented |
+| `gemini-wrapper: a concern with a fabricated quote is dropped and droppedCount increments through analyzeOfferText` | Verifies hallucinated quotes are dropped and increment `droppedCount` when run through `analyzeOfferText` | Implemented |
+| `gemini-wrapper: console spies prove no logged call ever contains the offer text, even when the model call fails` | Verifies console spies prove no logged call ever contains offer text or secrets on error or success | Implemented |
+| `gemini-wrapper: wraps prompt injection content in delimiters without altering system instructions` | Verifies untrusted text is enclosed in delimiters and does not alter system prompt | Implemented |
+| `api-route: returns 405 Method Not Allowed for non-POST HTTP methods` | Verifies GET, PUT, DELETE, PATCH return 405 with `Allow: POST` and `Cache-Control: no-store` | Implemented |
+| `api-route: returns 413 when Content-Length header exceeds 40 KB` | Verifies oversized payloads rejected early by Content-Length header | Implemented |
+| `api-route: returns 413 when body length exceeds 40 KB` | Verifies oversized raw body text rejected before parsing | Implemented |
+| `api-route: returns 400 when body is not valid JSON` | Verifies unparseable JSON returns 400 Bad Request | Implemented |
+| `api-route: returns 400 when 'text' field is missing from request body` | Verifies missing "text" property returns 400 Bad Request | Implemented |
+| `api-route: the route returns 400 for a non-string text field` | Verifies non-string "text" property (numbers, booleans, arrays) returns 400 Bad Request | Implemented |
+| `api-route: returns 200 with { ok: true, analysis } on successful analysis` | Verifies valid POST returns 200 with `{ ok: true, analysis }` and `Cache-Control: no-store` | Implemented |
+| `api-route: maps wrapper error codes to appropriate status codes and error shape` | Verifies downstream error status codes and error payload shape | Implemented |
+| `live-analysis: evaluates Synthetic Example 1 (Urgent payment request) via Gemini Interactions API` | Live execution asserting verified quotes, no overclaiming, and source offset slice match | Manual / live |
+| `live-analysis: evaluates Synthetic Example 2 (Incomplete offer) via Gemini Interactions API` | Live execution asserting verified quotes, no overclaiming, and source offset slice match | Manual / live |
+| `live-analysis: evaluates Synthetic Example 3 (Detailed offer) via Gemini Interactions API` | Live execution asserting verified quotes, no overclaiming, and source offset slice match | Manual / live |
+| `live-analysis: evaluates Synthetic Example 4 (Ambiguous offer) via Gemini Interactions API` | Live execution asserting verified quotes, no overclaiming, and source offset slice match | Manual / live |
+| `live-analysis: evaluates prompt-injection fixture against Gemini API` | Live execution asserting prompt injection does not suppress concerns or trip guardrails | Manual / live |
 | `Research ambiguity` | Verifies behavior when company name is generic, missing, or produces ambiguous search results | Planned |
 | `Verification question copy buttons` | Verifies clipboard copying functionality and user feedback state in Results UI | Planned |
 | `Mobile layout and responsiveness` | Tests responsive layout, tap targets, and typography down to ~360px viewport | Planned |
-| `Long input boundary test` | Tests input text near and at `MAX_INPUT_CHARS` (8000) on both client and server | Planned |
+
+---
+
+## Test Execution Summary
+
+- **Total Implemented Automated Tests (Offline)**: 68 tests across 7 test files in `tests/`.
+- **Manual / Live Tests**: 5 sequential live test cases in `tests-live/analyze.live.test.ts` (run via `npm run test:live`).
+- **Offline Test Command**: `npm run test` (fast, deterministic, zero external network dependency).
+- **Live Test Command**: `npm run test:live` (loads `.env.local`; skips cleanly if `GEMINI_API_KEY` is not present; does not fake results).

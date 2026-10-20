@@ -23,7 +23,7 @@ This phased build plan outlines the implementation roadmap for OfferCheck, an in
 ---
 
 ## Phase 2: Analysis Contract (Zod Schemas, Quotation Validator, Synthetic Examples, Unit Tests)
-- **Status:** In progress
+- **Status:** Complete
 - **Goal:** Define strict type schemas and deterministic quotation validation mechanisms without connecting to an LLM, accompanied by four diverse synthetic test fixtures and comprehensive unit tests.
 - **Acceptance Criteria:**
   - Zod schemas define the structured analysis response (`concerns`, `missingInfo`, `verificationQuestions`, `overallNote`) without risk scores or safety verdicts.
@@ -39,11 +39,11 @@ This phased build plan outlines the implementation roadmap for OfferCheck, an in
 ---
 
 ## Phase 3: Server-Side Gemini Analysis Endpoint
-- **Status:** Not started
+- **Status:** Complete
 - **Goal:** Implement a server-side route handler communicating with the Gemini API to analyze offer text, enforcing injection resistance, structured JSON generation, and graceful error recovery.
 - **Acceptance Criteria:**
   - Server route (`/api/analyze`) accepts untrusted offer text, validates input length (`<= MAX_INPUT_CHARS`), and blocks malicious injection patterns.
-  - Uses current official Gemini SDK with server-only environment variable (`GEMINI_API_KEY`).
+  - Uses current official Gemini SDK (`@google/genai` Interactions API) with server-only environment variable (`GEMINI_API_KEY`).
   - Strict system instructions enforce evidence rules, calm tone, and prohibit scam scores, safety guarantees, and legal claims.
   - Raw offer text is excluded from server logging.
   - Graceful error responses returned for upstream timeouts, network failures, or malformed responses.

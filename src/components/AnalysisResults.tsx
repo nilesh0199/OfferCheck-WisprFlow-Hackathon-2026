@@ -6,6 +6,7 @@ import { sortConcernsByPriority } from "@/lib/analysis/priorities";
 import { ConcernsSection } from "./ConcernsSection";
 import { MissingInfoSection } from "./MissingInfoSection";
 import { QuestionsSection } from "./QuestionsSection";
+import { CompanyResearchCard } from "./CompanyResearchCard";
 import { OfficialResourcesSection } from "./OfficialResourcesSection";
 import { LimitsSection } from "./LimitsSection";
 import { HighlightedTextViewer } from "./HighlightedTextViewer";
@@ -201,6 +202,12 @@ export function AnalysisResults({
           Questions ({analysis.verificationQuestions.length})
         </a>
         <a
+          href="#section-research"
+          className="rounded-md px-2.5 py-1 text-slate-700 hover:bg-slate-200/70 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 shrink-0"
+        >
+          Research
+        </a>
+        <a
           href="#section-resources"
           className="rounded-md px-2.5 py-1 text-slate-700 hover:bg-slate-200/70 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 shrink-0"
         >
@@ -227,6 +234,13 @@ export function AnalysisResults({
       <QuestionsSection
         questions={analysis.verificationQuestions}
         concerns={sortedConcerns}
+      />
+
+      {/* Optional: Company research prompt handoff */}
+      <CompanyResearchCard
+        offerText={analyzedSnapshotText}
+        entities={analysis.entities}
+        defaultCollapsed={false}
       />
 
       {/* Section: Next steps and official resources */}

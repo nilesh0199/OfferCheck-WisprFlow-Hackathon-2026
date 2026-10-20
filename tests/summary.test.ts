@@ -54,7 +54,7 @@ describe("buildReviewSummary", () => {
 
   it("contains missing information and verification questions", () => {
     const summary = buildReviewSummary(sampleAnalysis);
-    expect(summary).toContain("Stipend or Compensation");
+    expect(summary).toContain("Stipend or salary");
     expect(summary).toContain(
       "Stipend disbursement schedule is not stated in the provided text."
     );
@@ -127,5 +127,20 @@ describe("buildReviewSummary", () => {
     );
     expect(summary.toLowerCase()).not.toContain("verified safe");
     expect(summary.toLowerCase()).not.toContain("legitimate");
+  });
+
+  it("includes company name and role title when entities are present", () => {
+    const analysisWithEntities: ValidatedAnalysis = {
+      ...sampleAnalysis,
+      entities: {
+        companyName: "AetherFlume Cloud Technologies Pvt. Ltd.",
+        roleTitle: "Cloud Engineering Internship",
+      },
+    };
+    const summary = buildReviewSummary(analysisWithEntities);
+    expect(summary).toContain(
+      "Company name: AetherFlume Cloud Technologies Pvt. Ltd."
+    );
+    expect(summary).toContain("Role title: Cloud Engineering Internship");
   });
 });

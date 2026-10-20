@@ -22,7 +22,7 @@ export function MissingInfoSection({ missingInfo }: MissingInfoSectionProps) {
         </h3>
         <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
           Not included in the provided text does not prove the term does not
-          exist. These are standard internship terms that were unstated or
+          exist. These are standard offer terms that were unstated or
           ambiguous in the excerpt.
         </p>
       </div>

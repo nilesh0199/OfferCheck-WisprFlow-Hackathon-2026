@@ -82,7 +82,7 @@ export function OfferInputForm({
       {/* Textarea Area */}
       <div className="space-y-2">
         <label htmlFor="offer-text" className="sr-only">
-          Paste internship offer or communication text
+          Paste the internship or job offer
         </label>
         <textarea
           id="offer-text"
@@ -93,7 +93,7 @@ export function OfferInputForm({
           readOnly={isLoading}
           aria-describedby="char-count-meta privacy-callout"
           aria-invalid={isTooLong || isTooShort}
-          placeholder="Paste the written offer letter, email, or chat message here..."
+          placeholder="Paste the email, message or offer letter here (remove names, phone numbers, bank details and ID numbers first)"
           className={`w-full h-64 sm:h-72 min-h-[14rem] max-h-[22rem] resize-y rounded-lg border p-3.5 text-xs sm:text-sm font-mono leading-relaxed transition-colors custom-scrollbar overflow-y-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] bg-[var(--surface-muted)] text-[var(--text)] ${
             isLoading
               ? "opacity-60 cursor-not-allowed border-[var(--border)]"

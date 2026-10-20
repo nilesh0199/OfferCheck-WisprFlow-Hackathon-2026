@@ -78,6 +78,22 @@ This phased build plan outlines the implementation roadmap for OfferCheck, an in
 
 ---
 
+## Phase 5a: Landing Page and Routing
+- **Status:** Complete
+- **Goal:** Introduce an asymmetric landing page at `/` with an interactive annotated document, move the analysis tool to `/check`, implement in-memory session persistence surviving client navigation without browser storage, apply the "Annotated Paper" design system v2 with self-hosted Google Fonts (`Instrument Serif`, `Instrument Sans`, `IBM Plex Mono`), and add branded 404, error boundary, SVG favicon, and `next/og` Open Graph image.
+- **Acceptance Criteria:**
+  - Root `/` serves the landing page: asymmetric typography, primary CTA "Check an offer" above the fold at 1366x768 and 390x844, interactive document card featuring synthetic Example 1 with cursor-hover highlighting and sliding margin notes, gentle 3D parallax tilt (max 3 degrees) via `requestAnimationFrame` with touch/reduced-motion fallback, scroll-triggered "How it works" reveal, "What you get" index cards, "What OfferCheck will not do", "Privacy" notice, `<details>` FAQ accordion, and final CTA.
+  - Tool relocated to `/check` with full feature parity, input validation, sample picker, and results workspace.
+  - `SessionProvider` client context in `src/app/layout.tsx` with pure reducer `offerSessionReducer`; persists offer text, analysis snapshot, and in-flight request status across client navigation; zero persistent browser storage (no `localStorage`, `sessionStorage`, cookies, or database); resets on hard refresh.
+  - Feature flags in `src/lib/features.ts` ensure copy advertises only live features (`textAnalysis: true`, `documentUpload: false`, `companyResearch: false`).
+  - Typography powered by `next/font/google` (`Instrument_Serif`, `Instrument_Sans`, `IBM_Plex_Mono` with `display: swap`).
+  - Branded `not-found.tsx` and `error.tsx` matching design tokens.
+  - SVG favicon (`src/app/icon.svg`) and OpenGraph card (`src/app/opengraph-image.tsx` using `next/og`).
+  - Dynamic `metadataBase` configured from `NEXT_PUBLIC_SITE_URL` / Vercel production URL.
+  - All 187 offline tests pass; lint, typecheck, and build pass cleanly.
+
+---
+
 ## Phase 5: Document Input (PDF + Screenshots)
 - **Status:** Not started
 - **Goal:** Enable users to submit offers via one PDF or up to three screenshots, using multimodal transcription followed by explicit user review and redaction before running the unified text analysis pipeline.
@@ -108,26 +124,16 @@ This phased build plan outlines the implementation roadmap for OfferCheck, an in
 
 ---
 
-## Phase 7: Research-Prompt Fallback (Copy + Perplexity Link)
-- **Status:** Not started
-- **Goal:** Provide a resilient, zero-cost external research fallback allowing students to inspect recruiter and company authenticity via one-click queries.
+## Phase 7: Company Research Handoff (Perplexity Prompt Builder)
+- **Status:** Complete
+- **Goal:** Provide a resilient, zero-cost external research handoff allowing students to inspect company authenticity via a structured prompt copied to Perplexity, without any search API, network calls, or third-party data transmission from our servers.
 - **Acceptance Criteria:**
-  - Helper generates a structured, neutral company verification prompt using extracted organization details.
-  - One-click button copies the research prompt to the clipboard.
-  - Direct external link opens Perplexity (or public search) with pre-populated query parameters.
-  - Clear user guidance notes that external research is optional and that the core offer review functions independently.
-
----
-
-## Phase 8: Optional Tavily Research (Lowest Priority — First to Cut)
-- **Status:** Not started
-- **Goal:** If time and budget allow, implement an optional server-side Tavily search integration to surface public web footprint details for the claimed company.
-- **Acceptance Criteria:**
-  - User explicitly reviews and confirms company name and domain before any search request is initiated.
-  - Only company metadata is queried; raw offer text is never transmitted to the search API.
-  - Every finding links directly to a public source URL.
-  - Third-party allegations or complaints are strictly separated from verified corporate records.
-  - Feature is fully modular and cleanly cut without impacting core review functionality if rate limits or budgets are exceeded.
+  - Pure deterministic contact extractor (`src/lib/research/extract.ts`) extracts emails, lowercased sender domains, and URLs, with a documented `isFreeEmailDomain` list.
+  - Model entities schema in `src/lib/analysis/schema.ts` extended with optional `entities: { companyName, roleTitle }`, validated in `validateAnalysis` (case-insensitive, whitespace-collapsed exact substring match in source text, max 100 chars, else null).
+  - Pure prompt builder (`src/lib/research/prompt.ts`) formats short (300 words) and detailed (600 words) research templates with strict sanitization; offer text is structurally excluded.
+  - UI component (`src/components/CompanyResearchCard.tsx`) rendered after Section C and collapsed under empty state; editable fields; plain text observations on free email or domain mismatch; claimed website strictly plain text (never a link); clipboard copy with fallback and plain link to Perplexity.
+  - Feature flag `companyResearchPrompt` enabled in `src/lib/features.ts`; Tavily and in-app automated search explicitly removed and not planned.
+  - All offline unit tests, typecheck, lint, and build pass cleanly.
 
 ---
 

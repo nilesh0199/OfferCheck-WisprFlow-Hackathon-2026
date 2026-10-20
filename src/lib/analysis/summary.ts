@@ -40,6 +40,17 @@ export function buildReviewSummary(
     lines.push("");
   }
 
+  // Entities (if present)
+  if (analysis.entities && (analysis.entities.companyName || analysis.entities.roleTitle)) {
+    if (analysis.entities.companyName) {
+      lines.push(`Company name: ${analysis.entities.companyName}`);
+    }
+    if (analysis.entities.roleTitle) {
+      lines.push(`Role title: ${analysis.entities.roleTitle}`);
+    }
+    lines.push("");
+  }
+
   const sortedConcerns = sortConcernsByPriority(analysis.concerns);
   const categories = sortedConcerns.map((c) => c.category);
 

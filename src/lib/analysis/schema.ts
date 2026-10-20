@@ -80,6 +80,15 @@ export type ModelVerificationQuestion = z.infer<
 >;
 
 /**
+ * Optional extracted entity details returned by the model.
+ */
+export const ModelEntitiesSchema = z.object({
+  companyName: z.string().nullable().optional(),
+  roleTitle: z.string().nullable().optional(),
+});
+export type ModelEntities = z.infer<typeof ModelEntitiesSchema>;
+
+/**
  * Schema for the complete raw model output before client/server validation.
  * Explicitly excludes any numerical risk score, probability, or safe/unsafe verdict.
  */
@@ -95,6 +104,7 @@ export const ModelOutputSchema = z.object({
     .string()
     .max(400, "Overall note must not exceed 400 characters")
     .optional(),
+  entities: ModelEntitiesSchema.optional(),
 });
 export type ModelOutput = z.infer<typeof ModelOutputSchema>;
 
@@ -138,6 +148,11 @@ export interface ValidatedVerificationQuestion {
   relatedConcernId?: string;
 }
 
+export interface ValidatedEntities {
+  companyName: string | null;
+  roleTitle: string | null;
+}
+
 /**
  * Final validated analysis payload delivered to the presentation layer.
  */
@@ -146,6 +161,7 @@ export interface ValidatedAnalysis {
   missingInfo: ValidatedMissingInfo[];
   verificationQuestions: ValidatedVerificationQuestion[];
   overallNote?: string;
+  entities?: ValidatedEntities;
   droppedCount: number;
   limits: readonly string[];
 }

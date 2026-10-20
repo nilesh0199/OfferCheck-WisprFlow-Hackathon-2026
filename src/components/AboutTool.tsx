@@ -24,10 +24,11 @@ export function AboutTool() {
             <span>What this tool does</span>
           </h4>
           <p className="text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-            Helps students review internship offers by highlighting questionable
-            requests (such as training fees or equipment deposits), spotting
-            missing or ambiguous terms, and drafting concrete verification
-            questions before you pay money or share sensitive documents.
+            Helps students and first-time job seekers review internship or job
+            offers by highlighting questionable requests (such as training fees
+            or equipment deposits), spotting missing or ambiguous terms, and
+            drafting concrete verification questions before you pay money or
+            share sensitive documents.
           </p>
         </div>
 

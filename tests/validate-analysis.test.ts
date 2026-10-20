@@ -473,4 +473,103 @@ describe("validateAnalysis", () => {
       expect(result.verificationQuestions.length).toBe(1);
     });
   });
+
+  describe("Entity validation (companyName and roleTitle)", () => {
+    const sampleText =
+      "Congratulations on your selection for the Cloud Engineering Internship at AetherFlume Cloud Technologies Pvt. Ltd.";
+
+    const baseMock: ModelOutput = {
+      concerns: [],
+      missingInfo: [],
+      verificationQuestions: [],
+    };
+
+    it("keeps entities that occur in source text", () => {
+      const mock: ModelOutput = {
+        ...baseMock,
+        entities: {
+          companyName: "AetherFlume Cloud Technologies Pvt. Ltd.",
+          roleTitle: "Cloud Engineering Internship",
+        },
+      };
+
+      const result = validateAnalysis(mock, sampleText);
+      expect(result.entities).toBeDefined();
+      expect(result.entities?.companyName).toBe(
+        "AetherFlume Cloud Technologies Pvt. Ltd."
+      );
+      expect(result.entities?.roleTitle).toBe("Cloud Engineering Internship");
+      expect(result.droppedCount).toBe(0);
+    });
+
+    it("matches entities case-insensitively with collapsed whitespace", () => {
+      const mock: ModelOutput = {
+        ...baseMock,
+        entities: {
+          companyName: "  aetherflume   cloud technologies   pvt. ltd.  ",
+          roleTitle: "cloud   engineering internship",
+        },
+      };
+
+      const result = validateAnalysis(mock, sampleText);
+      expect(result.entities?.companyName).toBe(
+        "aetherflume   cloud technologies   pvt. ltd."
+      );
+      expect(result.entities?.roleTitle).toBe("cloud   engineering internship");
+    });
+
+    it("sets entity to null if it does not occur in source text", () => {
+      const mock: ModelOutput = {
+        ...baseMock,
+        entities: {
+          companyName: "Invented Impersonator Firm Inc.",
+          roleTitle: "Chief Executive Intern",
+        },
+      };
+
+      const result = validateAnalysis(mock, sampleText);
+      expect(result.entities?.companyName).toBeNull();
+      expect(result.entities?.roleTitle).toBeNull();
+      // Entity mismatch sets to null and does NOT increment droppedCount
+      expect(result.droppedCount).toBe(0);
+    });
+
+    it("sets entity to null when input is explicitly null", () => {
+      const mock: ModelOutput = {
+        ...baseMock,
+        entities: {
+          companyName: null,
+          roleTitle: null,
+        },
+      };
+
+      const result = validateAnalysis(mock, sampleText);
+      expect(result.entities?.companyName).toBeNull();
+      expect(result.entities?.roleTitle).toBeNull();
+    });
+
+    it("sets entity to null if length exceeds 100 characters even if text contains it", () => {
+      const longName = "A".repeat(101);
+      const textWithLong = `Welcome to ${longName}`;
+      const mock: ModelOutput = {
+        ...baseMock,
+        entities: {
+          companyName: longName,
+          roleTitle: null,
+        },
+      };
+
+      const result = validateAnalysis(mock, textWithLong);
+      expect(result.entities?.companyName).toBeNull();
+    });
+
+    it("preserves backward compatibility when entities object is omitted", () => {
+      const mock: ModelOutput = {
+        ...baseMock,
+      };
+
+      const result = validateAnalysis(mock, sampleText);
+      expect(result.entities).toBeUndefined();
+    });
+  });
 });

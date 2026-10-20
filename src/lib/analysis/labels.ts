@@ -20,9 +20,9 @@ export const CONCERN_CATEGORY_LABELS: Record<ConcernCategory, string> = {
  * Human-readable labels for missing information topics.
  */
 export const MISSING_INFO_TOPIC_LABELS: Record<MissingInfoTopic, string> = {
-  stipend_or_pay: "Stipend or Compensation",
+  stipend_or_pay: "Stipend or salary",
   working_hours: "Working Hours and Schedule",
-  duration: "Internship Duration",
+  duration: "Duration or contract term",
   start_date: "Start Date",
   responsibilities: "Job Responsibilities and Scope",
   work_mode_or_location: "Work Mode or Location",

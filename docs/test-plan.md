@@ -206,14 +206,64 @@ This document tracks all implemented, live, and planned automated tests for Offe
 | `UI: Official resources collapsible state` | Manual check that cybercrime card is open by default on payment/sensitive concerns, and closed otherwise | Manual |
 | `UI: External link attributes` | Manual check that official links open in a new tab with rel="noopener noreferrer" and visible helper text | Manual |
 | `UI: Resource contact copy feedback` | Manual check that clicking Copy on helpline or email announces copy state via aria-live | Manual |
-| `Research ambiguity` | Verifies behavior when company name is generic, missing, or produces ambiguous search results | Planned |
+| `features: reflects today's live capabilities truthfully` | Verifies textAnalysis and officialResources are enabled while future features are disabled | Implemented |
+| `features: disables future features so the landing page cannot advertise what does not exist` | Verifies documentUpload and companyResearch are false | Implemented |
+| `features: isFeatureEnabled returns expected boolean for valid flags` | Verifies pure helper function evaluates all feature flags correctly | Implemented |
+| `landing-annotations: ensures every defined annotation phrase exists exactly in synthetic Example 1` | Verifies all landing demo annotations match exact text in Example 1 | Implemented |
+| `landing-annotations: finds all annotations with accurate, verifiable character offsets in Example 1` | Verifies character slice offsets match verbatim phrases in Example 1 | Implemented |
+| `landing-annotations: ensures annotations are non-overlapping and sorted chronologically by start offset` | Verifies annotation ordering and lack of overlap for document card | Implemented |
+| `landing-annotations: guarantees text segmentation invariant: segments joined exactly equal source text` | Verifies pure segmentation function preserves complete text fidelity | Implemented |
+| `landing-annotations: handles empty or missing input gracefully` | Verifies pure annotation functions handle empty text safely | Implemented |
+| `session-reducer: initializes with empty, idle state` | Verifies default state for ephemeral tab session | Implemented |
+| `session-reducer: updates offerText on SET_OFFER_TEXT` | Verifies offerText state transition | Implemented |
+| `session-reducer: handles START_ANALYSIS by setting loading and resetting timers/errors` | Verifies start analysis transition resets timers and error state | Implemented |
+| `session-reducer: updates elapsed seconds via TICK_ELAPSED` | Verifies timer ticker updates elapsed seconds | Implemented |
+| `session-reducer: transitions to success and records analysis result on ANALYSIS_SUCCESS` | Verifies success transition stores analysis and snapshot text | Implemented |
+| `session-reducer: transitions to error on ANALYSIS_ERROR` | Verifies error dispatch sets error type and message | Implemented |
+| `session-reducer: handles CANCEL_ANALYSIS with CANCELLED error type` | Verifies user cancellation transitions to CANCELLED state | Implemented |
+| `session-reducer: resets to initial state on CLEAR_SESSION` | Verifies full state reset on clear | Implemented |
+| `research-extract: extracts multiple emails and domains with lowercasing and deduplication` | Verifies conservative email regex and lowercased deduplicated domain extraction | Implemented |
+| `research-extract: extracts multiple distinct domains in order of first appearance` | Verifies domain ordering and deduplication | Implemented |
+| `research-extract: extracts URLs starting with http, https, and www., trimming trailing punctuation` | Verifies URL regex and punctuation stripping (periods, commas, etc.) | Implemented |
+| `research-extract: correctly trims URLs wrapped in parentheses` | Verifies prose parentheses around URLs are trimmed cleanly | Implemented |
+| `research-extract: handles internal parentheses in URLs without mangling` | Verifies Wikipedia style URLs with balanced parens are preserved | Implemented |
+| `research-extract: deduplicates identical URLs regardless of case` | Verifies case-insensitive URL deduplication | Implemented |
+| `research-extract: returns empty arrays when text contains no emails or URLs` | Verifies empty array handling on non-contact text | Implemented |
+| `research-extract: handles empty or non-string text safely` | Verifies defensive non-string handling | Implemented |
+| `research-extract: isFreeEmailDomain identifies all documented free webmail domains` | Verifies detection of gmail, yahoo, outlook, hotmail, proton, icloud, rediffmail | Implemented |
+| `research-extract: isFreeEmailDomain returns false for corporate domains` | Verifies corporate domains like example.com are not classified as free email | Implemented |
+| `research-extract: isFreeEmailDomain handles empty or whitespace values safely` | Verifies defensive handling for empty/null domains | Implemented |
+| `validate-analysis: keeps entities that occur in source text` | Verifies companyName and roleTitle substrings are retained | Implemented |
+| `validate-analysis: matches entities case-insensitively with collapsed whitespace` | Verifies case and whitespace normalization for entity matching | Implemented |
+| `validate-analysis: sets entity to null if it does not occur in source text` | Verifies hallucinated/unfound entities are normalized to null | Implemented |
+| `validate-analysis: sets entity to null when input is explicitly null` | Verifies null entity passthrough | Implemented |
+| `validate-analysis: sets entity to null if length exceeds 100 characters` | Verifies entity max length threshold | Implemented |
+| `validate-analysis: preserves backward compatibility when entities object is omitted` | Verifies analysis functions without entities object | Implemented |
+| `summary: includes company name and role title when entities are present` | Verifies plain-text export summary formats entities when present | Implemented |
+| `research-prompt: sanitizeField converts null, undefined, and whitespace to Not provided` | Verifies default placeholder generation | Implemented |
+| `research-prompt: sanitizeField strips control characters and line breaks` | Verifies control character and newline suppression | Implemented |
+| `research-prompt: sanitizeField cuts field to max length and trims remaining string` | Verifies character truncation limits per field | Implemented |
+| `research-prompt: configures short mode with 300 words and smaller caps` | Verifies short prompt limit substitution | Implemented |
+| `research-prompt: configures detailed mode with 600 words and expanded caps` | Verifies detailed prompt limit substitution | Implemented |
+| `research-prompt: replaces missing or blank fields with Not provided` | Verifies placeholder substitution inside template | Implemented |
+| `research-prompt: strips line breaks from malicious inputs and preserves RULES structure` | Verifies prompt injection cannot break out of data block | Implemented |
+| `research-prompt: enforces maximum field lengths` | Verifies field-specific length caps (name: 100, website: 200, domain: 100, role: 100, location: 100) | Implemented |
+| `research-prompt: is structurally impossible to include the full offer text` | Verifies type and function accept only confirmed entity fields | Implemented |
+| `research-prompt: never contains verdict assertions outside of negative instruction` | Verifies safe/legitimate/scam only exist in prohibition line | Implemented |
+| `UI: Landing page CTA visible above fold` | Manual check that CTA is visible above fold at 1366x768 and 390x844 | Manual |
+| `UI: Interactive document tilt & reduced-motion fallback` | Manual check that 3D tilt tracks pointer and smoothly turns off on touch / reduced motion | Manual |
+| `UI: In-memory session survives client-side navigation` | Manual check that entered text and results persist between / and /check without storage | Manual |
+| `UI: Research card collapse state under empty state and open state in results` | Manual check that card renders collapsed before analysis and open after Section C | Manual |
+| `UI: Research prompt copy feedback and clipboard fallback` | Manual check that Copy button announces copied state and falls back to selectable textarea | Manual |
+| `UI: Open Perplexity link attributes` | Manual check that Perplexity link opens in new tab with rel=noopener noreferrer | Manual |
+| `UI: Claimed website displayed as plain text and never as a clickable link` | Manual check that claimed website is rendered strictly as plain text | Manual |
 | `Mobile layout and responsiveness` | Tests responsive layout, tap targets, and typography down to ~360px viewport | Planned |
 
 ---
 
 ## Test Execution Summary
 
-- **Total Implemented Automated Tests (Offline)**: 171 tests across 21 test files in `tests/`.
+- **Total Implemented Automated Tests (Offline)**: 215 tests across 26 test files in `tests/`.
 - **Manual / Live Tests**: 5 sequential live test cases in `tests-live/analyze.live.test.ts` (run via `npm run test:live`), plus manual UI verification checks.
 - **Offline Test Command**: `npm run test` (fast, deterministic, zero external network dependency).
 - **Live Test Command**: `npm run test:live` (loads `.env.local`; skips cleanly if `GEMINI_API_KEY` is not present; does not fake results).

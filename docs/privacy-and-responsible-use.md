@@ -3,7 +3,7 @@
 > **OfferCheck** — *"Understand the offer. Know what to verify."*  
 > Document Version: Phase 6 (Safeguards for Public Demo) — October 2026
 
-OfferCheck is built with a strict privacy-first, evidence-first design to assist students in evaluating internship communications safely. This document transparently explains data flows, storage practices, rate limiting, system boundaries, and how to report issues.
+OfferCheck is built with a strict privacy-first, evidence-first design to assist students and first-time job seekers in evaluating internship and job offers safely. This document transparently explains data flows, storage practices, rate limiting, system boundaries, and how to report issues.
 
 ---
 
@@ -60,9 +60,9 @@ To maintain absolute ethical integrity and avoid misleading users:
 - **NOT a Company Authentication Service:**  
   It cannot verify whether a recruiter legitimately represents the named enterprise or whether an organization is legally incorporated.
 - **NOT Legal Advice:**  
-  All observations and suggested questions are informational prompts for student self-advocacy, not legal counsel.
+  All observations and suggested questions are informational prompts for student and job seeker self-advocacy, not legal counsel.
 - **NOT a Safety Guarantee:**  
-  The absence of identified concerns ("No concerns identified") reflects only the specific text reviewed and does not mean the internship or sender is safe or legitimate.
+  The absence of identified concerns ("No concerns identified") reflects only the specific text reviewed and does not mean the offer or sender is safe or legitimate.
 
 ---
 

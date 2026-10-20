@@ -320,7 +320,7 @@ export async function analyzeOfferText(
     return {
       ok: false,
       code: "EMPTY_INPUT",
-      message: "Please provide internship offer text to review.",
+      message: "Please provide offer text to review.",
       httpStatus: 422,
       attempts: [],
     };

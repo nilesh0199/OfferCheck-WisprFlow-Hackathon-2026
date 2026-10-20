@@ -1,74 +1,100 @@
 @import "tailwindcss";
 
 :root {
-  /* Core surfaces and text - Light theme */
-  --bg: #f8fafc;
-  --surface: #ffffff;
-  --surface-muted: #f1f5f9;
-  --border: #e2e8f0;
-  --border-muted: #cbd5e1;
-  --text: #0f172a;
-  --text-muted: #475569;
-  --accent: #0f172a;
-  --accent-contrast: #ffffff;
-  --focus-ring: #0f172a;
+  /* Core surfaces and text - Light theme (Annotated Paper) */
+  --bg: #f4efe4;
+  --surface: #faf7f0;
+  --surface-muted: #eae4d5;
+  --border: #dcd5c5;
+  --border-muted: #cac0ad;
+  --text: #17150f;
+  --text-muted: #57534a;
+  --accent: #17150f;
+  --accent-contrast: #faf7f0;
+  --accent-highlighter: #ffd84a;
+  --primary-ledger: #1e5c46;
+  --primary-ledger-hover: #164635;
+  --focus-ring: #1e5c46;
 
-  /* Semantic context tints (Not red/green traffic lights) */
-  --tint-attention-bg: #fffbeb;
-  --tint-attention-border: #fde68a;
-  --tint-attention-text: #92400e;
-  --tint-attention-accent: #d97706;
+  /* Semantic context tints (Evidence-linked, strictly non-traffic-light) */
+  --tint-attention-bg: #fff9db;
+  --tint-attention-border: #ffd84a;
+  --tint-attention-text: #17150f;
+  --tint-attention-accent: #b8860b;
 
-  --tint-info-bg: #f8fafc;
-  --tint-info-border: #cbd5e1;
-  --tint-info-text: #334155;
+  --tint-info-bg: #efe9dc;
+  --tint-info-border: #cac0ad;
+  --tint-info-text: #3d3933;
 
-  --tint-action-bg: #f8fafc;
-  --tint-action-border: #cbd5e1;
-  --tint-action-text: #0f172a;
+  --tint-action-bg: #eae3d2;
+  --tint-action-border: #8c8270;
+  --tint-action-text: #17150f;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    /* Core surfaces and text - Dark theme */
-    --bg: #0b0f17;
-    --surface: #131924;
-    --surface-muted: #1a2232;
-    --border: #263348;
-    --border-muted: #334155;
-    --text: #f1f5f9;
-    --text-muted: #94a3b8;
-    --accent: #f1f5f9;
-    --accent-contrast: #0b0f17;
-    --focus-ring: #94a3b8;
+    /* Core surfaces and text - Dark theme (Warm Charcoal) */
+    --bg: #14130f;
+    --surface: #1c1a15;
+    --surface-muted: #24221c;
+    --border: #333028;
+    --border-muted: #423f36;
+    --text: #f4efe4;
+    --text-muted: #a39e93;
+    --accent: #f4efe4;
+    --accent-contrast: #14130f;
+    --accent-highlighter: #ffd84a;
+    --primary-ledger: #2f7c60;
+    --primary-ledger-hover: #3d9675;
+    --focus-ring: #ffd84a;
 
     /* Semantic context tints - Dark theme */
-    --tint-attention-bg: #1c1917;
-    --tint-attention-border: #78350f;
-    --tint-attention-text: #fef3c7;
-    --tint-attention-accent: #f59e0b;
+    --tint-attention-bg: #292414;
+    --tint-attention-border: #a38012;
+    --tint-attention-text: #fff0a6;
+    --tint-attention-accent: #ffd84a;
 
-    --tint-info-bg: #0f172a;
-    --tint-info-border: #334155;
-    --tint-info-text: #cbd5e1;
+    --tint-info-bg: #1e1c17;
+    --tint-info-border: #3d3933;
+    --tint-info-text: #d5cebf;
 
-    --tint-action-bg: #111827;
-    --tint-action-border: #374151;
-    --tint-action-text: #f3f4f6;
+    --tint-action-bg: #222019;
+    --tint-action-border: #524c40;
+    --tint-action-text: #f4efe4;
   }
 }
 
 html {
   background-color: var(--bg);
   color: var(--text);
+  scroll-behavior: smooth;
 }
 
 body {
   background-color: var(--bg);
   color: var(--text);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
   margin: 0;
   padding: 0;
+}
+
+/* Typography Utility Classes */
+.font-serif {
+  font-family: var(--font-serif), Georgia, serif;
+}
+
+.font-sans {
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+}
+
+.font-mono {
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* Paper texture pattern (pure CSS, no raster images) */
+.paper-pattern {
+  background-image: radial-gradient(var(--border) 0.65px, transparent 0.65px);
+  background-size: 20px 20px;
 }
 
 /* Custom theme-matched thin scrollbar */
@@ -97,7 +123,12 @@ body {
 
 /* Reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
-  *, ::before, ::after {
+  html {
+    scroll-behavior: auto !important;
+  }
+  *,
+  ::before,
+  ::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

@@ -43,7 +43,10 @@ describe("labels mapping", () => {
 
   it("getMissingInfoTopicLabel returns mapped label or fallback", () => {
     expect(getMissingInfoTopicLabel("stipend_or_pay")).toBe(
-      "Stipend or Compensation"
+      "Stipend or salary"
+    );
+    expect(getMissingInfoTopicLabel("duration")).toBe(
+      "Duration or contract term"
     );
     expect(getMissingInfoTopicLabel("unknown_topic")).toBe("Standard Term");
   });

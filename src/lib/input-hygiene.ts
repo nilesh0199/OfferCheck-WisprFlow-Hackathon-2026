@@ -24,7 +24,7 @@ export function validateInputHygiene(rawText: unknown): InputHygieneResult {
     return {
       ok: false,
       code: "EMPTY_INPUT",
-      message: "Please provide internship offer text to review.",
+      message: "Please provide offer text to review.",
       httpStatus: 422,
     };
   }
@@ -66,7 +66,7 @@ export function validateInputHygiene(rawText: unknown): InputHygieneResult {
     return {
       ok: false,
       code: "EMPTY_INPUT",
-      message: "Please provide internship offer text to review.",
+      message: "Please provide offer text to review.",
       httpStatus: 422,
     };
   }

@@ -93,6 +93,25 @@ export function isValidatedAnalysis(val: unknown): val is ValidatedAnalysis {
     return false;
   }
 
+  // 7. entities optional object validation
+  if (val.entities !== undefined) {
+    if (!isObject(val.entities)) return false;
+    if (
+      val.entities.companyName !== null &&
+      val.entities.companyName !== undefined &&
+      typeof val.entities.companyName !== "string"
+    ) {
+      return false;
+    }
+    if (
+      val.entities.roleTitle !== null &&
+      val.entities.roleTitle !== undefined &&
+      typeof val.entities.roleTitle !== "string"
+    ) {
+      return false;
+    }
+  }
+
   return true;
 }
 

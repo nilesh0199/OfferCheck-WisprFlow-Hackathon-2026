@@ -5,6 +5,7 @@ import {
   ValidatedConcern,
   ValidatedMissingInfo,
   ValidatedVerificationQuestion,
+  ValidatedEntities,
 } from "./schema";
 import { validateQuote } from "./quote-validator";
 import { detectOverclaiming } from "./guardrails";
@@ -56,6 +57,12 @@ export function parseModelOutput(raw: unknown): ParseModelOutputResult {
       if (obj.missingInfo === null) obj.missingInfo = [];
       if (obj.verificationQuestions === null) obj.verificationQuestions = [];
       if (obj.overallNote === null) delete obj.overallNote;
+      if (obj.entities === null) delete obj.entities;
+      if (obj.entities && typeof obj.entities === "object" && !Array.isArray(obj.entities)) {
+        const ent = obj.entities as Record<string, unknown>;
+        if (ent.companyName === undefined) ent.companyName = null;
+        if (ent.roleTitle === undefined) ent.roleTitle = null;
+      }
       if (Array.isArray(obj.missingInfo)) {
         for (const item of obj.missingInfo) {
           if (
@@ -260,11 +267,35 @@ export function validateAnalysis(
     });
   }
 
+  // 5. Validate entities (if present)
+  let validatedEntities: ValidatedEntities | undefined = undefined;
+  if (parsed.entities) {
+    const validateEntity = (val: string | null | undefined): string | null => {
+      if (!val || typeof val !== "string") return null;
+      const trimmed = val.trim();
+      if (!trimmed || trimmed.length > 100) return null;
+
+      // Case-insensitive, whitespace-collapsed exact substring check
+      const normalizedEntity = trimmed.replace(/\s+/g, " ").toLowerCase();
+      const normalizedSource = sourceText.replace(/\s+/g, " ").toLowerCase();
+      if (normalizedSource.includes(normalizedEntity)) {
+        return trimmed;
+      }
+      return null;
+    };
+
+    validatedEntities = {
+      companyName: validateEntity(parsed.entities.companyName),
+      roleTitle: validateEntity(parsed.entities.roleTitle),
+    };
+  }
+
   return {
     concerns: finalConcerns,
     missingInfo: validatedMissingInfo,
     verificationQuestions: validatedQuestions,
     overallNote,
+    ...(validatedEntities !== undefined ? { entities: validatedEntities } : {}),
     droppedCount,
     limits: [...REVIEW_LIMITS],
   };

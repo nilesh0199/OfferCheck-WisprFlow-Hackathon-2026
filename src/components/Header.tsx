@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { APP_NAME, TAGLINE } from "@/lib/config";
 import { LogoIcon, GitHubIcon, ExternalLinkIcon } from "./Icons";
 import { Container } from "./Container";
@@ -13,19 +14,25 @@ export function Header() {
       >
         <Container className="h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <a
-              href="#"
-              className="inline-flex items-center gap-2 font-bold text-base tracking-tight text-[var(--text)] py-1 px-2 -ml-2 rounded-lg outline-none hover:opacity-90 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)]"
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 font-bold text-base tracking-tight text-[var(--text)] py-1 px-2 -ml-2 rounded-lg outline-none hover:opacity-90 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
             >
               <LogoIcon className="w-5 h-5 text-[var(--accent)] shrink-0" />
               <span>{APP_NAME}</span>
-            </a>
+            </Link>
             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-medium bg-[var(--surface-muted)] text-[var(--text-muted)] border border-[var(--border)]">
               Hackathon prototype
             </span>
           </div>
 
           <div className="flex items-center gap-4 text-xs font-medium text-[var(--text-muted)]">
+            <Link
+              href="/"
+              className="hover:text-[var(--text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 px-1.5"
+            >
+              Home
+            </Link>
             <a
               href="#how-it-works"
               className="hover:text-[var(--text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 px-1.5"
@@ -33,7 +40,7 @@ export function Header() {
               How it works
             </a>
             <a
-              href="#limits"
+              href="#about-this-tool"
               className="hover:text-[var(--text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 px-1.5"
             >
               Limits
@@ -56,11 +63,11 @@ export function Header() {
       {/* Hero and steps section wrapped in shared Container */}
       <header className="w-full">
         <Container className="pt-6 sm:pt-8 pb-4 text-left">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text)]">
+          <h1 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight text-[var(--text)]">
             {TAGLINE}
           </h1>
           <p className="mt-2 text-sm sm:text-base text-[var(--text-muted)] max-w-[40rem] leading-relaxed">
-            Paste an internship offer, get evidence-linked observations and
+            Paste an internship or job offer, get evidence-linked observations and
             questions to verify before you pay or share documents.
           </p>
 

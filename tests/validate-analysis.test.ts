@@ -159,6 +159,163 @@ describe("validateAnalysis", () => {
     expect(validated.limits.some((l) => l.includes("Reviews supplied text only"))).toBe(true);
     expect(validated.limits.some((l) => l.includes("Cannot establish"))).toBe(true);
     expect(validated.limits.some((l) => l.includes("Absence of identified warnings"))).toBe(true);
+    expect(
+      validated.limits.some((l) =>
+        l.includes(
+          "OfferCheck makes no claim about any named organisation; verify independently through official channels."
+        )
+      )
+    ).toBe(true);
+  });
+
+  it("case (a): 'as soon as possible.' (payment_urgency) nested in a longer sensitive_information_request quote is still dropped", () => {
+    const text =
+      "To proceed with the onboarding process, our desk requires you to send over your standard documents for verification as soon as possible.";
+    const mockOutput: ModelOutput = {
+      concerns: [
+        {
+          id: "c-longer",
+          category: "sensitive_information_request",
+          observation: "Desk requests standard documents as soon as possible.",
+          interpretation: "Requests for documents with short deadlines should be verified.",
+          quote:
+            "send over your standard documents for verification as soon as possible.",
+        },
+        {
+          id: "c-nested",
+          category: "payment_urgency",
+          observation: "Urgency phrase used.",
+          interpretation: "Time pressure should be noted.",
+          quote: "as soon as possible.",
+        },
+      ],
+      missingInfo: [],
+      verificationQuestions: [
+        {
+          id: "q-nested",
+          question: "Can you confirm the deadline?",
+          relatedConcernId: "c-nested", // Points to the nested concern that will be dropped
+        },
+      ],
+    };
+
+    const validated = validateAnalysis(mockOutput, text);
+    // The shorter nested quote is dropped, the longer enclosing quote is kept
+    expect(validated.concerns.length).toBe(1);
+    expect(validated.concerns[0].id).toBe("c-longer");
+    // Does NOT count as a dropped error
+    expect(validated.droppedCount).toBe(0);
+    // Question reference pointing to dropped nested concern is safely cleared
+    expect(validated.verificationQuestions[0].relatedConcernId).toBeUndefined();
+  });
+
+  it("case (b): a short refundable_deposit quote nested in a longer 'other' quote is KEPT, both appear, droppedCount unchanged", () => {
+    const text =
+      "All interns must complete the onboarding procedure including a refundable deposit of ₹5,000 before equipment shipment.";
+    const mockOutput: ModelOutput = {
+      concerns: [
+        {
+          id: "c-enclosing-other",
+          category: "other",
+          observation: "Onboarding procedure mentioned.",
+          interpretation: "Check the procedure requirements.",
+          quote:
+            "complete the onboarding procedure including a refundable deposit of ₹5,000 before equipment shipment.",
+        },
+        {
+          id: "c-nested-deposit",
+          category: "refundable_deposit",
+          observation: "Security deposit required.",
+          interpretation: "Security deposits are unusual for legitimate internships.",
+          quote: "refundable deposit of ₹5,000",
+        },
+      ],
+      missingInfo: [],
+      verificationQuestions: [
+        {
+          id: "q-deposit",
+          question: "Why is a deposit required?",
+          relatedConcernId: "c-nested-deposit",
+        },
+      ],
+    };
+
+    const validated = validateAnalysis(mockOutput, text);
+    // Both concerns are kept!
+    expect(validated.concerns.length).toBe(2);
+    expect(validated.concerns.map((c) => c.id)).toEqual([
+      "c-enclosing-other",
+      "c-nested-deposit",
+    ]);
+    expect(validated.droppedCount).toBe(0);
+    // Question reference pointing to the nested refundable_deposit is preserved
+    expect(validated.verificationQuestions[0].relatedConcernId).toBe(
+      "c-nested-deposit"
+    );
+  });
+
+  it("case (c): exact duplicates still collapse to one", () => {
+    const text = "A refundable deposit of ₹5,000 is required before onboarding.";
+    const mockOutput: ModelOutput = {
+      concerns: [
+        {
+          id: "c-first",
+          category: "refundable_deposit",
+          observation: "Deposit requested.",
+          interpretation: "Deposits are unusual.",
+          quote: "refundable deposit of ₹5,000",
+        },
+        {
+          id: "c-dup",
+          category: "refundable_deposit",
+          observation: "Deposit requested duplicate.",
+          interpretation: "Deposits are unusual duplicate.",
+          quote: "refundable deposit of ₹5,000",
+        },
+      ],
+      missingInfo: [],
+      verificationQuestions: [],
+    };
+
+    const validated = validateAnalysis(mockOutput, text);
+    expect(validated.concerns.length).toBe(1);
+    expect(validated.concerns[0].id).toBe("c-first");
+    expect(validated.droppedCount).toBe(0);
+  });
+
+  it("case (d): overlapping-but-not-nested spans keeps both", () => {
+    const text = "Please remit the training fee and refundable laptop deposit today.";
+    // Quote 1: "training fee and refundable laptop"
+    // Quote 2: "refundable laptop deposit today."
+    // These overlap on "refundable laptop", but neither contains the other.
+    const mockOutput: ModelOutput = {
+      concerns: [
+        {
+          id: "c-overlap-1",
+          category: "other",
+          observation: "Mentions training fee and laptop.",
+          interpretation: "Note the training fee mention.",
+          quote: "training fee and refundable laptop",
+        },
+        {
+          id: "c-overlap-2",
+          category: "other",
+          observation: "Mentions laptop deposit today.",
+          interpretation: "Note the deposit mention.",
+          quote: "refundable laptop deposit today.",
+        },
+      ],
+      missingInfo: [],
+      verificationQuestions: [],
+    };
+
+    const validated = validateAnalysis(mockOutput, text);
+    expect(validated.concerns.length).toBe(2);
+    expect(validated.concerns.map((c) => c.id)).toEqual([
+      "c-overlap-1",
+      "c-overlap-2",
+    ]);
+    expect(validated.droppedCount).toBe(0);
   });
 
   describe("Valid mock outputs for each of the four synthetic examples pass with droppedCount = 0", () => {

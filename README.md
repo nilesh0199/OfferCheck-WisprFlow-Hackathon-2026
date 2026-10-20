@@ -15,16 +15,17 @@ OfferCheck is built as a solo submission for **No Hands: The Wispr Challenge** (
 
 ---
 
-## Current Status: Phase 4 (Results UI)
+## Current Status: Phase 4b (Guidance and Official Resources)
 
 > [!NOTE]
-> **Project in progress:** Phases 1 through 4 are complete. The application features a fully functional results UI connected to the server-side Gemini analysis endpoint, rendering findings across four structured sections with verbatim quotation highlights and clipboard exports.
+> **Project in progress:** Phases 1 through 4b are complete. The application features a two-column responsive SaaS interface connected to the server-side Gemini analysis endpoint, rendering findings across structured sections with verbatim quotation highlights, contextually prioritized self-checks, verified official government resources (Cybercrime 1930, AICTE, NCS, MCA), and clipboard exports.
 
 Implemented so far:
 - **Phase 1 (Shell):** Project documentation, accessible text input, character counter against 8,000 chars, limits disclaimer, and pre-paste redaction notice.
 - **Phase 2 (Analysis Contract & Validator):** Zod schemas, deterministic quote validator with Unicode grapheme mapping, overclaiming guardrails, four synthetic test examples, and test plan.
 - **Phase 3 (Gemini Endpoint):** Server-side `/api/analyze` route powered by `@google/genai` Interactions API with multi-model fallback chain (`gemini-3.8-flash`, `gemini-3.6-flash`, `gemini-3.5-flash-lite`), lowest documented thinking levels, 55s shared deadline, 20s per-attempt timeout cap, and zero logging of user text or credentials.
-- **Phase 4 (Results UI):** Complete client interface with input panel above the fold, live elapsed timer, request cancellation via AbortController, synthetic sample picker with overwrite confirmation, calm error recovery, four output sections (Potential Concerns, Missing Info, Questions to Verify, Limits), interactive highlighted text viewer, and one-click summary clipboard export.
+- **Phase 4 (Results UI & Visual Redesign):** Complete client interface with two-column workspace ($\ge 1024\text{ px}$), sticky input, live elapsed timer, request cancellation via AbortController, synthetic sample picker with overwrite confirmation, calm error recovery, four output sections, interactive highlighted text viewer, and one-click summary clipboard export.
+- **Phase 4b (Guidance & Official Resources):** Verified government reporting and verification resources (`cybercrime.gov.in`, AICTE portal, NCS, MCA registration lookup), contextually ordered student self-checks, severity priority sorting for concerns, nested quote deduplication, and refined system instructions.
 
 ---
 
@@ -70,11 +71,11 @@ Implemented so far:
 ## Testing
 
 ### Running Offline Unit Tests
-Run the comprehensive Vitest test suite (includes quote validation, schema parsing, guardrails, synthetic examples, model fallback chain, shared deadline, and mock endpoint execution):
+Run the comprehensive Vitest test suite (includes quote validation, schema parsing, guardrails, synthetic examples, model fallback chain, shared deadline, resource selection, self-check prioritization, concern sorting, and mock endpoint execution):
 ```bash
 npm run test
 ```
-*(All 78 unit tests run entirely offline with zero network calls).*
+*(All 135 unit tests run entirely offline with zero network calls).*
 
 ### Running Live Analysis Tests
 To run live end-to-end evaluations against the Gemini API using synthetic examples and prompt-injection fixtures:
@@ -96,7 +97,7 @@ curl -X POST http://localhost:3000/api/analyze \
 ## Available Scripts
 
 - `npm run dev`: Runs the local development server with Turbopack.
-- `npm run test`: Executes the 68 offline Vitest tests once.
+- `npm run test`: Executes the 135 offline Vitest tests once.
 - `npm run test:live`: Executes the live Gemini evaluation suite (requires `GEMINI_API_KEY`).
 - `npm run build`: Compiles and builds the production application.
 - `npm run lint`: Runs ESLint checks.

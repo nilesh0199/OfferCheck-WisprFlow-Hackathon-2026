@@ -18,6 +18,7 @@ export const REVIEW_LIMITS: readonly string[] = [
   "Absence of identified warnings is not proof of safety or legitimacy.",
   "Polished writing is not proof of legitimacy, and poor grammar is not proof of fraud.",
   "'Not stated in the provided text' is an observation about the text, not proof that a term does not exist in the actual offer.",
+  "OfferCheck makes no claim about any named organisation; verify independently through official channels.",
 ];
 
 export type ParseModelOutputResult =
@@ -167,7 +168,46 @@ export function validateAnalysis(
         end: quoteResult.end,
       },
     });
-    keptConcernIds.add(concern.id);
+  }
+
+  // De-duplicate exact duplicate quotes and drop nested (contained) spans without incrementing droppedCount
+  const finalConcerns: ValidatedConcern[] = [];
+  for (let i = 0; i < validatedConcerns.length; i++) {
+    const candidate = validatedConcerns[i];
+
+    // Drop exact duplicate quote appearing earlier in the list
+    const isEarlierDuplicate = validatedConcerns.slice(0, i).some(
+      (earlier) =>
+        earlier.span.start === candidate.span.start &&
+        earlier.span.end === candidate.span.end
+    );
+    if (isEarlierDuplicate) {
+      continue;
+    }
+
+    // Drop concern if its validated span lies completely inside another concern's longer span,
+    // with ONE exception: never drop a nested concern whose category is upfront_payment or refundable_deposit.
+    const isContained = validatedConcerns.some((other, otherIdx) => {
+      if (otherIdx === i) return false;
+      const otherLen = other.span.end - other.span.start;
+      const candidateLen = candidate.span.end - candidate.span.start;
+      return (
+        other.span.start <= candidate.span.start &&
+        other.span.end >= candidate.span.end &&
+        otherLen > candidateLen
+      );
+    });
+
+    const isExemptFromNestedDrop =
+      candidate.category === "upfront_payment" ||
+      candidate.category === "refundable_deposit";
+
+    if (isContained && !isExemptFromNestedDrop) {
+      continue;
+    }
+
+    finalConcerns.push(candidate);
+    keptConcernIds.add(candidate.id);
   }
 
   // 3. Validate missing information items
@@ -221,7 +261,7 @@ export function validateAnalysis(
   }
 
   return {
-    concerns: validatedConcerns,
+    concerns: finalConcerns,
     missingInfo: validatedMissingInfo,
     verificationQuestions: validatedQuestions,
     overallNote,

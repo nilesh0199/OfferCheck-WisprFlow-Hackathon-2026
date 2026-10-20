@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import { AttentionIcon } from "./Icons";
 
 export type ErrorType =
   | "TOO_SHORT"
@@ -92,20 +93,23 @@ export function ErrorAlert({
       ref={alertRef}
       tabIndex={-1}
       role="alert"
-      className="rounded-xl border border-zinc-300 bg-zinc-100/90 p-4 text-zinc-900 shadow-2xs focus:outline-none focus:ring-2 focus:ring-zinc-600 dark:border-zinc-700 dark:bg-zinc-800/90 dark:text-zinc-100"
+      className="rounded-xl border border-slate-300 bg-slate-100/90 p-4 text-slate-900 shadow-xs focus:outline-none focus:ring-2 focus:ring-slate-600 dark:border-slate-700 dark:bg-slate-800/90 dark:text-slate-100 transition-colors"
     >
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h3 className="text-sm font-semibold">{title}</h3>
-          <p className="mt-0.5 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
-            {body}
-          </p>
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+        <div className="flex items-start gap-2.5">
+          <AttentionIcon className="w-5 h-5 text-slate-600 dark:text-slate-300 mt-0.5 shrink-0" size={18} />
+          <div>
+            <h3 className="text-sm font-semibold">{title}</h3>
+            <p className="mt-0.5 text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+              {body}
+            </p>
+          </div>
         </div>
         {onTryAgain && errorType !== "CANCELLED" && (
           <button
             type="button"
             onClick={onTryAgain}
-            className="inline-flex items-center justify-center rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-xs sm:text-sm font-medium text-zinc-900 shadow-2xs hover:bg-zinc-50 active:bg-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700 min-h-[44px] shrink-0"
+            className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-xs sm:text-sm font-medium text-slate-900 shadow-xs hover:bg-slate-50 active:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700 min-h-[44px] shrink-0 self-start sm:self-auto"
           >
             Try again
           </button>

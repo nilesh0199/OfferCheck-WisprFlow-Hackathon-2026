@@ -51,7 +51,7 @@ This phased build plan outlines the implementation roadmap for OfferCheck, an in
 ---
 
 ## Phase 4: Results UI
-- **Status:** Completed
+- **Status:** Complete
 - **Goal:** Connect the frontend form to the analysis endpoint, displaying structured findings across the four required sections with quotation highlights and verification question export. Reorganize layout so input is higher on the page.
 - **Acceptance Criteria:**
   - Input form moved higher on the page so users can immediately reach and paste text without scrolling past explanatory cards.
@@ -60,6 +60,21 @@ This phased build plan outlines the implementation roadmap for OfferCheck, an in
   - Easy one-click clipboard copying for suggested verification questions.
   - Clean error handling displays non-alarmist, actionable guidance if analysis fails.
   - Ephemeral state management: refreshing or navigating away discards sensitive data.
+
+---
+
+## Phase 4b: Guidance and Resources
+- **Status:** Complete
+- **Goal:** Add verified official verification resources (Cybercrime 1930, AICTE, NCS, MCA), static student self-checks ordered contextually, priority-based concern sorting, quote deduplication/containment in validation, and prompt refinements.
+- **Acceptance Criteria:**
+  - Official resource data in `src/data/verification-resources.ts` verified against official government portals on 2026-10-20.
+  - Pure selection function `selectResources` includes MCA and Cybercrime always (expanded on financial/sensitive concerns), and matches AICTE and NCS via word boundaries.
+  - Static self-checks in `src/data/self-checks.ts` ordered contextually via `selectSelfChecks` (payment -> 4 first; sensitive -> 5 first; off-platform -> 2 and 3 first).
+  - Priority sort `sortConcernsByPriority` orders concerns by severity (upfront payment, deposit, urgency, sensitive data, off-platform, other) while preserving relative model order.
+  - `validateAnalysis` drops nested (shorter contained) quotes and duplicate quotes without incrementing `droppedCount`.
+  - Added new disclaimer to `REVIEW_LIMITS` regarding named organizations; updated privacy notice with passwords/OTPs.
+  - UI renders "Check these yourself" in Section C and "Next steps and official resources" section with external links, copyable contacts, and collapsible cybercrime card.
+  - All offline tests, typecheck, lint, and build pass.
 
 ---
 

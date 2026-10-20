@@ -114,6 +114,41 @@ This document tracks all implemented, live, and planned automated tests for Offe
 | `summary: contains limits and note on dropped unverified items` | Verifies review limits and dropped item warnings appear in the plain-text summary | Implemented |
 | `summary: contains NO model names, attempt logs, or verdict words` | Verifies summary text never leaks model identifiers, attempt logs, or verdict terms | Implemented |
 | `summary: handles zero concerns calmly without declaring safety` | Verifies zero-concern analysis produces calm disclaimer without proclaiming safety | Implemented |
+| `sentence-case: capitalises first letter of lower-case string` | Verifies leading lowercase letter is converted to uppercase | Implemented |
+| `sentence-case: preserves already capitalised string` | Verifies already capitalised string remains unchanged | Implemented |
+| `sentence-case: preserves leading whitespace before capitalising` | Verifies leading spaces or indents are preserved while first non-whitespace character is capitalised | Implemented |
+| `sentence-case: safely handles empty and whitespace-only strings` | Verifies empty strings, null values, or whitespace-only strings return safely without crash | Implemented |
+| `sentence-case: leaves strings starting with numbers or symbols unchanged` | Verifies strings starting with digits, quotes, or symbols remain intact | Implemented |
+| `sentence-case: handles non-Latin Unicode characters properly` | Verifies accented and non-Latin characters (e.g. umlauts) are correctly uppercase-converted | Implemented |
+| `validate-analysis: case (a) 'as soon as possible.' (payment_urgency) nested in a longer sensitive_information_request quote is still dropped` | Verifies non-payment nested quotes are dropped without incrementing droppedCount | Implemented |
+| `validate-analysis: case (b) a short refundable_deposit quote nested in a longer 'other' quote is KEPT, both appear, droppedCount unchanged` | Verifies refundable_deposit and upfront_payment are exempt from nested drop and kept alongside enclosing quote | Implemented |
+| `validate-analysis: case (c) exact duplicates still collapse to one` | Verifies identical quote spans are deduplicated without incrementing droppedCount | Implemented |
+| `validate-analysis: case (d) overlapping-but-not-nested spans keeps both` | Verifies spans that overlap partially but are not contained keep both concerns | Implemented |
+| `summary: contains self-checks and selected official resources with conditional reason lines` | Verifies summary text includes self-check actions, official resources, and conditional reason lines | Implemented |
+| `priorities: sorts concerns according to specified category priority` | Verifies category priority order: upfront_payment, refundable_deposit, payment_urgency, sensitive_information_request, off_platform_communication, other | Implemented |
+| `priorities: maintains stable original order for multiple concerns within the same category` | Verifies stable sort preserving original model order within each category | Implemented |
+| `priorities: handles empty arrays cleanly` | Verifies empty array handling returns empty array | Implemented |
+| `resources: always includes cybercrime and mca for empty text and empty categories with no matchedTerm` | Verifies default inclusion of cybercrime and mca resources with matchedTerm undefined | Implemented |
+| `resources: flags cybercrime as expanded when upfront_payment category is present` | Verifies expanded=true on upfront payment concern | Implemented |
+| `resources: flags cybercrime as expanded when refundable_deposit category is present` | Verifies expanded=true on refundable deposit concern | Implemented |
+| `resources: flags cybercrime as expanded when payment_urgency category is present` | Verifies expanded=true on payment urgency concern | Implemented |
+| `resources: flags cybercrime as expanded when sensitive_information_request is present` | Verifies expanded=true on sensitive document request concern | Implemented |
+| `resources: leaves cybercrime non-expanded for other or off_platform_communication categories` | Verifies expanded=false when no financial/sensitive categories are present | Implemented |
+| `resources: includes aicte when text contains word AICTE and populates matchedTerm` | Verifies AICTE resource inclusion on word match with matchedTerm | Implemented |
+| `resources: does not include aicte for partial word matches like 'Aicted'` | Verifies word-boundary enforcement for AICTE regex | Implemented |
+| `resources: includes ncs when text contains word NCS or National Career Service and populates matchedTerm` | Verifies NCS resource inclusion on acronym or full name match with matchedTerm | Implemented |
+| `resources: selects NCS card with matchedTerm 'NCS' when text is 'NCS Group offers a role'` | Verifies match on substring like 'NCS Group' populates matchedTerm 'NCS' | Implemented |
+| `resources: does not include ncs for partial word matches like 'NCSU'` | Verifies word-boundary enforcement for NCS regex | Implemented |
+| `resources: returns stable order [cybercrime, aicte, ncs, mca] when all are triggered with matchedTerm for conditional cards` | Verifies stable resource list ordering and matchedTerm population | Implemented |
+| `self-checks: contains exactly six static self-checks` | Verifies static existence of all 6 self-check items | Implemented |
+| `self-checks: returns default order [1, 2, 3, 4, 5, 6] when no categories are provided` | Verifies default ordering of self-checks | Implemented |
+| `self-checks: prioritizes check 4 (pause_before_paying) first when upfront_payment is present` | Verifies payment category prioritization of check 4 | Implemented |
+| `self-checks: prioritizes check 4 (pause_before_paying) first when refundable_deposit is present` | Verifies deposit category prioritization of check 4 | Implemented |
+| `self-checks: prioritizes check 4 (pause_before_paying) first when payment_urgency is present` | Verifies urgency category prioritization of check 4 | Implemented |
+| `self-checks: prioritizes check 5 (pause_before_sharing_docs) first when sensitive_information_request is present` | Verifies sensitive document category prioritization of check 5 | Implemented |
+| `self-checks: prioritizes checks 2 and 3 first when off_platform_communication is present` | Verifies off-platform category prioritization of checks 2 and 3 | Implemented |
+| `self-checks: handles payment and sensitive categories simultaneously without duplicating items` | Verifies combined category prioritization with no duplicate items | Implemented |
+| `self-checks: returns default order for 'other' category` | Verifies fallback to default order on other categories | Implemented |
 | `live-analysis: evaluates Synthetic Example 1 (Urgent payment request) via Gemini Interactions API` | Live execution asserting verified quotes, no overclaiming, and source offset slice match | Manual / live |
 | `live-analysis: evaluates Synthetic Example 2 (Incomplete offer) via Gemini Interactions API` | Live execution asserting verified quotes, no overclaiming, and source offset slice match | Manual / live |
 | `live-analysis: evaluates Synthetic Example 3 (Detailed offer) via Gemini Interactions API` | Live execution asserting verified quotes, no overclaiming, and source offset slice match | Manual / live |
@@ -125,8 +160,19 @@ This document tracks all implemented, live, and planned automated tests for Offe
 | `UI: Loading state shows elapsed timer and cancel button` | Manual check that timer ticks, button shows 'Analyzing...', and cancel button aborts | Manual |
 | `UI: Outdated banner appears after editing analyzed text` | Manual check that banner appears when user edits textarea after a review | Manual |
 | `UI: Show in text scrolls to highlight` | Manual check that clicking 'Show in text' scrolls text viewer and emphasizes highlight | Manual |
-| `UI: Copy buttons provide user feedback` | Manual check that clicking copy buttons shows 'Copied!' feedback | Manual |
+| `UI: Copy buttons provide user feedback` | Manual check that clicking copy buttons shows 'Copied' feedback (no exclamation marks) | Manual |
 | `UI: Mobile responsiveness at 360px` | Manual check that page exhibits no horizontal scroll and tap targets >= 44px at 360px width | Manual |
+| `UI: Keyboard-only navigation` | Manual check that all interactive controls are reachable and operable via Tab/Shift+Tab and Enter/Space | Manual |
+| `UI: Visible focus indicators` | Manual check that visible 2px focus ring appears on focused interactive elements, suppressed on programmatic headings | Manual |
+| `UI: Screen reader live announcements` | Manual check that aria-live polite regions announce loading time, cancel, and clipboard copy operations | Manual |
+| `UI: Tap target accessibility` | Manual check that buttons and interactive tap targets meet or exceed ~44px minimum touch height | Manual |
+| `UI: Motion sensitivity compliance` | Manual check that prefers-reduced-motion media query suppresses animations and transitions | Manual |
+| `UI: Theme contrast verification` | Manual check that light and dark themes (prefers-color-scheme: dark) both maintain high readability and WCAG contrast | Manual |
+| `UI: Responsive viewport testing (360px, 768px, 1280px)` | Manual check verifying no horizontal overflow and proper column stacking/side-by-side transition | Manual |
+| `UI: Check these yourself ordering` | Manual check that self-checks reorder based on concern category relevance (payment/sensitive/off-platform) | Manual |
+| `UI: Official resources collapsible state` | Manual check that cybercrime card is open by default on payment/sensitive concerns, and closed otherwise | Manual |
+| `UI: External link attributes` | Manual check that official links open in a new tab with rel="noopener noreferrer" and visible helper text | Manual |
+| `UI: Resource contact copy feedback` | Manual check that clicking Copy on helpline or email announces copy state via aria-live | Manual |
 | `Research ambiguity` | Verifies behavior when company name is generic, missing, or produces ambiguous search results | Planned |
 | `Mobile layout and responsiveness` | Tests responsive layout, tap targets, and typography down to ~360px viewport | Planned |
 
@@ -134,7 +180,7 @@ This document tracks all implemented, live, and planned automated tests for Offe
 
 ## Test Execution Summary
 
-- **Total Implemented Automated Tests (Offline)**: 103 tests across 11 test files in `tests/`.
+- **Total Implemented Automated Tests (Offline)**: 138 tests across 15 test files in `tests/`.
 - **Manual / Live Tests**: 5 sequential live test cases in `tests-live/analyze.live.test.ts` (run via `npm run test:live`), plus manual UI verification checks.
 - **Offline Test Command**: `npm run test` (fast, deterministic, zero external network dependency).
 - **Live Test Command**: `npm run test:live` (loads `.env.local`; skips cleanly if `GEMINI_API_KEY` is not present; does not fake results).

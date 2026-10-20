@@ -29,7 +29,6 @@ export function SamplePicker({
     );
     if (!exampleToLoad) return;
 
-    // If there's text already and it differs from the sample, require confirmation
     const hasCustomText =
       currentText.trim().length > 0 &&
       currentText.trim() !== exampleToLoad.text.trim();
@@ -58,14 +57,14 @@ export function SamplePicker({
   };
 
   return (
-    <div className="flex flex-col gap-2.5 rounded-lg border border-zinc-200 bg-zinc-100/70 p-3 text-xs dark:border-zinc-800 dark:bg-zinc-900/60">
+    <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-1.5 ml-auto">
           <label
             htmlFor="sample-select"
-            className="font-medium text-zinc-700 dark:text-zinc-300"
+            className="text-xs text-[var(--text-muted)]"
           >
-            Load a sample offer:
+            Try a sample:
           </label>
           <select
             id="sample-select"
@@ -75,7 +74,7 @@ export function SamplePicker({
               setConfirmPending(false);
             }}
             disabled={disabled}
-            className="rounded-md border border-zinc-300 bg-white px-2.5 py-1.5 text-xs text-zinc-900 shadow-2xs focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 min-h-[38px]"
+            className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-1 text-xs text-[var(--text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[36px]"
           >
             {SYNTHETIC_EXAMPLES.map((ex) => (
               <option key={ex.id} value={ex.id}>
@@ -87,45 +86,45 @@ export function SamplePicker({
             type="button"
             onClick={handleLoadClick}
             disabled={disabled}
-            className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-800 shadow-2xs hover:bg-zinc-50 active:bg-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-1 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 min-h-[38px]"
+            className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-xs font-medium text-[var(--text)] hover:bg-[var(--surface-muted)] active:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:opacity-50 min-h-[36px]"
           >
-            Load example
+            Load
           </button>
         </div>
+      </div>
 
-        {/* Visible badge when current text matches a synthetic example */}
-        {isSyntheticBadgeVisible && (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-zinc-200/90 px-2.5 py-1 text-2xs sm:text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+      {/* Synthetic offer badge */}
+      {isSyntheticBadgeVisible && (
+        <div className="flex justify-end">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--surface-muted)] px-2.5 py-0.5 text-2xs font-medium text-[var(--text-muted)] border border-[var(--border)]">
             <span
-              className="h-1.5 w-1.5 rounded-full bg-zinc-500"
+              className="h-1.5 w-1.5 rounded-full bg-[var(--text-muted)] opacity-60"
               aria-hidden="true"
             />
             Synthetic example, not a real offer
           </span>
-        )}
-      </div>
+        </div>
+      )}
 
-      {/* Inline confirmation when text already exists in textarea */}
+      {/* Inline confirmation when custom text exists */}
       {confirmPending && (
         <div
           role="alert"
-          className="flex flex-wrap items-center gap-2 pt-1 border-t border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200"
+          className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-[var(--border)] bg-[var(--surface-muted)] p-2 text-xs text-[var(--text)]"
         >
-          <span className="font-medium">
-            Replace your current text with this sample?
-          </span>
-          <div className="flex items-center gap-2">
+          <span className="font-medium">Replace your text?</span>
+          <div className="flex items-center gap-1.5">
             <button
               type="button"
               onClick={handleConfirmReplace}
-              className="rounded-md bg-zinc-800 px-2.5 py-1 text-2xs sm:text-xs font-semibold text-white hover:bg-zinc-700 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:bg-zinc-200 dark:text-zinc-900 dark:hover:bg-zinc-300 min-h-[34px]"
+              className="rounded bg-[var(--accent)] text-[var(--accent-contrast)] px-2.5 py-1 text-2xs font-semibold hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[32px]"
             >
-              Confirm replace
+              Replace
             </button>
             <button
               type="button"
               onClick={handleCancelReplace}
-              className="rounded-md border border-zinc-300 bg-white px-2.5 py-1 text-2xs sm:text-xs font-medium text-zinc-700 hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 min-h-[34px]"
+              className="rounded border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] px-2.5 py-1 text-2xs font-medium hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[32px]"
             >
               Cancel
             </button>

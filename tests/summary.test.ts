@@ -78,8 +78,27 @@ describe("buildReviewSummary", () => {
     expect(summary.toLowerCase()).not.toContain("flash");
     expect(summary.toLowerCase()).not.toContain("attempt");
     expect(summary.toLowerCase()).not.toContain("verdict");
-    expect(summary.toLowerCase()).not.toContain("scam");
-    expect(summary.toLowerCase()).not.toContain("fraud");
+    expect(summary.toLowerCase()).not.toContain("verified safe");
+    expect(summary.toLowerCase()).not.toContain("guaranteed safe");
+    expect(summary.toLowerCase()).not.toContain("definitely a scam");
+    expect(summary.toLowerCase()).not.toContain("definitely fraud");
+  });
+
+  it("contains self-checks and selected official resources with conditional reason lines", () => {
+    const summary = buildReviewSummary(
+      sampleAnalysis,
+      "Offered through AICTE scheme and verified on NCS."
+    );
+    expect(summary).toContain("--- CHECK THESE YOURSELF ---");
+    expect(summary).toContain("Pause before paying anything and confirm independently first.");
+    expect(summary).toContain("--- OFFICIAL RESOURCES ---");
+    expect(summary).toContain("If you have already paid or shared documents");
+    expect(summary).toContain("1930");
+    expect(summary).toContain("AICTE National Internship Portal");
+    expect(summary).toContain('Shown because your text mentions "AICTE".');
+    expect(summary).toContain("National Career Service");
+    expect(summary).toContain('Shown because your text mentions "NCS".');
+    expect(summary).toContain("Check a company's registration");
   });
 
   it("handles zero concerns calmly without declaring safety", () => {

@@ -138,7 +138,17 @@ export default function Home() {
         const code = data.error.code;
         const status = response.status;
 
-        if (status === 429 || code === "RATE_LIMITED") {
+        if (code === "RATE_LIMITED_CLIENT") {
+          setErrorState({
+            type: "RATE_LIMITED_CLIENT",
+            message: data.error.message,
+          });
+        } else if (code === "BUSY") {
+          setErrorState({
+            type: "RATE_LIMITED",
+            message: data.error.message,
+          });
+        } else if (status === 429 || code === "RATE_LIMITED") {
           setErrorState({ type: "RATE_LIMITED" });
         } else if (status === 504 || code === "TIMEOUT") {
           setErrorState({ type: "TIMEOUT" });

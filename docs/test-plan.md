@@ -149,6 +149,39 @@ This document tracks all implemented, live, and planned automated tests for Offe
 | `self-checks: prioritizes checks 2 and 3 first when off_platform_communication is present` | Verifies off-platform category prioritization of checks 2 and 3 | Implemented |
 | `self-checks: handles payment and sensitive categories simultaneously without duplicating items` | Verifies combined category prioritization with no duplicate items | Implemented |
 | `self-checks: returns default order for 'other' category` | Verifies fallback to default order on other categories | Implemented |
+| `rate-limit: anonymizes client IP using SHA-256 and salt; raw IP never appears in result` | Verifies SHA-256 hashing with salt on x-forwarded-for, x-real-ip, and local fallback | Implemented |
+| `rate-limit: different salts generate different hashes for the same IP` | Verifies unique per-process salts prevent rainbow table lookups | Implemented |
+| `rate-limit: enforces sliding window limit (default 8 per 15 minutes)` | Verifies 8 allowed in 15m window and 9th rejected with Retry-After math | Implemented |
+| `rate-limit: enforces daily cap (default 30 per 24 hours)` | Verifies daily limit enforcement and DayExceeded reason | Implemented |
+| `rate-limit: evicts oldest entries when capacity limit is reached` | Verifies memory protection and eviction down to capacity | Implemented |
+| `rate-limit: returns 429 with Retry-After header and RATE_LIMITED_CLIENT body from route` | Verifies route returns 429, Retry-After header, and calm client error message | Implemented |
+| `rate-limit: validation failures do NOT consume rate limit allowance` | Verifies empty/short/long inputs fail before rate limit consumption | Implemented |
+| `model-health: puts model on cooldown for 5 minutes after TIMEOUT` | Verifies 5-minute cooldown on timeout failure | Implemented |
+| `model-health: puts model on cooldown for 15 minutes after RATE_LIMITED (429)` | Verifies 15-minute cooldown on 429 rate limit failure | Implemented |
+| `model-health: puts model on cooldown for 1 minute after 5xx server error` | Verifies 1-minute cooldown on upstream 5xx server error | Implemented |
+| `model-health: recordSuccess immediately clears cooldown for that model` | Verifies successful analysis clears active cooldown | Implemented |
+| `model-health: skips cooled-down models when filtering` | Verifies filtering omits models on cooldown | Implemented |
+| `model-health: never fails closed: if ALL models are on cooldown, tries all models normally` | Verifies fallback when all models are on cooldown to try all models | Implemented |
+| `model-health: skipped model does not count toward MAX_MODEL_ATTEMPTS in analyzeOfferText` | Verifies skipped cooled-down models do not consume attempts | Implemented |
+| `concurrency: permits acquisitions up to configured limit, then blocks further acquisitions` | Verifies concurrency guard bounds active tasks to 4 | Implemented |
+| `concurrency: release is idempotent and never drops below zero` | Verifies safe decrementing and floor at zero | Implemented |
+| `concurrency: route returns 503 with BUSY when concurrency limit is exceeded` | Verifies HTTP 503 response with BUSY code when saturated | Implemented |
+| `concurrency: always decrements concurrency slot in finally block even when analyzeOfferText throws` | Verifies guaranteed release in finally block | Implemented |
+| `input-hygiene: accepts clean plain text with standard length` | Verifies clean text passes hygiene check | Implemented |
+| `input-hygiene: accepts text with standard whitespace characters (tabs, newlines)` | Verifies tabs and newlines are permitted | Implemented |
+| `input-hygiene: rejects text containing NUL characters with 422 INVALID_CHARACTERS` | Verifies NUL character detection and 422 rejection | Implemented |
+| `input-hygiene: rejects text with >30% non-printable control characters with 422 INVALID_CHARACTERS` | Verifies control character ratio enforcement | Implemented |
+| `input-hygiene: rejects empty or whitespace-only input with 422 EMPTY_INPUT` | Verifies empty input rejection | Implemented |
+| `input-hygiene: rejects text shorter than MIN_INPUT_CHARS (40) with 422 TOO_SHORT` | Verifies minimum input length check | Implemented |
+| `input-hygiene: rejects text longer than MAX_INPUT_CHARS (8000) with 413 TOO_LONG` | Verifies maximum character limit check | Implemented |
+| `input-hygiene: does NOT normalise CRLF to LF if doing so would alter character offsets` | Verifies CRLF strings are preserved to protect quotation offsets | Implemented |
+| `cancellation: passes an AbortSignal to client.interactions.create options` | Verifies AbortSignal is supplied to @google/genai options | Implemented |
+| `cancellation: aborts the AbortSignal when the per-attempt timeout fires` | Verifies signal abort event fires on timeout | Implemented |
+| `cancellation: a completed attempt clears the timeout handle and does not leave a pending timer` | Verifies clearTimeout runs on completion | Implemented |
+| `logging-audit: finds source files in src directory` | Verifies audit scanner finds source files | Implemented |
+| `logging-audit: no source file in src/ contains console.log` | Verifies absence of console.log across src/ | Implemented |
+| `logging-audit: no console.* call in src/ logs sensitive variables (text, body, analysis, apiKey, ip)` | Verifies absence of sensitive variable logging | Implemented |
+| `logging-audit: the only allowed logging call in src/ is logSafeAttemptError in gemini.ts` | Verifies single audited metadata logging function | Implemented |
 | `live-analysis: evaluates Synthetic Example 1 (Urgent payment request) via Gemini Interactions API` | Live execution asserting verified quotes, no overclaiming, and source offset slice match | Manual / live |
 | `live-analysis: evaluates Synthetic Example 2 (Incomplete offer) via Gemini Interactions API` | Live execution asserting verified quotes, no overclaiming, and source offset slice match | Manual / live |
 | `live-analysis: evaluates Synthetic Example 3 (Detailed offer) via Gemini Interactions API` | Live execution asserting verified quotes, no overclaiming, and source offset slice match | Manual / live |
@@ -180,7 +213,7 @@ This document tracks all implemented, live, and planned automated tests for Offe
 
 ## Test Execution Summary
 
-- **Total Implemented Automated Tests (Offline)**: 138 tests across 15 test files in `tests/`.
+- **Total Implemented Automated Tests (Offline)**: 171 tests across 21 test files in `tests/`.
 - **Manual / Live Tests**: 5 sequential live test cases in `tests-live/analyze.live.test.ts` (run via `npm run test:live`), plus manual UI verification checks.
 - **Offline Test Command**: `npm run test` (fast, deterministic, zero external network dependency).
 - **Live Test Command**: `npm run test:live` (loads `.env.local`; skips cleanly if `GEMINI_API_KEY` is not present; does not fake results).

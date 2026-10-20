@@ -5,6 +5,7 @@ export type ErrorType =
   | "TOO_SHORT"
   | "TOO_LONG"
   | "RATE_LIMITED"
+  | "RATE_LIMITED_CLIENT"
   | "TIMEOUT"
   | "UNAVAILABLE"
   | "NETWORK_ERROR"
@@ -35,6 +36,13 @@ export function ErrorAlert({
         return {
           title: "Service busy",
           body: "The service is busy right now. Please try again in a minute.",
+        };
+      case "RATE_LIMITED_CLIENT":
+        return {
+          title: "Request limit reached",
+          body:
+            customMessage ||
+            "You have reached the request limit for now. Please try again later.",
         };
       case "TIMEOUT":
         return {

@@ -15,10 +15,10 @@ OfferCheck is built as a solo submission for **No Hands: The Wispr Challenge** (
 
 ---
 
-## Current Status: Phase 4b (Guidance and Official Resources)
+## Current Status: Phase 6 (Safeguards for a Public Demo)
 
 > [!NOTE]
-> **Project in progress:** Phases 1 through 4b are complete. The application features a two-column responsive SaaS interface connected to the server-side Gemini analysis endpoint, rendering findings across structured sections with verbatim quotation highlights, contextually prioritized self-checks, verified official government resources (Cybercrime 1930, AICTE, NCS, MCA), and clipboard exports.
+> **Project in progress:** Phases 1 through 6 are complete. The application features a two-column responsive SaaS interface connected to the server-side Gemini analysis endpoint, rendering findings across structured sections with verbatim quotation highlights, contextually prioritized self-checks, verified official government resources (Cybercrime 1930, AICTE, NCS, MCA), clipboard exports, and robust public demo safeguards (real cancellation, sliding-window rate limiting with salted SHA-256 IP hashing, model circuit breaker, in-memory concurrency controls, input hygiene, security headers, and an automated privacy audit).
 
 Implemented so far:
 - **Phase 1 (Shell):** Project documentation, accessible text input, character counter against 8,000 chars, limits disclaimer, and pre-paste redaction notice.
@@ -26,6 +26,7 @@ Implemented so far:
 - **Phase 3 (Gemini Endpoint):** Server-side `/api/analyze` route powered by `@google/genai` Interactions API with multi-model fallback chain (`gemini-3.8-flash`, `gemini-3.6-flash`, `gemini-3.5-flash-lite`), lowest documented thinking levels, 55s shared deadline, 20s per-attempt timeout cap, and zero logging of user text or credentials.
 - **Phase 4 (Results UI & Visual Redesign):** Complete client interface with two-column workspace ($\ge 1024\text{ px}$), sticky input, live elapsed timer, request cancellation via AbortController, synthetic sample picker with overwrite confirmation, calm error recovery, four output sections, interactive highlighted text viewer, and one-click summary clipboard export.
 - **Phase 4b (Guidance & Official Resources):** Verified government reporting and verification resources (`cybercrime.gov.in`, AICTE portal, NCS, MCA registration lookup), contextually ordered student self-checks, severity priority sorting for concerns, nested quote deduplication, and refined system instructions.
+- **Phase 6 (Safeguards for Public Demo):** Real network cancellation via AbortSignal in SDK options, per-client sliding window rate limiting (8/15m, 30/24h) with salted SHA-256 IP anonymization, model circuit breaker with tiered cooldowns (5m on timeout, 15m on 429, 1m on 5xx), in-memory concurrency guard (max 4 in-flight), input hygiene blocking NUL characters and unprintable control characters, security headers, and regression test auditing zero sensitive logging.
 
 ---
 
@@ -57,6 +58,10 @@ Implemented so far:
 
    # Optional thinking level override (default: lowest documented level per model: "low" for 3.8, "minimal" for 3.6/3.5)
    # GEMINI_THINKING_LEVEL="low"
+
+   # Optional sliding-window rate limit overrides (default: 8 analyses / 15m, 30 analyses / 24h)
+   # RATE_LIMIT_PER_WINDOW=8
+   # RATE_LIMIT_PER_DAY=30
    ```
    *(Note: Offline tests run with injected mock clients and do NOT require an API key or network access.)*
 

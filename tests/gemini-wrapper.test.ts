@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   analyzeOfferText,
   cleanJsonSchemaForGemini,
@@ -7,6 +7,7 @@ import {
   GEMINI_RESPONSE_SCHEMA,
   GeminiModelClient,
 } from "@/lib/analysis/gemini";
+import { defaultCircuitBreaker } from "@/lib/analysis/model-health";
 import {
   MIN_INPUT_CHARS,
   MAX_INPUT_CHARS,
@@ -135,6 +136,10 @@ describe("analyzeOfferText offline validation and fallback handling", () => {
       },
     ],
     overallNote: "Review is based exclusively on the provided text.",
+  });
+
+  beforeEach(() => {
+    defaultCircuitBreaker.reset();
   });
 
   it("returns EMPTY_INPUT for empty or whitespace-only input without calling model", async () => {

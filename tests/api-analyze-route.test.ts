@@ -2,10 +2,14 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
 import { POST, GET, PUT, DELETE, PATCH } from "@/app/api/analyze/route";
 import * as geminiModule from "@/lib/analysis/gemini";
+import { defaultRateLimiter } from "@/lib/rate-limit";
+import { defaultConcurrencyGuard } from "@/lib/concurrency";
 
 describe("/api/analyze Route Handler", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    defaultRateLimiter.reset();
+    defaultConcurrencyGuard.reset();
   });
 
   it("returns 405 Method Not Allowed for non-POST HTTP methods", async () => {
@@ -174,7 +178,9 @@ describe("/api/analyze Route Handler", () => {
     const req = new NextRequest("http://localhost:3000/api/analyze", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ text: "Some internship offer text..." }),
+      body: JSON.stringify({
+        text: "Congratulations! We are pleased to extend this offer for the internship role with Acme.",
+      }),
     });
 
     const res = await POST(req);

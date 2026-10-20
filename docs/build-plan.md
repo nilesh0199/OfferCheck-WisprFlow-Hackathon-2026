@@ -92,13 +92,19 @@ This phased build plan outlines the implementation roadmap for OfferCheck, an in
 ---
 
 ## Phase 6: Safeguards and Documented Test Set
-- **Status:** Not started
-- **Goal:** Harden the application with input sanitization, client and server request timeouts, basic in-memory rate limiting with clearly documented limitations, and a documented test suite.
+- **Status:** Complete
+- **Goal:** Harden the application with input sanitization, real request cancellation, in-memory sliding-window rate limiting with salted SHA-256 key hashing, model circuit breaker, concurrency controls, security headers, logging audit, and comprehensive evaluation documentation.
 - **Acceptance Criteria:**
-  - Character limit strictly enforced on both frontend and backend.
-  - Explicit request timeout mechanisms abort stalled upstream connections.
-  - Basic IP or session rate limiting implemented with documented operational limits (best-effort in-memory limits plus provider quota ceiling; friendly "busy, try later" notice).
-  - Documented verification test set verifying handling of empty input, max length, boundary text, prompt injection attempts, and special characters.
+  - Real network cancellation: AbortSignal passed to `@google/genai` Interactions API options, aborting on timeout and cleaning up timer handles.
+  - Per-client sliding window rate limiting: default 8 analyses per 15 minutes, 30 per 24 hours, overridable via `RATE_LIMIT_PER_WINDOW` and `RATE_LIMIT_PER_DAY`.
+  - Salted SHA-256 client key hashing: raw IP never stored, logged, or returned. Map capped at 5,000 keys with eviction.
+  - Pre-analysis validation checks ensure invalid requests (empty, too short, too long) do not consume rate limit allowance.
+  - In-memory concurrency guard: at most 4 simultaneous in-flight analyses per instance, returning 503 `BUSY`. Guaranteed decrement in `finally` block.
+  - Model circuit breaker: tiered cooldowns (5 min on timeout, 15 min on 429, 1 min on 503/5xx); skipped models do not count toward attempts or deadlines; falls back to all models if all are on cooldown.
+  - Input hygiene: blocks NUL characters and >30% control characters with 422; CRLF preserved to protect verbatim quote offsets.
+  - Security headers added in `next.config.ts`: `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `X-Frame-Options: DENY`, restrictive `Permissions-Policy`.
+  - Privacy policy in `docs/privacy-and-responsible-use.md` and evaluation benchmark set in `docs/evaluation-set.md`.
+  - Automated logging audit test ensures zero sensitive variable leaks across `src/`.
 
 ---
 

@@ -13,6 +13,7 @@ import { ModelOutputSchema, ValidatedAnalysis } from "./schema";
 import { parseModelOutput } from "./validate-result";
 import { validateAnalysis } from "./validate-result";
 import { SYSTEM_INSTRUCTION, buildUserContent } from "./prompt";
+import { ModelCircuitBreaker, defaultCircuitBreaker } from "./model-health";
 
 export type AnalyzeErrorCode =
   | "EMPTY_INPUT"
@@ -89,6 +90,7 @@ export interface AnalyzeOfferDeps {
   overallDeadlineMs?: number;
   perAttemptTimeoutMs?: number;
   thinkingLevel?: string;
+  circuitBreaker?: ModelCircuitBreaker;
 }
 
 export interface ModelThinkingSpec {
@@ -359,7 +361,7 @@ export async function analyzeOfferText(
   }
 
   // Model chain parsing
-  const models =
+  const rawModels =
     deps?.modelChain && deps.modelChain.length > 0
       ? deps.modelChain
           .map((m) => m.trim())
@@ -368,6 +370,10 @@ export async function analyzeOfferText(
       : deps?.modelName
         ? [deps.modelName.trim()]
         : parseModelChain(process.env.GEMINI_MODELS, process.env.GEMINI_MODEL);
+
+  const breaker = deps?.circuitBreaker ?? defaultCircuitBreaker;
+  const { modelsToTry } = breaker.filterModels(rawModels);
+  const models = modelsToTry.slice(0, MAX_MODEL_ATTEMPTS);
 
   const overallDeadlineMs = deps?.overallDeadlineMs ?? OVERALL_DEADLINE_MS;
   const perAttemptTimeoutCap =
@@ -539,6 +545,7 @@ export async function analyzeOfferText(
         currentModel,
         elapsedMs
       );
+      breaker.recordFailure(currentModel, outcomeCode, httpStatus);
       attempts.push({
         model: currentModel,
         outcome: outcomeCode,
@@ -567,6 +574,7 @@ export async function analyzeOfferText(
         currentModel,
         elapsedMs
       );
+      breaker.recordFailure(currentModel, "INVALID_MODEL_OUTPUT", 502);
       attempts.push({
         model: currentModel,
         outcome: "INVALID_MODEL_OUTPUT",
@@ -579,6 +587,7 @@ export async function analyzeOfferText(
     }
 
     // 5. Success: Validate analysis quotes against original source text
+    breaker.recordSuccess(currentModel);
     attempts.push({
       model: currentModel,
       outcome: "SUCCESS",

@@ -333,6 +333,11 @@ This document tracks all implemented, live, and planned automated tests for Offe
 | `wcag-contrast: UI borders, focus rings, and divider tokens meet >= 3:1 contrast` | Verifies border, border-strong, and focus-ring tokens against canvas/surface satisfy non-text contrast | Implemented |
 | `wcag-contrast: yellow highlight tokens maintain dark ink contrast >= 4.5:1` | Verifies accent-highlight and highlight-ink pairing meets WCAG text readability standards | Implemented |
 | `token-audit: zero raw hex colors and zero un-tokenised tailwind color classes in production components` | Verifies scanner finds no hardcoded palette classes or raw hex values across src/ | Implemented |
+| `token-audit: ensures no source file defines or uses a font size below 13px` | Verifies scanner traverses all source files under src/ and enforces 13px absolute minimum font size floor | Implemented |
+| `wcag-contrast: navy header background against white text and header-nav-text meets AAA standard` | Verifies header bar contrast reaches >= 10:1 in both light and dark themes | Implemented |
+| `wcag-contrast: primary action against primary contrast and tints meets AA standard` | Verifies Ink Blue primary buttons and tints reach >= 5.2:1 in both light and dark themes | Implemented |
+| `wcag-contrast: observation background against observation text meets AAA standard` | Verifies yellow observation cards reach >= 9:1 text contrast in both themes | Implemented |
+| `wcag-contrast: border-strong and focus-ring tokens meet >= 3:1 non-text contrast in both themes` | Verifies strong container borders and focus rings satisfy WCAG non-text contrast | Implemented |
 | `line-offset: calculates 1-based line numbers from zero-based character offsets` | Verifies line number mapping for start/middle/end offsets, empty text, CRLF newlines, out-of-bounds, and Unicode | Implemented |
 | `UI: Bi-directional evidence linking between observation cards and offer viewer lines` | Manual check that hovering/focusing observation highlights line in viewer and clicking quote scrolls to observation | Manual |
 | `UI: Widescreen fluid container scaling up to 2000px without horizontal overflow` | Manual check verifying fluid container clamping across mobile, tablet, desktop, and ultra-wide displays | Manual |

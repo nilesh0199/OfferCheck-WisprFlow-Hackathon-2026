@@ -10,14 +10,11 @@ export function PrivacySection() {
       className="py-16 sm:py-24 border-t border-[var(--border)] bg-[var(--surface)] transition-colors"
     >
       <Container className="space-y-12">
-        <div className="max-w-2xl space-y-3">
-          <span className="font-mono text-2xs uppercase tracking-wider text-[var(--primary-ledger)] font-semibold">
-            Transparency
-          </span>
+        <div className="space-y-3">
           <h2 className="text-2xl sm:text-3xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]">
             Privacy and responsible data use
           </h2>
-          <p className="text-sm sm:text-base text-[var(--text-muted)] leading-relaxed">
+          <p className="text-[17px] text-[var(--text-muted)] leading-relaxed max-w-2xl">
             How your information is processed when you use OfferCheck.
           </p>
         </div>
@@ -26,13 +23,13 @@ export function PrivacySection() {
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-6 sm:p-8 space-y-6">
           <div className="flex items-start gap-4">
             <div className="p-2.5 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] shrink-0">
-              <LockIcon className="w-5 h-5 text-[var(--primary-ledger)]" />
+              <LockIcon className="w-5 h-5 text-[var(--color-primary)]" />
             </div>
             <div className="space-y-2">
               <h3 className="text-sm sm:text-base font-bold text-[var(--text)]">
                 AI Processing Notice
               </h3>
-              <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">
+              <p className="text-sm text-[var(--text-muted)] leading-relaxed">
                 {AI_DATA_NOTICE}
               </p>
             </div>
@@ -70,7 +67,7 @@ export function PrivacySection() {
               href="https://github.com/nilesh0199/OfferCheck-WisprFlow-Hackathon-2026/blob/main/docs/privacy-and-responsible-use.md"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--primary-ledger)] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--color-primary)] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded"
             >
               <span>Read the complete Privacy and Responsible Use policy on GitHub</span>
               <ExternalLinkIcon className="w-3.5 h-3.5 opacity-80" />

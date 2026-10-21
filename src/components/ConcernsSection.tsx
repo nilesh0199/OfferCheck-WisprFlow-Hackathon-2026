@@ -93,7 +93,7 @@ export function ConcernsSection({
 
                 {/* Observation */}
                 <div>
-                  <h4 className="text-xs font-mono uppercase tracking-wider text-[var(--text-muted)] font-semibold">
+                  <h4 className="text-xs font-sans text-[var(--text-muted)] font-semibold">
                     What the text says
                   </h4>
                   <p className="mt-0.5 text-xs sm:text-sm text-[var(--text)] leading-relaxed max-w-[70ch]">
@@ -103,7 +103,7 @@ export function ConcernsSection({
 
                 {/* Interpretation */}
                 <div className="pt-2 border-t border-[var(--border)]">
-                  <h4 className="text-xs font-mono uppercase tracking-wider text-[var(--text-muted)] font-semibold">
+                  <h4 className="text-xs font-sans text-[var(--text-muted)] font-semibold">
                     Why caution is recommended
                   </h4>
                   <p className="mt-0.5 text-xs text-[var(--text-muted)] leading-relaxed max-w-[70ch]">
@@ -113,7 +113,7 @@ export function ConcernsSection({
 
                 {/* Direct Quote Reference */}
                 <div className="pt-1.5 border-t border-[var(--border)] flex items-baseline gap-2 text-xs text-[var(--text-muted)]">
-                  <span className="font-semibold text-[var(--text)] font-sans uppercase">
+                  <span className="font-semibold text-[var(--text)] font-sans">
                     Quote:
                   </span>
                   <blockquote className="italic font-mono break-words border-l border-[var(--border)] pl-2 max-w-[70ch]">

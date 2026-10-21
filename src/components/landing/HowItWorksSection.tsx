@@ -58,7 +58,7 @@ export function HowItWorksSection() {
       description: hasResearchPrompt
         ? "Clarify terms with drafted verification questions, consult official Indian registries, or copy a structured prompt to research the company with an external assistant."
         : "Use drafted verification questions to request clarification from the recruiter, and cross-reference with official Indian government registries.",
-      icon: <ShieldCheckIcon className="w-5 h-5 text-[var(--primary-ledger)]" />,
+      icon: <ShieldCheckIcon className="w-5 h-5 text-[var(--color-primary)]" />,
     },
   ];
 
@@ -66,17 +66,14 @@ export function HowItWorksSection() {
     <section
       id="how-it-works"
       ref={sectionRef}
-      className="py-16 sm:py-24 border-t border-[var(--border)] transition-colors"
+      className="py-16 sm:py-24 border-t border-[var(--border)] bg-[var(--color-canvas)] transition-colors"
     >
       <Container className="space-y-12">
-        <div className="max-w-2xl space-y-3">
-          <span className="font-mono text-2xs uppercase tracking-wider text-[var(--primary-ledger)] font-semibold">
-            Process
-          </span>
+        <div className="space-y-3">
           <h2 className="text-2xl sm:text-3xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]">
             How OfferCheck works
           </h2>
-          <p className="text-sm sm:text-base text-[var(--text-muted)] leading-relaxed">
+          <p className="text-[17px] text-[var(--text-muted)] leading-relaxed max-w-2xl">
             A three-step checklist to help you evaluate an internship or job offer
             before taking irreversible actions.
           </p>
@@ -85,7 +82,7 @@ export function HowItWorksSection() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
           {steps.map((step, index) => (
             <div
-              key={step.num}
+              key={index}
               style={{
                 transitionDelay: `${index * 120}ms`,
               }}
@@ -97,24 +94,17 @@ export function HowItWorksSection() {
             >
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <div className="w-10 h-10 rounded-xl bg-[var(--surface-muted)] border border-[var(--border)] flex items-center justify-center">
-                    {step.icon}
-                  </div>
-                  <span className="font-mono text-sm font-bold text-[var(--text-muted)]">
-                    {step.num}
+                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-[var(--color-primary)] text-[var(--color-primary-contrast)] font-mono text-sm font-bold shadow-xs">
+                    {index + 1}
                   </span>
                 </div>
 
                 <h3 className="text-base font-bold text-[var(--text)]">
                   {step.title}
                 </h3>
-                <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">
+                <p className="text-sm text-[var(--text-muted)] leading-relaxed">
                   {step.description}
                 </p>
-              </div>
-
-              <div className="pt-4 border-t border-[var(--border)] text-2xs font-mono text-[var(--text-muted)]">
-                Step {index + 1} of 3
               </div>
             </div>
           ))}

@@ -27,11 +27,11 @@ export default function LandingPage() {
 
       <main className="flex-1">
         {/* Asymmetric Hero Section */}
-        <section className="pt-8 pb-16 sm:pt-14 sm:pb-24 border-b border-[var(--border)]">
+        <section className="pt-8 pb-16 sm:pt-14 sm:pb-24 border-b border-[var(--border)] bg-[var(--tint-info-bg)]/40 transition-colors">
           <Container className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
             {/* Left Column: Asymmetric Typography and CTAs */}
             <div className="lg:col-span-6 space-y-6 text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-medium bg-[var(--surface)] text-[var(--primary-ledger)] border border-[var(--border)] shadow-2xs">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-medium bg-[var(--surface)] text-[var(--color-primary)] border border-[var(--border)] shadow-2xs">
                 <span className="w-2 h-2 rounded-full bg-[var(--accent-highlighter)]" />
                 <span>Offer Due Diligence for Students & Job Seekers</span>
               </div>
@@ -40,7 +40,7 @@ export default function LandingPage() {
                 {TAGLINE}
               </h1>
 
-              <p className="text-sm sm:text-base text-[var(--text-muted)] max-w-xl leading-relaxed">
+              <p className="text-[17px] sm:text-[19px] text-[var(--text-muted)] max-w-xl leading-relaxed">
                 Paste an internship or job offer and get quote-linked observations and
                 questions to verify before you pay or share documents.
               </p>
@@ -49,13 +49,13 @@ export default function LandingPage() {
               <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
                 <Link
                   href="/check"
-                  className="inline-flex items-center justify-center rounded-xl bg-[var(--color-primary)] text-[var(--color-primary-contrast)] px-6 py-3 text-sm font-medium shadow-xs hover:bg-[var(--color-primary-hover)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px]"
+                  className="inline-flex items-center justify-center rounded-xl bg-[var(--color-primary)] text-[var(--color-primary-contrast)] px-6 py-3 text-[15px] font-medium shadow-xs hover:bg-[var(--color-primary-hover)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px]"
                 >
                   Check an offer
                 </Link>
                 <a
                   href="#how-it-works"
-                  className="inline-flex items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] px-5 py-3 text-sm font-medium shadow-xs hover:bg-[var(--surface-muted)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px]"
+                  className="inline-flex items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] px-5 py-3 text-[15px] font-medium shadow-xs hover:bg-[var(--surface-muted)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px]"
                 >
                   See how it works
                 </a>

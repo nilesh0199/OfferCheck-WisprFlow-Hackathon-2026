@@ -43,14 +43,11 @@ export function WhatYouGetSection() {
       className="py-16 sm:py-24 border-t border-[var(--border)] bg-[var(--surface)] transition-colors"
     >
       <Container className="space-y-12">
-        <div className="max-w-2xl space-y-3">
-          <span className="font-mono text-2xs uppercase tracking-wider text-[var(--primary-ledger)] font-semibold">
-            Deliverables
-          </span>
+        <div className="space-y-3">
           <h2 className="text-2xl sm:text-3xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]">
             What OfferCheck gives you
           </h2>
-          <p className="text-sm sm:text-base text-[var(--text-muted)] leading-relaxed">
+          <p className="text-[17px] text-[var(--text-muted)] leading-relaxed max-w-2xl">
             Practical tools and evidence to help you evaluate offers objectively,
             without arbitrary ratings or alarmist language.
           </p>
@@ -64,23 +61,20 @@ export function WhatYouGetSection() {
             >
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-2xs font-mono font-medium bg-[var(--surface)] text-[var(--text-muted)] border border-[var(--border)]">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-sans font-medium bg-[var(--surface)] text-[var(--text-muted)] border border-[var(--border)]">
                     {item.badge}
-                  </span>
-                  <span className="font-mono text-xs text-[var(--text-muted)]">
-                    0{idx + 1}
                   </span>
                 </div>
 
                 <h3 className="text-base font-bold text-[var(--text)]">
                   {item.title}
                 </h3>
-                <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">
+                <p className="text-sm text-[var(--text-muted)] leading-relaxed">
                   {item.body}
                 </p>
               </div>
 
-              <div className="pt-3 border-t border-[var(--border)] text-2xs text-[var(--text-muted)] leading-normal font-sans">
+              <div className="pt-3 border-t border-[var(--border)] text-xs text-[var(--text-muted)] leading-normal font-sans">
                 <strong className="text-[var(--text)] font-semibold">Scope: </strong>
                 {item.detail}
               </div>

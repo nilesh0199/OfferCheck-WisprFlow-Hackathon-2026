@@ -60,17 +60,30 @@ describe("WCAG 2.1 Contrast Ratios for Semantic Design Tokens", () => {
 
   describe("Light Theme Token Contrast", () => {
     it("has all required semantic tokens defined", () => {
+      expect(light["--color-header-bg"]).toBeDefined();
+      expect(light["--color-header-text"]).toBeDefined();
+      expect(light["--color-header-nav-text"]).toBeDefined();
       expect(light["--color-canvas"]).toBeDefined();
       expect(light["--color-surface"]).toBeDefined();
+      expect(light["--color-surface-alt"]).toBeDefined();
       expect(light["--color-text"]).toBeDefined();
       expect(light["--color-text-muted"]).toBeDefined();
       expect(light["--color-text-subtle"]).toBeDefined();
       expect(light["--color-border"]).toBeDefined();
+      expect(light["--color-border-strong"]).toBeDefined();
       expect(light["--color-primary"]).toBeDefined();
       expect(light["--color-primary-contrast"]).toBeDefined();
       expect(light["--color-accent-highlight"]).toBeDefined();
       expect(light["--color-highlight-ink"]).toBeDefined();
       expect(light["--color-focus-ring"]).toBeDefined();
+      expect(light["--color-tint-info-bg"]).toBeDefined();
+      expect(light["--color-tint-action-bg"]).toBeDefined();
+      expect(light["--color-tint-attention-bg"]).toBeDefined();
+    });
+
+    it("header text and nav text achieve >= 4.5:1 against header-bg", () => {
+      expect(contrastRatio(light["--color-header-text"], light["--color-header-bg"])).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(light["--color-header-nav-text"], light["--color-header-bg"])).toBeGreaterThanOrEqual(4.5);
     });
 
     it("primary text achieves >= 7:1 against surface and >= 4.5:1 against canvas", () => {
@@ -91,33 +104,66 @@ describe("WCAG 2.1 Contrast Ratios for Semantic Design Tokens", () => {
       expect(contrastRatio(light["--color-primary-contrast"], light["--color-primary"])).toBeGreaterThanOrEqual(4.5);
     });
 
+    it("link (primary) achieves >= 4.5:1 on surface, info tint, and action tint", () => {
+      expect(contrastRatio(light["--color-primary"], light["--color-surface"])).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(light["--color-primary"], light["--color-tint-info-bg"])).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(light["--color-primary"], light["--color-tint-action-bg"])).toBeGreaterThanOrEqual(4.5);
+    });
+
+    it("text achieves >= 4.5:1 on info tint and action tint", () => {
+      expect(contrastRatio(light["--color-text"], light["--color-tint-info-bg"])).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(light["--color-text"], light["--color-tint-action-bg"])).toBeGreaterThanOrEqual(4.5);
+    });
+
     it("highlight ink on accent highlight achieves >= 4.5:1", () => {
       expect(contrastRatio(light["--color-highlight-ink"], light["--color-accent-highlight"])).toBeGreaterThanOrEqual(4.5);
     });
 
-    it("borders achieve >= 3:1 against surface", () => {
-      expect(contrastRatio(light["--color-border"], light["--color-surface"])).toBeGreaterThanOrEqual(3.0);
+    it("observation text achieves >= 4.5:1 on observation tint bg", () => {
+      expect(contrastRatio(light["--color-tint-attention-text"], light["--color-tint-attention-bg"])).toBeGreaterThanOrEqual(4.5);
+    });
+
+    it("border-strong achieves >= 3:1 against surface", () => {
+      expect(contrastRatio(light["--color-border-strong"], light["--color-surface"])).toBeGreaterThanOrEqual(3.0);
     });
 
     it("focus ring achieves >= 3:1 against canvas and surface", () => {
       expect(contrastRatio(light["--color-focus-ring"], light["--color-canvas"])).toBeGreaterThanOrEqual(3.0);
       expect(contrastRatio(light["--color-focus-ring"], light["--color-surface"])).toBeGreaterThanOrEqual(3.0);
     });
+
+    it("header focus ring achieves >= 3:1 against header-bg", () => {
+      // In light mode, keyboard focus on navy bar uses white offset ring
+      expect(contrastRatio("#ffffff", light["--color-header-bg"])).toBeGreaterThanOrEqual(3.0);
+    });
   });
 
   describe("Dark Theme Token Contrast", () => {
     it("has all required semantic tokens defined", () => {
+      expect(dark["--color-header-bg"]).toBeDefined();
+      expect(dark["--color-header-text"]).toBeDefined();
+      expect(dark["--color-header-nav-text"]).toBeDefined();
       expect(dark["--color-canvas"]).toBeDefined();
       expect(dark["--color-surface"]).toBeDefined();
+      expect(dark["--color-surface-alt"]).toBeDefined();
       expect(dark["--color-text"]).toBeDefined();
       expect(dark["--color-text-muted"]).toBeDefined();
       expect(dark["--color-text-subtle"]).toBeDefined();
       expect(dark["--color-border"]).toBeDefined();
+      expect(dark["--color-border-strong"]).toBeDefined();
       expect(dark["--color-primary"]).toBeDefined();
       expect(dark["--color-primary-contrast"]).toBeDefined();
       expect(dark["--color-accent-highlight"]).toBeDefined();
       expect(dark["--color-highlight-ink"]).toBeDefined();
       expect(dark["--color-focus-ring"]).toBeDefined();
+      expect(dark["--color-tint-info-bg"]).toBeDefined();
+      expect(dark["--color-tint-action-bg"]).toBeDefined();
+      expect(dark["--color-tint-attention-bg"]).toBeDefined();
+    });
+
+    it("header text and nav text achieve >= 4.5:1 against header-bg", () => {
+      expect(contrastRatio(dark["--color-header-text"], dark["--color-header-bg"])).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(dark["--color-header-nav-text"], dark["--color-header-bg"])).toBeGreaterThanOrEqual(4.5);
     });
 
     it("primary text achieves >= 7:1 against surface and >= 4.5:1 against canvas", () => {
@@ -138,17 +184,33 @@ describe("WCAG 2.1 Contrast Ratios for Semantic Design Tokens", () => {
       expect(contrastRatio(dark["--color-primary-contrast"], dark["--color-primary"])).toBeGreaterThanOrEqual(4.5);
     });
 
+    it("link (primary) achieves >= 4.5:1 on surface, info tint, and action tint", () => {
+      expect(contrastRatio(dark["--color-primary"], dark["--color-surface"])).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(dark["--color-primary"], dark["--color-tint-info-bg"])).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(dark["--color-primary"], dark["--color-tint-action-bg"])).toBeGreaterThanOrEqual(4.5);
+    });
+
+    it("text achieves >= 4.5:1 on info tint and action tint", () => {
+      expect(contrastRatio(dark["--color-text"], dark["--color-tint-info-bg"])).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(dark["--color-text"], dark["--color-tint-action-bg"])).toBeGreaterThanOrEqual(4.5);
+    });
+
     it("highlight ink on accent highlight achieves >= 4.5:1", () => {
       expect(contrastRatio(dark["--color-highlight-ink"], dark["--color-accent-highlight"])).toBeGreaterThanOrEqual(4.5);
     });
 
-    it("borders achieve >= 3:1 against surface", () => {
-      expect(contrastRatio(dark["--color-border"], dark["--color-surface"])).toBeGreaterThanOrEqual(3.0);
+    it("observation text achieves >= 4.5:1 on observation tint bg", () => {
+      expect(contrastRatio(dark["--color-tint-attention-text"], dark["--color-tint-attention-bg"])).toBeGreaterThanOrEqual(4.5);
     });
 
-    it("focus ring achieves >= 3:1 against canvas and surface", () => {
+    it("border-strong achieves >= 3:1 against surface", () => {
+      expect(contrastRatio(dark["--color-border-strong"], dark["--color-surface"])).toBeGreaterThanOrEqual(3.0);
+    });
+
+    it("focus ring achieves >= 3:1 against canvas, surface, and header-bg", () => {
       expect(contrastRatio(dark["--color-focus-ring"], dark["--color-canvas"])).toBeGreaterThanOrEqual(3.0);
       expect(contrastRatio(dark["--color-focus-ring"], dark["--color-surface"])).toBeGreaterThanOrEqual(3.0);
+      expect(contrastRatio(dark["--color-focus-ring"], dark["--color-header-bg"])).toBeGreaterThanOrEqual(3.0);
     });
   });
 });

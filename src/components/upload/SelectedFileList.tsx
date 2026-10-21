@@ -70,7 +70,7 @@ export function SelectedFileList({
                   <p className="truncate text-xs font-medium text-[var(--text)]">
                     {item.file.name}
                   </p>
-                  <p className="text-2xs text-[var(--text-muted)]">
+                  <p className="text-xs text-[var(--text-muted)]">
                     File {index + 1} of {files.length} • {formatBytes(item.file.size)}
                   </p>
                 </div>
@@ -109,7 +109,7 @@ export function SelectedFileList({
           type="button"
           onClick={onClearAll}
           disabled={disabled}
-          className="text-2xs underline underline-offset-2 hover:text-[var(--text)] disabled:opacity-40"
+          className="text-xs underline underline-offset-2 hover:text-[var(--text)] disabled:opacity-40"
         >
           Remove all files
         </button>

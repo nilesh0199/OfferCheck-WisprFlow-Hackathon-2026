@@ -224,3 +224,18 @@ This phased build plan outlines the implementation roadmap for OfferCheck, an in
   - Mobile touch targets $\ge 44$px across all interactive controls, sticky bottom action bar on viewports $<640$px with `env(safe-area-inset-bottom)`, and `overflow-x: clip` preventing horizontal scrolling.
   - Hero motion resilience: wait for `document.fonts.ready` + 100ms before measuring highlight targets, 300ms gesture grace period to ignore scroll restoration on reload, persistent ghost button, and `overflow-x: clip` on `html, body` restoring native CSS `position: sticky` on the scroll scene.
   - Offline Vitest test suites, TypeScript typecheck, ESLint, and Next.js Turbopack production build pass cleanly.
+
+---
+
+## Phase 12: UI Pass (Ink Blue Palette, Alignment, Typography Scale & Anti-Template Polish)
+- **Status:** Complete
+- **Goal:** Implement the Ink Blue color system, establish a verified typographic scale with an enforced 13px minimum floor, ensure strict container left-edge alignment, and eliminate all AI template tells across the application.
+- **Acceptance Criteria:**
+  - Token architecture in `src/app/globals.css` with swappable Ink Blue primary system (Palette A default, with Palette B Petrol and Palette C Cobalt documented in `docs/design-brief.md`).
+  - Dual-theme WCAG AA/AAA compliance verified by automated unit tests in `tests/wcag-contrast.test.ts`.
+  - Header styled in navy with brand wordmark in white, header-nav-text links, primary action button, segmented theme selector, and high-contrast focus rings.
+  - Semantic container hierarchy on `/check`: observations with observation tint and 3px left border; missing details table header in info tint; questions cards in action tint; "Check these yourself" card with 3px primary top border; company research card with 3px primary top border; active "On this page" item with action tint background and 3px primary left border.
+  - Alignment rules: all sections wrapped in `Container`; headings aligned to container left edge; FAQ two-column grid on desktop with `items-start`; balanced hero and scroll scene columns.
+  - Elimination of AI template tells: zero uppercase tracked eyebrows; zero duplicate numbering; zero text arrows or triangle glyphs (`&rarr;`, `→`, `▲`, `▼`); custom SVG rotating chevrons on all disclosure elements; mono font restricted to code/quotes/line numbers; decorative dot-grid textures removed.
+  - Typography scale: Tailwind v4 scale overridden in `globals.css` (`text-xs` 13px, `text-sm` 14px, `text-base` 16px); 13px absolute minimum font size enforced across all source files by automated tests in `tests/token-audit.test.ts`.
+  - Offline Vitest test suites, TypeScript typecheck, ESLint, and Next.js Turbopack production build pass cleanly.

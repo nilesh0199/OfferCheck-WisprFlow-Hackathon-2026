@@ -175,14 +175,11 @@ export function ScrollSceneSection() {
         <div className="sticky top-16 z-10 w-full flex flex-col justify-center py-6 min-h-[calc(100vh-4rem)] max-h-[calc(100vh-4rem)] overflow-hidden">
           <Container className="space-y-6">
             {/* Header */}
-            <div className="max-w-2xl space-y-2">
-              <span className="font-mono text-2xs uppercase tracking-wider text-[var(--primary-ledger)] font-semibold">
-                Line-by-Line Inspection
-              </span>
+            <div className="space-y-2">
               <h2 className="text-2xl sm:text-3xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]">
                 A second look, line by line
               </h2>
-              <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">
+              <p className="text-[17px] text-[var(--text-muted)] leading-relaxed max-w-3xl">
                 OfferCheck reviews the specific phrasing in an offer to isolate patterns that warrant independent confirmation.
               </p>
             </div>
@@ -190,16 +187,16 @@ export function ScrollSceneSection() {
             {/* Two-Column Interactive Stage */}
             <div className="grid grid-cols-12 gap-8 items-center">
               {/* Left Column: Synthetic Letter with Moving Magnifying Lens */}
-              <div className="col-span-6 relative">
+              <div className="col-span-12 lg:col-span-6 relative">
                 <div
                   ref={letterRef}
-                  className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-xs paper-pattern relative overflow-hidden max-h-[460px] overflow-y-auto"
+                  className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-xs relative overflow-hidden max-h-[460px] overflow-y-auto"
                 >
                   <div className="flex items-center justify-between pb-3 mb-3 border-b border-[var(--border)] text-xs">
-                    <span className="font-mono text-2xs uppercase tracking-wider text-[var(--text-muted)] font-semibold">
-                      Sample Letter Excerpt
+                    <span className="font-sans text-xs text-[var(--text-muted)] font-medium">
+                      Sample letter excerpt
                     </span>
-                    <span className="text-2xs font-medium px-2 py-0.5 rounded-full bg-[var(--tint-attention-bg)] text-[var(--tint-attention-text)] border border-[var(--tint-attention-border)]">
+                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[var(--tint-attention-bg)] text-[var(--tint-attention-text)] border border-[var(--tint-attention-border)]">
                       Synthetic example, not a real offer
                     </span>
                   </div>
@@ -221,7 +218,7 @@ export function ScrollSceneSection() {
               </div>
 
               {/* Right Column: Step Cards & Progress Indicators */}
-              <div className="col-span-6 space-y-4">
+              <div className="col-span-12 lg:col-span-6 space-y-4">
                 <ol className="space-y-3.5 list-none p-0 m-0">
                   {SCENE_STEPS.map((step, idx) => {
                     const isActive = activeStep === idx;
@@ -231,7 +228,7 @@ export function ScrollSceneSection() {
                         key={step.id}
                         className={`rounded-xl border p-4 transition-all duration-200 ${
                           isActive
-                            ? "border-[var(--tint-attention-border)] bg-[var(--surface)] shadow-sm opacity-100 ring-1 ring-[var(--tint-attention-border)]"
+                            ? "border-[var(--tint-attention-border)] bg-[var(--surface)] shadow-xs opacity-100 ring-1 ring-[var(--tint-attention-border)]"
                             : "border-[var(--border)] bg-[var(--surface-muted)]/40 opacity-55"
                         }`}
                       >
@@ -250,7 +247,7 @@ export function ScrollSceneSection() {
                               {step.title}
                             </span>
                           </div>
-                          <span className="font-mono text-xs uppercase text-[var(--text-muted)] font-medium">
+                          <span className="font-sans text-xs text-[var(--text-muted)] font-medium">
                             {step.label}
                           </span>
                         </div>
@@ -272,7 +269,7 @@ export function ScrollSceneSection() {
                         key={idx}
                         className={`h-1.5 rounded-full transition-all duration-200 ${
                           activeStep === idx
-                            ? "w-6 bg-[var(--primary-ledger)]"
+                            ? "w-6 bg-[var(--color-primary)]"
                             : "w-2 bg-[var(--border)]"
                         }`}
                       />
@@ -283,7 +280,7 @@ export function ScrollSceneSection() {
             </div>
 
             {/* Closing Line */}
-            <p className="text-xs text-[var(--text-muted)] pt-2 border-t border-[var(--border)] max-w-3xl leading-relaxed">
+            <p className="text-xs text-[var(--text-muted)] pt-2 border-t border-[var(--border)] w-full leading-relaxed">
               {SCENE_CLOSING_LINE}
             </p>
           </Container>
@@ -294,24 +291,21 @@ export function ScrollSceneSection() {
            ======================================================== */
         <div className="py-16 sm:py-24">
           <Container className="space-y-10">
-            <div className="max-w-2xl space-y-3">
-              <span className="font-mono text-xs uppercase tracking-wider text-[var(--primary-ledger)] font-semibold">
-                Line-by-Line Inspection
-              </span>
+            <div className="space-y-3">
               <h2 className="text-2xl sm:text-3xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]">
                 A second look, line by line
               </h2>
-              <p className="text-sm sm:text-base text-[var(--text-muted)] leading-relaxed">
+              <p className="text-[17px] text-[var(--text-muted)] leading-relaxed max-w-3xl">
                 OfferCheck reviews specific phrasing in an offer to isolate patterns that warrant independent confirmation.
               </p>
             </div>
 
             {/* Stacked Cards in Normal Document Flow */}
-            <ol className="space-y-6 list-none p-0 m-0 max-w-3xl">
+            <ol className="space-y-6 list-none p-0 m-0 w-full max-w-4xl">
               {SCENE_STEPS.map((step) => (
                 <li
                   key={step.id}
-                  className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 sm:p-6 shadow-xs space-y-3 paper-pattern"
+                  className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 sm:p-6 shadow-xs space-y-3"
                 >
                   <div className="flex items-center justify-between gap-2 pb-2 border-b border-[var(--border)]">
                     <div className="flex items-center gap-2.5">
@@ -322,7 +316,7 @@ export function ScrollSceneSection() {
                         {step.title}
                       </h3>
                     </div>
-                    <span className="font-mono text-xs uppercase text-[var(--text-muted)] font-medium">
+                    <span className="font-sans text-xs text-[var(--text-muted)] font-medium">
                       {step.label}
                     </span>
                   </div>

@@ -13,49 +13,49 @@ export function LandingNav() {
   return (
     <nav
       aria-label="Landing navigation"
-      className="sticky top-0 z-30 w-full border-b border-[var(--border)] bg-[var(--surface)]/95 backdrop-blur-md transition-colors"
+      className="sticky top-0 z-30 w-full border-b border-[var(--border)] bg-[var(--header-bg)] text-[var(--header-text)] transition-colors"
     >
       <Container className="h-16 flex items-center justify-between">
         {/* Brand */}
         <div className="flex items-center gap-3">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 font-bold text-base tracking-tight text-[var(--text)] py-1 px-2 -ml-2 rounded-lg outline-none hover:opacity-90 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
+            className="inline-flex items-center gap-2 font-bold text-base tracking-tight text-[var(--header-text)] py-1 px-2 -ml-2 rounded-lg outline-none hover:opacity-90 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)]"
           >
-            <LogoIcon className="w-5 h-5 text-[var(--accent)] shrink-0" />
+            <LogoIcon className="w-5 h-5 text-[var(--header-text)] shrink-0" />
             <span>{APP_NAME}</span>
           </Link>
         </div>
 
         {/* Desktop Anchor Links */}
-        <div className="hidden md:flex items-center gap-5 text-xs font-medium text-[var(--text-muted)]">
+        <div className="hidden md:flex items-center gap-5 text-xs font-medium text-[var(--header-nav-text)]">
           <a
             href="#how-it-works"
-            className="hover:text-[var(--text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 px-1.5"
+            className="hover:text-[var(--header-text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] rounded py-1 px-1.5"
           >
             How it works
           </a>
           <a
             href="#what-you-get"
-            className="hover:text-[var(--text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 px-1.5"
+            className="hover:text-[var(--header-text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] rounded py-1 px-1.5"
           >
             What you get
           </a>
           <a
             href="#privacy"
-            className="hover:text-[var(--text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 px-1.5"
+            className="hover:text-[var(--header-text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] rounded py-1 px-1.5"
           >
             Privacy
           </a>
           <a
             href="#faq"
-            className="hover:text-[var(--text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 px-1.5"
+            className="hover:text-[var(--header-text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] rounded py-1 px-1.5"
           >
             FAQ
           </a>
           <Link
             href="/resources"
-            className="hover:text-[var(--text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 px-1.5"
+            className="hover:text-[var(--header-text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] rounded py-1 px-1.5"
           >
             Resources
           </Link>
@@ -63,7 +63,7 @@ export function LandingNav() {
             href="https://github.com/nilesh0199/OfferCheck-WisprFlow-Hackathon-2026"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 hover:text-[var(--text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 px-1.5"
+            className="inline-flex items-center gap-1.5 hover:text-[var(--header-text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] rounded py-1 px-1.5"
             aria-label="GitHub repository (opens in a new tab)"
           >
             <GitHubIcon className="w-3.5 h-3.5" />
@@ -74,11 +74,11 @@ export function LandingNav() {
 
         {/* Action Button & Theme Selector */}
         <div className="flex items-center gap-2.5 sm:gap-3">
-          <ThemeToggle />
+          <ThemeToggle onHeader />
 
           <Link
             href="/check"
-            className="inline-flex items-center justify-center rounded-xs bg-[var(--color-primary)] text-[var(--color-primary-contrast)] px-3.5 py-1.5 text-xs font-medium shadow-2xs hover:bg-[var(--color-primary-hover)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[36px]"
+            className="inline-flex items-center justify-center rounded-xs bg-[var(--color-primary)] text-[var(--color-primary-contrast)] px-3.5 py-1.5 text-xs font-medium shadow-2xs hover:bg-[var(--color-primary-hover)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] min-h-[36px]"
           >
             Check an offer
           </Link>
@@ -86,7 +86,7 @@ export function LandingNav() {
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden inline-flex items-center justify-center p-2 rounded-xs border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[36px] min-w-[36px]"
+            className="md:hidden inline-flex items-center justify-center p-2 rounded-xs border border-[var(--color-border-strong)]/40 text-[var(--header-nav-text)] hover:text-[var(--header-text)] hover:bg-[var(--surface-muted)]/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] min-h-[36px] min-w-[36px]"
             aria-expanded={mobileMenuOpen}
             aria-label="Toggle navigation menu"
           >

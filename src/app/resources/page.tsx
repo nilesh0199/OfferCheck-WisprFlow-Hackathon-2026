@@ -69,8 +69,8 @@ export default function ResourcesPage() {
         <Container className="space-y-10">
           {/* Header */}
           <div className="max-w-3xl space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-medium bg-[var(--surface)] text-[var(--primary-ledger)] border border-[var(--border)] shadow-2xs">
-              <span className="w-2 h-2 rounded-full bg-[var(--accent-highlighter)]" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-[var(--surface)] text-[var(--color-primary)] border border-[var(--border)] shadow-2xs">
+              <span className="w-2 h-2 rounded-full bg-[var(--color-highlight)]" />
               <span>Official portals and reporting channels</span>
             </div>
             <h1 className="text-2xl sm:text-4xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]">

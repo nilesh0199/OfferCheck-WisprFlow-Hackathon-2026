@@ -2,31 +2,69 @@
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
+@theme {
+  --text-xs: 13px;
+  --text-xs--line-height: 1.5;
+  --text-sm: 14px;
+  --text-sm--line-height: 1.55;
+  --text-base: 16px;
+  --text-base--line-height: 1.6;
+}
+
+/* ========================================================================
+   THEME PALETTE: INK BLUE (LIGHT THEME)
+   Edit this block to swap the entire light palette.
+   ======================================================================== */
 :root,
 [data-theme="light"] {
   color-scheme: light;
 
-  /* Semantic Color Tokens (WCAG AA compliant: text >= 7:1, muted >= 4.5:1, border >= 3:1) */
-  --color-canvas: #f2f4f5;
-  --color-surface: #ffffff;
-  --color-surface-alt: #ebeff2;
-  --color-border: #737a82;
-  --color-border-strong: #3d434a;
-  --color-text: #121417;
-  --color-text-muted: #464c54;
-  --color-text-subtle: #50565f;
-  --color-primary: #184e3b;
-  --color-primary-hover: #11382a;
-  --color-primary-contrast: #ffffff;
-  --color-accent-highlight: #ffdc4a;
-  --color-highlight-ink: #121417;
-  --color-focus-ring: #184e3b;
+  /* Header & Navigation */
+  --color-header-bg: #10263f;
+  --color-header-text: #ffffff;
+  --color-header-nav-text: #c5d3e4;
 
-  /* Semantic attention tints (Evidence-linked, non-traffic-light) */
-  --color-tint-attention-bg: #fff7d6;
-  --color-tint-attention-border: #8f6300;
+  /* Surfaces & Canvas */
+  --color-canvas: #f2f5f9;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f7f9fc;
+
+  /* Borders & Dividers */
+  --color-border: #cfd8e3;
+  --color-border-strong: #7b8ca3;
+
+  /* Typography */
+  --color-text: #14202e;
+  --color-text-muted: #4b5b6d;
+  --color-text-subtle: #546578;
+
+  /* Primary Accent & Links */
+  --color-primary: #1d5fa8;
+  --color-primary-hover: #174c87;
+  --color-primary-contrast: #ffffff;
+
+  /* Focus Ring */
+  --color-focus-ring: #1d5fa8;
+
+  /* Evidence Highlighter */
+  --color-accent-highlight: #ffe27a;
+  --color-highlight-ink: #1b1b1b;
+
+  /* Information Tint */
+  --color-tint-info-bg: #eaf0f7;
+  --color-tint-info-border: #cfd8e3;
+  --color-tint-info-text: #14202e;
+
+  /* Action Tint */
+  --color-tint-action-bg: #e3eefb;
+  --color-tint-action-border: #9dbde3;
+  --color-tint-action-text: #14202e;
+
+  /* Observation Tint */
+  --color-tint-attention-bg: #fff6d6;
+  --color-tint-attention-border: #e8d48a;
+  --color-tint-attention-accent: #d9a400;
   --color-tint-attention-text: #593e00;
-  --color-tint-attention-accent: #8f6300;
 
   /* Backwards-compatible aliases */
   --bg: var(--color-canvas);
@@ -39,11 +77,12 @@
   --text: var(--color-text);
   --text-muted: var(--color-text-muted);
   --text-subtle: var(--color-text-subtle);
+  --header-bg: var(--color-header-bg);
+  --header-text: var(--color-header-text);
+  --header-nav-text: var(--color-header-nav-text);
   --accent: var(--color-primary);
   --accent-contrast: var(--color-primary-contrast);
   --accent-highlighter: var(--color-accent-highlight);
-  --header-bg: #1f2933;
-  --header-text: #ffffff;
   --primary-ledger: var(--color-primary);
   --primary-ledger-hover: var(--color-primary-hover);
   --focus-ring: var(--color-focus-ring);
@@ -53,39 +92,68 @@
   --tint-attention-text: var(--color-tint-attention-text);
   --tint-attention-accent: var(--color-tint-attention-accent);
 
-  --tint-info-bg: #eef2f6;
-  --tint-info-border: var(--color-border);
-  --tint-info-text: var(--color-text);
+  --tint-info-bg: var(--color-tint-info-bg);
+  --tint-info-border: var(--color-tint-info-border);
+  --tint-info-text: var(--color-tint-info-text);
 
-  --tint-action-bg: #eef2f6;
-  --tint-action-border: var(--color-border-strong);
-  --tint-action-text: var(--color-text);
+  --tint-action-bg: var(--color-tint-action-bg);
+  --tint-action-border: var(--color-tint-action-border);
+  --tint-action-text: var(--color-tint-action-text);
 }
 
+/* ========================================================================
+   THEME PALETTE: INK BLUE (DARK THEME)
+   Edit this block to swap the entire dark palette.
+   ======================================================================== */
 [data-theme="dark"] {
   color-scheme: dark;
 
-  /* Semantic Color Tokens (WCAG AA compliant: text >= 7:1, muted >= 4.5:1, border >= 3:1) */
-  --color-canvas: #12110d;
-  --color-surface: #1b1914;
-  --color-surface-alt: #25221b;
-  --color-border: #6e6657;
-  --color-border-strong: #9e9482;
-  --color-text: #f7f3ea;
-  --color-text-muted: #aba291;
-  --color-text-subtle: #a39a88;
-  --color-primary: #266b53;
-  --color-primary-hover: #328567;
-  --color-primary-contrast: #ffffff;
-  --color-accent-highlight: #ffdc4a;
-  --color-highlight-ink: #12110d;
-  --color-focus-ring: #ffdc4a;
+  /* Header & Navigation */
+  --color-header-bg: #0a111a;
+  --color-header-text: #ffffff;
+  --color-header-nav-text: #c5d3e4;
 
-  /* Semantic attention tints - Dark theme */
-  --color-tint-attention-bg: #2b2310;
-  --color-tint-attention-border: #a37f1a;
-  --color-tint-attention-text: #ffe885;
-  --color-tint-attention-accent: #ffdc4a;
+  /* Surfaces & Canvas */
+  --color-canvas: #0e1620;
+  --color-surface: #152130;
+  --color-surface-alt: #1b2a3c;
+
+  /* Borders & Dividers */
+  --color-border: #2b3b50;
+  --color-border-strong: #5b7496;
+
+  /* Typography */
+  --color-text: #e8eef6;
+  --color-text-muted: #a9b7c9;
+  --color-text-subtle: #94a4b8;
+
+  /* Primary Accent & Links */
+  --color-primary: #5b9bf0;
+  --color-primary-hover: #74acf4;
+  --color-primary-contrast: #0b1520;
+
+  /* Focus Ring */
+  --color-focus-ring: #8cb8f7;
+
+  /* Evidence Highlighter */
+  --color-accent-highlight: #ffe27a;
+  --color-highlight-ink: #0e1620;
+
+  /* Information Tint */
+  --color-tint-info-bg: #172333;
+  --color-tint-info-border: #2b3b50;
+  --color-tint-info-text: #e8eef6;
+
+  /* Action Tint */
+  --color-tint-action-bg: #1a283b;
+  --color-tint-action-border: #2e4868;
+  --color-tint-action-text: #e8eef6;
+
+  /* Observation Tint */
+  --color-tint-attention-bg: #282210;
+  --color-tint-attention-border: #947620;
+  --color-tint-attention-accent: #d9a400;
+  --color-tint-attention-text: #fde896;
 
   /* Backwards-compatible aliases */
   --bg: var(--color-canvas);
@@ -98,11 +166,12 @@
   --text: var(--color-text);
   --text-muted: var(--color-text-muted);
   --text-subtle: var(--color-text-subtle);
+  --header-bg: var(--color-header-bg);
+  --header-text: var(--color-header-text);
+  --header-nav-text: var(--color-header-nav-text);
   --accent: var(--color-primary);
   --accent-contrast: var(--color-primary-contrast);
   --accent-highlighter: var(--color-accent-highlight);
-  --header-bg: #14130f;
-  --header-text: #f4efe4;
   --primary-ledger: var(--color-primary);
   --primary-ledger-hover: var(--color-primary-hover);
   --focus-ring: var(--color-focus-ring);
@@ -112,20 +181,20 @@
   --tint-attention-text: var(--color-tint-attention-text);
   --tint-attention-accent: var(--color-tint-attention-accent);
 
-  --tint-info-bg: #1e1c17;
-  --tint-info-border: var(--color-border);
-  --tint-info-text: #d5cebf;
+  --tint-info-bg: var(--color-tint-info-bg);
+  --tint-info-border: var(--color-tint-info-border);
+  --tint-info-text: var(--color-tint-info-text);
 
-  --tint-action-bg: #222019;
-  --tint-action-border: var(--color-border-strong);
-  --tint-action-text: var(--color-text);
+  --tint-action-bg: var(--color-tint-action-bg);
+  --tint-action-border: var(--color-tint-action-border);
+  --tint-action-text: var(--color-tint-action-text);
 }
 
 html {
   background-color: var(--color-canvas);
   color: var(--color-text);
   scroll-behavior: smooth;
-  font-size: 15px;
+  font-size: 16px;
   overflow-x: clip;
 }
 
@@ -133,7 +202,7 @@ body {
   background-color: var(--color-canvas);
   color: var(--color-text);
   font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.6;
   letter-spacing: 0;
   margin: 0;
@@ -164,12 +233,6 @@ h1, h2, h3, h4, h5, h6 {
 
 .font-mono {
   font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-}
-
-/* Paper texture pattern (pure CSS, no raster images) */
-.paper-pattern {
-  background-image: radial-gradient(var(--color-border) 0.65px, transparent 0.65px);
-  background-size: 20px 20px;
 }
 
 /* Custom theme-matched thin scrollbar */

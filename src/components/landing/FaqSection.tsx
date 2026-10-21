@@ -35,34 +35,38 @@ export function FaqSection() {
   return (
     <section
       id="faq"
-      className="py-16 sm:py-24 border-t border-[var(--border)] transition-colors"
+      className="py-16 sm:py-24 border-t border-[var(--border)] bg-[var(--color-canvas)] transition-colors"
     >
       <Container className="space-y-12">
-        <div className="max-w-2xl space-y-3">
-          <span className="font-mono text-2xs uppercase tracking-wider text-[var(--primary-ledger)] font-semibold">
-            Common Inquiries
-          </span>
+        <div className="space-y-3">
           <h2 className="text-2xl sm:text-3xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]">
             Frequently asked questions
           </h2>
-          <p className="text-sm sm:text-base text-[var(--text-muted)] leading-relaxed">
+          <p className="text-[17px] text-[var(--text-muted)] leading-relaxed max-w-2xl">
             Straightforward answers about how the tool works and how your data is handled.
           </p>
         </div>
 
-        <div className="max-w-3xl space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start w-full">
           {faqs.map((faq, idx) => (
             <details
               key={idx}
               className="group rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 sm:p-6 transition-colors shadow-xs"
             >
-              <summary className="flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-[var(--text)] cursor-pointer list-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded-lg py-1 min-h-[44px]">
+              <summary className="flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-[var(--text)] cursor-pointer list-none [&::-webkit-details-marker]:hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded-lg py-1 min-h-[44px]">
                 <span>{faq.q}</span>
-                <span className="text-[var(--text-muted)] group-open:rotate-180 transition-transform duration-200 shrink-0 font-mono text-xs">
-                  ▼
-                </span>
+                <svg
+                  className="w-4 h-4 text-[var(--text-muted)] group-open:rotate-180 transition-transform duration-200 motion-reduce:transition-none shrink-0"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  aria-hidden="true"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
               </summary>
-              <div className="mt-3 pt-3 border-t border-[var(--border)] text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed space-y-3">
+              <div className="mt-3 pt-3 border-t border-[var(--border)] text-sm text-[var(--text-muted)] leading-relaxed space-y-3">
                 <p>{faq.a}</p>
                 {faq.linkHref && (
                   <p>

@@ -16,7 +16,7 @@ export function MissingInfoSection({ missingInfo }: MissingInfoSectionProps) {
           className="text-sm sm:text-base font-bold text-[var(--text)] flex items-center gap-2"
         >
           <span>Section B: Missing or unclear information</span>
-          <span className="inline-flex items-center rounded-xs bg-[var(--surface-muted)] px-2 py-0.5 text-2xs font-mono font-medium text-[var(--text-muted)] border border-[var(--border)]">
+          <span className="inline-flex items-center rounded-xs bg-[var(--tint-info-bg)] px-2 py-0.5 text-xs font-mono font-medium text-[var(--color-primary)] border border-[var(--border)]">
             {missingInfo.length} {missingInfo.length === 1 ? "item" : "items"}
           </span>
         </h3>
@@ -30,7 +30,7 @@ export function MissingInfoSection({ missingInfo }: MissingInfoSectionProps) {
           <p className="font-medium text-[var(--text)]">
             No standard employment terms were flagged as unstated.
           </p>
-          <p className="mt-1 text-2xs text-[var(--text-muted)]">
+          <p className="mt-1 text-xs text-[var(--text-muted)]">
             Review the original documentation carefully to ensure all expectations are confirmed in writing.
           </p>
         </div>
@@ -38,7 +38,7 @@ export function MissingInfoSection({ missingInfo }: MissingInfoSectionProps) {
         <div className="overflow-x-auto rounded border border-[var(--border)] bg-[var(--surface)] shadow-2xs">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-[var(--border)] bg-[var(--surface-muted)] text-[var(--text-muted)] font-mono uppercase tracking-wider text-2xs">
+              <tr className="border-b border-[var(--border)] bg-[var(--tint-info-bg)] text-[var(--text)] font-sans text-xs">
                 <th className="py-2.5 px-3 sm:px-4 w-1/3 sm:w-1/4 font-semibold">
                   Topic
                 </th>
@@ -57,7 +57,7 @@ export function MissingInfoSection({ missingInfo }: MissingInfoSectionProps) {
                   >
                     <td className="py-2.5 px-3 sm:px-4 font-medium text-[var(--text)] align-top">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[var(--text-muted)] font-mono text-2xs">
+                        <span className="text-[var(--text-muted)] font-mono text-xs">
                           #{idx + 1}
                         </span>
                         <span className="font-semibold">{topicLabel}</span>
@@ -66,7 +66,7 @@ export function MissingInfoSection({ missingInfo }: MissingInfoSectionProps) {
                     <td className="py-2.5 px-3 sm:px-4 text-[var(--text)] align-top leading-relaxed space-y-1">
                       <p>{sentenceCase(item.note)}</p>
                       {item.relatedQuote && (
-                        <p className="text-2xs text-[var(--text-muted)] font-mono italic">
+                        <p className="text-xs text-[var(--text-muted)] font-mono italic">
                           Mentioned: &ldquo;{item.relatedQuote}&rdquo;
                         </p>
                       )}

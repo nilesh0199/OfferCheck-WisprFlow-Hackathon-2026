@@ -43,11 +43,11 @@ export function HighlightedTextViewer({
       onToggle={(e) => onToggle?.(e.currentTarget.open)}
       className="group rounded border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 shadow-2xs transition-colors"
     >
-      <summary className="cursor-pointer font-bold text-xs sm:text-sm text-[var(--text)] flex items-center justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 min-h-[36px] list-none select-none">
+      <summary className="cursor-pointer font-bold text-xs sm:text-sm text-[var(--text)] flex items-center justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 min-h-[36px] list-none select-none [&::-webkit-details-marker]:hidden">
         <div className="flex items-center gap-2">
           <FileTextIcon className="w-4 h-4 text-[var(--text-muted)]" size={16} />
           <span>Your text, with quotes highlighted</span>
-          <span className="text-2xs font-mono font-normal text-[var(--text-muted)]">
+          <span className="text-xs font-mono font-normal text-[var(--text-muted)]">
             ({text.length.toLocaleString()} characters)
           </span>
         </div>
@@ -62,7 +62,7 @@ export function HighlightedTextViewer({
       </summary>
 
       <div className="mt-3 pt-3 border-t border-[var(--border)] space-y-2">
-        <p className="text-2xs text-[var(--text-muted)]">
+        <p className="text-xs text-[var(--text-muted)]">
           Quotes referenced in the observations above are highlighted below in the snapshot of text analyzed.
         </p>
 

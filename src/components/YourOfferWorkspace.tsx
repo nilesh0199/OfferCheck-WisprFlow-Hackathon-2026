@@ -92,8 +92,8 @@ export function YourOfferWorkspace({
 
   return (
     <div className="rounded border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 shadow-2xs space-y-3.5 transition-colors">
-      {/* Header with Title and Status */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] pb-3">
+      {/* Header with Title and Status on Tinted Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] -mx-4 sm:-mx-5 -mt-4 sm:-mt-5 p-3.5 sm:px-5 rounded-t bg-[var(--tint-info-bg)]">
         <div>
           <h3 className="text-sm font-bold text-[var(--text)]">Your offer</h3>
           <p className="text-xs text-[var(--text-muted)] font-mono tabular-nums">
@@ -106,7 +106,7 @@ export function YourOfferWorkspace({
             className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-medium border ${
               highlightCount > 0
                 ? "bg-[var(--tint-attention-bg)] text-[var(--tint-attention-text)] border-[var(--tint-attention-border)]"
-                : "bg-[var(--surface-muted)] text-[var(--text-muted)] border-[var(--border)]"
+                : "bg-[var(--surface)] text-[var(--text-muted)] border-[var(--border)]"
             }`}
           >
             {highlightCount > 0

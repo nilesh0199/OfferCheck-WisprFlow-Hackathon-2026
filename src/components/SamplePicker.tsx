@@ -96,7 +96,7 @@ export function SamplePicker({
       {/* Synthetic offer badge */}
       {isSyntheticBadgeVisible && (
         <div className="flex justify-start">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--surface-muted)] px-2.5 py-0.5 text-2xs font-medium text-[var(--text-muted)] border border-[var(--border)]">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--surface-muted)] px-2.5 py-0.5 text-xs font-medium text-[var(--text-muted)] border border-[var(--border)]">
             <span
               className="h-1.5 w-1.5 rounded-full bg-[var(--text-muted)] opacity-60"
               aria-hidden="true"
@@ -117,14 +117,14 @@ export function SamplePicker({
             <button
               type="button"
               onClick={handleConfirmReplace}
-              className="rounded bg-[var(--accent)] text-[var(--accent-contrast)] px-2.5 py-1 text-2xs font-semibold hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[32px]"
+              className="rounded bg-[var(--accent)] text-[var(--accent-contrast)] px-2.5 py-1 text-xs font-semibold hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[32px]"
             >
               Replace
             </button>
             <button
               type="button"
               onClick={handleCancelReplace}
-              className="rounded border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] px-2.5 py-1 text-2xs font-medium hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[32px]"
+              className="rounded border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] px-2.5 py-1 text-xs font-medium hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[32px]"
             >
               Cancel
             </button>

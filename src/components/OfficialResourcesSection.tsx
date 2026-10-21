@@ -75,10 +75,9 @@ export function OfficialResourcesSection({
       <div className="pt-2">
         <Link
           href="/resources"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--primary-ledger)] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 min-h-[44px]"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--color-primary)] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 min-h-[44px]"
         >
           <span>View all official resources &amp; reporting guides</span>
-          <span aria-hidden="true">&rarr;</span>
         </Link>
       </div>
     </section>

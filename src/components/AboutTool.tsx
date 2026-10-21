@@ -7,7 +7,7 @@ export function AboutTool() {
       id="about-this-tool"
       className="group rounded border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 shadow-2xs transition-colors"
     >
-      <summary className="cursor-pointer font-bold text-xs sm:text-sm text-[var(--text)] flex items-center justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 min-h-[36px] list-none select-none">
+      <summary className="cursor-pointer font-bold text-xs sm:text-sm text-[var(--text)] flex items-center justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 min-h-[36px] list-none select-none [&::-webkit-details-marker]:hidden">
         <span>About this tool</span>
         <ChevronDownIcon className="w-4 h-4 text-[var(--text-muted)] transition-transform duration-150 group-open:rotate-180" />
       </summary>
@@ -17,7 +17,7 @@ export function AboutTool() {
           <h4 className="text-xs font-semibold text-[var(--text)] flex items-center gap-2">
             <span
               aria-hidden="true"
-              className="inline-flex items-center justify-center rounded-full bg-[var(--surface)] p-1 text-[var(--primary-ledger)] border border-[var(--border)]"
+              className="inline-flex items-center justify-center rounded-full bg-[var(--surface)] p-1 text-[var(--color-primary)] border border-[var(--border)]"
             >
               <CheckIcon className="w-3 h-3" size={12} />
             </span>

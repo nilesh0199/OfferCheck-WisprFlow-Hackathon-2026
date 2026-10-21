@@ -56,7 +56,7 @@ export function OnThisPageNav({
       className="rounded border border-[var(--border)] bg-[var(--surface)] p-4 shadow-2xs space-y-3 transition-colors"
     >
       <div className="border-b border-[var(--border)] pb-2">
-        <h4 className="text-xs font-mono uppercase tracking-wider text-[var(--text-muted)] font-semibold">
+        <h4 className="text-xs font-sans font-semibold text-[var(--text-muted)]">
           On this page
         </h4>
       </div>
@@ -70,7 +70,7 @@ export function OnThisPageNav({
                 href={`#${section.id}`}
                 className={`flex items-center justify-between rounded-xs px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] ${
                   isActive
-                    ? "bg-[var(--surface-muted)] text-[var(--text)] font-semibold border-l-2 border-l-[var(--color-primary)] pl-2"
+                    ? "bg-[var(--tint-action-bg)] text-[var(--color-primary)] font-semibold border-l-[3px] border-l-[var(--color-primary)] pl-2"
                     : "text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-muted)]/60"
                 }`}
               >
@@ -88,7 +88,7 @@ export function OnThisPageNav({
 
       {/* Quick Actions (Copy summary, Print / PDF) */}
       <div className="pt-3 border-t border-[var(--border)] space-y-2">
-        <h4 className="text-xs font-mono uppercase tracking-wider text-[var(--text-muted)] font-semibold">
+        <h4 className="text-xs font-sans font-semibold text-[var(--text-muted)]">
           Quick actions
         </h4>
         <div className="space-y-1.5">

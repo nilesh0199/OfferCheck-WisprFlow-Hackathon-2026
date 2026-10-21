@@ -128,7 +128,7 @@ export function AnalysisResults({
           >
             {copiedSummary ? (
               <>
-                <CheckIcon className="w-3.5 h-3.5 text-[var(--primary-ledger)]" />
+                <CheckIcon className="w-3.5 h-3.5 text-[var(--color-primary)]" />
                 <span>Copied</span>
               </>
             ) : (
@@ -175,18 +175,18 @@ export function AnalysisResults({
         id="section-summary"
         className="rounded border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 shadow-2xs space-y-3 transition-colors"
       >
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] pb-2.5">
-          <h3 className="text-xs font-mono font-semibold uppercase tracking-wider text-[var(--text-muted)]">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] -mx-4 sm:-mx-5 -mt-4 sm:-mt-5 p-3.5 sm:px-5 rounded-t bg-[var(--tint-info-bg)]">
+          <h3 className="text-xs font-sans font-semibold text-[var(--text-muted)]">
             Review summary
           </h3>
           <div className="flex flex-wrap items-center gap-1.5 font-mono text-xs tabular-nums">
-            <span className="inline-flex items-center rounded-xs bg-[var(--surface-muted)] px-2 py-0.5 font-medium text-[var(--text-muted)] border border-[var(--border)]">
+            <span className="inline-flex items-center rounded-xs bg-[var(--surface)] px-2 py-0.5 font-medium text-[var(--color-primary)] border border-[var(--border)]">
               {sortedConcerns.length} observations
             </span>
-            <span className="inline-flex items-center rounded-xs bg-[var(--surface-muted)] px-2 py-0.5 font-medium text-[var(--text-muted)] border border-[var(--border)]">
+            <span className="inline-flex items-center rounded-xs bg-[var(--surface)] px-2 py-0.5 font-medium text-[var(--color-primary)] border border-[var(--border)]">
               {analysis.missingInfo.length} missing details
             </span>
-            <span className="inline-flex items-center rounded-xs bg-[var(--surface-muted)] px-2 py-0.5 font-medium text-[var(--text-muted)] border border-[var(--border)]">
+            <span className="inline-flex items-center rounded-xs bg-[var(--surface)] px-2 py-0.5 font-medium text-[var(--color-primary)] border border-[var(--border)]">
               {analysis.verificationQuestions.length} questions
             </span>
           </div>
@@ -227,9 +227,9 @@ export function AnalysisResults({
       {/* Mobile-Only Horizontal Jump Navigation (Hidden on desktop where Left Panel has OnThisPageNav) */}
       <nav
         aria-label="Results sections jump navigation"
-        className="sticky top-14 z-10 lg:hidden flex items-center gap-2 overflow-x-auto py-2 px-1 bg-[var(--surface)]/95 backdrop-blur-xs border-y border-[var(--border)] text-xs font-medium custom-scrollbar"
+        className="sticky top-14 z-10 lg:hidden flex items-center gap-2 overflow-x-auto py-2 px-1 bg-[var(--surface)]/95 border-y border-[var(--border)] text-xs font-medium custom-scrollbar"
       >
-        <span className="text-[var(--text-muted)] shrink-0 font-mono text-xs uppercase">Jump:</span>
+        <span className="text-[var(--text-muted)] shrink-0 font-sans text-xs">Jump:</span>
         <a
           href="#section-summary"
           className="rounded-xs px-2 py-1 text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] shrink-0"

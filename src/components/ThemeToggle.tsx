@@ -28,7 +28,7 @@ function applyTheme(pref: ThemePreference) {
 
   const metaTheme = document.querySelector('meta[name="theme-color"]');
   if (metaTheme) {
-    metaTheme.setAttribute("content", resolved === "dark" ? "#14130f" : "#1f2933");
+    metaTheme.setAttribute("content", resolved === "dark" ? "#0a111a" : "#10263f");
   }
 }
 
@@ -71,7 +71,13 @@ function getServerSnapshot(): ThemePreference {
   return DEFAULT_THEME_PREFERENCE;
 }
 
-export function ThemeToggle({ className = "" }: { className?: string }) {
+export function ThemeToggle({
+  className = "",
+  onHeader = false,
+}: {
+  className?: string;
+  onHeader?: boolean;
+}) {
   const preference = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
@@ -110,7 +116,11 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
     <div
       role="radiogroup"
       aria-label="Theme preference"
-      className={`inline-flex items-center rounded border border-[var(--border)] bg-[var(--surface-muted)] p-0.5 text-xs shadow-2xs ${className}`}
+      className={`inline-flex items-center rounded border p-0.5 text-xs shadow-2xs ${
+        onHeader
+          ? "border-[var(--color-border-strong)]/40 bg-[var(--color-header-bg)]/80"
+          : "border-[var(--border)] bg-[var(--surface-muted)]"
+      } ${className}`}
     >
       {THEME_OPTIONS.map((opt, idx) => {
         const isSelected = preference === opt.value;
@@ -128,9 +138,17 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
             aria-label={opt.label}
             onClick={() => selectPreference(opt.value)}
             onKeyDown={(e) => handleKeyDown(e, idx)}
-            className={`relative flex items-center justify-center rounded-xs p-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:z-10 ${
+            className={`relative flex items-center justify-center rounded-xs p-1.5 transition-colors focus:outline-none focus-visible:ring-2 ${
+              onHeader
+                ? "focus-visible:ring-[var(--header-text)] focus-visible:z-10"
+                : "focus-visible:ring-[var(--focus-ring)] focus-visible:z-10"
+            } ${
               isSelected
-                ? "bg-[var(--surface)] text-[var(--text)] font-medium shadow-2xs"
+                ? onHeader
+                  ? "bg-[var(--header-text)] text-[var(--color-header-bg)] font-semibold shadow-xs"
+                  : "bg-[var(--surface)] text-[var(--text)] font-medium shadow-2xs"
+                : onHeader
+                ? "text-[var(--header-nav-text)] hover:text-[var(--header-text)]"
                 : "text-[var(--text-muted)] hover:text-[var(--text)]"
             }`}
           >

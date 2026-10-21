@@ -173,7 +173,7 @@ export function FileUploadDropzone({
           disabled || remainingSlots <= 0
             ? "border-[var(--border)] bg-[var(--surface-muted)] opacity-60 cursor-not-allowed"
             : isDragOver
-            ? "border-[var(--primary-ledger)] bg-[var(--surface-muted)]"
+            ? "border-[var(--color-primary)] bg-[var(--surface-muted)]"
             : "border-[var(--border)] bg-[var(--surface-muted)] hover:border-[var(--border-muted)] hover:bg-[var(--surface)]"
         }`}
       >
@@ -216,11 +216,11 @@ export function FileUploadDropzone({
           )}
         </p>
 
-        <p className="mt-1 text-2xs sm:text-xs text-[var(--text-muted)] max-w-xs leading-normal">
+        <p className="mt-1 text-xs text-[var(--text-muted)] max-w-xs leading-normal">
           PNG, JPEG, WebP images or PDF documents up to 4 MB total.
         </p>
 
-        <p className="mt-2 text-2xs text-[var(--text-muted)] opacity-80">
+        <p className="mt-2 text-xs text-[var(--text-muted)] opacity-80">
           Tip: You can also paste screenshots with Ctrl+V.
         </p>
       </div>

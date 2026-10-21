@@ -133,10 +133,10 @@ export function CheckClient() {
               {/* 1) Try a sample cards */}
               <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs space-y-3.5 transition-colors">
                 <div className="flex items-center justify-between border-b border-[var(--border)] pb-2.5">
-                  <h3 className="text-xs font-mono font-semibold uppercase tracking-wider text-[var(--text-muted)]">
+                  <h3 className="text-xs font-sans font-semibold text-[var(--text-muted)]">
                     Try a sample offer
                   </h3>
-                  <span className="text-xs font-mono text-[var(--text-muted)]">
+                  <span className="text-xs font-sans text-[var(--text-muted)]">
                     Click to load
                   </span>
                 </div>
@@ -153,8 +153,8 @@ export function CheckClient() {
                         <span className="text-xs sm:text-sm font-semibold text-[var(--text)] group-hover:text-[var(--color-primary)]">
                           {sample.title}
                         </span>
-                        <span className="text-xs font-mono text-[var(--color-primary)] opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                          Use sample &rarr;
+                        <span className="text-xs font-sans text-[var(--color-primary)] opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                          Use sample
                         </span>
                       </div>
                       <p className="mt-1 text-xs text-[var(--text-muted)] line-clamp-2 leading-relaxed">
@@ -167,7 +167,7 @@ export function CheckClient() {
 
               {/* 2) What you will get card */}
               <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs space-y-3 transition-colors">
-                <h3 className="text-xs font-mono font-semibold uppercase tracking-wider text-[var(--text-muted)] border-b border-[var(--border)] pb-2">
+                <h3 className="text-xs font-sans font-semibold text-[var(--text-muted)] border-b border-[var(--border)] pb-2">
                   What you will get
                 </h3>
                 <ul className="space-y-2 text-xs sm:text-sm text-[var(--text)] leading-relaxed">
@@ -352,8 +352,20 @@ export function CheckClient() {
                       <span>
                         Your offer text ({analyzedSnapshotText.length.toLocaleString()} characters)
                       </span>
-                      <span className="text-[var(--color-primary)] font-mono text-xs">
-                        {mobileOfferExpanded ? "Collapse ▲" : "View offer ▼"}
+                      <span className="inline-flex items-center gap-1.5 text-[var(--color-primary)] text-xs font-medium">
+                        <span>{mobileOfferExpanded ? "Collapse" : "View offer"}</span>
+                        <svg
+                          aria-hidden="true"
+                          className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                            mobileOfferExpanded ? "rotate-180" : ""
+                          }`}
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
                       </span>
                     </button>
                     {mobileOfferExpanded && (

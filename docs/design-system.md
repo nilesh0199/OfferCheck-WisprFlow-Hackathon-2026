@@ -1,63 +1,109 @@
-# Design System v4: The Annotated Document & Full-Width Workspace (OfferCheck)
+# Design System v5: Ink Blue Palette, Typographic Scale, and Anti-Template Polish (OfferCheck)
 
 ## 1. Principles
 OfferCheck is a calm, honest review assistant for students and first-time job seekers receiving internship or entry-level job offers. Rather than behaving like an automated judging machine or AI oracle, its visual metaphor is a desk with an **annotated document**: a letter in the margins, real line numbers, high-contrast text, and a physical highlighter pen marking specific phrases of evidence.
-- **The Annotated Document Metaphor:** Tactile, forensic clarity. Clean canvas, high-contrast paper surfaces, deep ledger green primary actions, and an authentic highlighter yellow accent strictly reserved for evidence phrases and observational markers.
+- **The Annotated Document Metaphor:** Tactile, forensic clarity. Clean canvas, high-contrast paper surfaces, authoritative Ink Blue primary actions against a deep navy header, and an authentic highlighter yellow accent strictly reserved for evidence phrases and observational markers.
 - **Calm, Honest Copy:** Strictly avoids verdict language ("safe", "verified", "legit", "scam", "fraud" as a verdict) and red/green traffic-light semantics. "No concerns identified" is never presented as a safety verdict.
 - **Evidence-Grounded Linking:** Every potential concern is anchored to verbatim quotations. On desktop, hovering an observation card highlights that quote in the left rail document viewer and scrolls to its line; clicking a highlighted quote in the document focuses the observation card.
-- **Accessible & Contrast-Guaranteed:** Every color token pair meets or exceeds WCAG 2.1 AA standards (text $\ge 4.5:1$, primary text $\ge 7:1$, borders and focus rings $\ge 3:1$).
+- **Accessible & Contrast-Guaranteed:** Every color token pair meets or exceeds WCAG 2.1 AA standards (normal text $\ge 4.5:1$, headings/lead text $\ge 7:1$, non-text borders and focus rings $\ge 3:1$).
 - **Zero Runtime Dependencies:** Native Next.js 16.4.2 App Router, Tailwind CSS v4, pure SVG icons, and build-time Google fonts via `next/font/google`. No third-party UI component kits or external animation libraries.
 
 ---
 
-## 2. Semantic Token System
+## 2. Semantic Token System (Ink Blue Palette)
 
-Tokens are declared in `src/app/globals.css` with explicit `color-scheme: light` and `color-scheme: dark`.
+All color tokens are declared in ONE isolated, swappable block per theme in `src/app/globals.css` with explicit `color-scheme: light` and `color-scheme: dark`.
 
-### 2.1 Color Tokens & WCAG Contrast
+### 2.1 Color Tokens & WCAG Contrast Standards
 
-| Token | Light Theme | Dark Theme | Purpose | Contrast Standard |
+| Token | Light Theme | Dark Theme | Purpose | Contrast Ratio |
 | :--- | :--- | :--- | :--- | :--- |
-| `--color-canvas` | `#F2F4F5` | `#12110D` | Viewport canvas background | Base |
-| `--color-surface` | `#FFFFFF` | `#1B1914` | Primary cards, panels, and modals | Base |
-| `--color-surface-alt` | `#EBEFF2` | `#25221B` | Nested wells, textareas, code blocks | Surface background |
-| `--color-border` | `#737A82` | `#6E6657` | Structural 1px borders and dividers | $\ge 3:1$ vs surface |
-| `--color-border-strong` | `#3D434A` | `#9E9482` | Emphasized borders, active states | $\ge 4.5:1$ vs surface |
-| `--color-text` | `#121417` | `#F7F3EA` | Primary body text and headings | $\ge 7:1$ vs surface |
-| `--color-text-muted` | `#464C54` | `#ABA291` | Secondary captions, hints, and limits | $\ge 4.5:1$ vs surface |
-| `--color-text-subtle` | `#50565F` | `#A39A88` | Non-text icons, labels, tags | $\ge 4.5:1$ vs surface |
-| `--color-primary` | `#184E3B` | `#266B53` | Primary action buttons and links | Action accent |
-| `--color-primary-contrast`| `#FFFFFF` | `#FFFFFF` | Text and icons on primary action buttons | $\ge 4.5:1$ vs primary |
-| `--color-accent-highlight` | `#FFDC4A` | `#FFDC4A` | Evidence quote highlighter (yellow) | Evidence marker ONLY |
-| `--color-highlight-ink` | `#121417` | `#12110D` | High-contrast text on highlighter | $\ge 7:1$ vs highlight |
-| `--color-focus-ring` | `#184E3B` | `#FFDC4A` | Keyboard focus outline | $\ge 3:1$ vs canvas/surface |
+| `--color-header-bg` | `#10263f` | `#0a111a` | Top header bar background | Base (Navy) |
+| `--color-header-text` | `#ffffff` | `#ffffff` | Brand wordmark and header contrast text | 15.3:1 (L), 19.0:1 (D) vs header |
+| `--color-header-nav-text` | `#c5d3e4` | `#c5d3e4` | Header navigation links | 10.1:1 (L), 12.5:1 (D) vs header |
+| `--color-canvas` | `#f2f5f9` | `#0e1620` | Viewport canvas background | Base |
+| `--color-surface` | `#ffffff` | `#152130` | Primary cards, panels, and modals | Base |
+| `--color-surface-alt` | `#eaf0f7` | `#1b2a3d` | Limits section, secondary wells | Secondary surface |
+| `--color-surface-muted` | `#f0f4f9` | `#121c2a` | Table alternating rows, inputs | Muted surface |
+| `--color-border` | `#d5dfeb` | `#223348` | Standard structural borders | Base structure |
+| `--color-border-strong` | `#7b8ca3` | `#5b7496` | High-contrast container borders | $\ge 3.0:1$ vs surface |
+| `--color-border-muted` | `#e2ebf4` | `#1b2838` | Subtle interior dividers | Subtle structure |
+| `--color-text` | `#14202e` | `#e8eef6` | Primary body text and headings | 16.5:1 (L), 13.9:1 (D) vs surface |
+| `--color-text-muted` | `#4b5b6d` | `#a9b7c9` | Secondary descriptions, hints, limits | 7.0:1 (L), 8.0:1 (D) vs surface |
+| `--color-text-subtle` | `#546578` | `#94a4b8` | Metadata labels, tertiary captions | 6.0:1 (L), 6.4:1 (D) vs surface |
+| `--color-primary` | `#1d5fa8` | `#5b9bf0` | Primary actions, links, active states | 6.5:1 (L), 6.5:1 (D) vs contrast |
+| `--color-primary-hover` | `#164a85` | `#7cb2f5` | Hover state for primary actions | High contrast |
+| `--color-primary-contrast`| `#ffffff` | `#0b1520` | Text/icons on primary buttons | $\ge 6.4:1$ vs primary |
+| `--tint-info-bg` | `#eaf0f7` | `#172333` | Missing details table header, summary row | Semantic info |
+| `--tint-info-border` | `#c8d7e8` | `#24364e` | Info section borders | Semantic info |
+| `--tint-action-bg` | `#e3eefb` | `#1a283b` | Questions cards, active nav item | Semantic action |
+| `--tint-action-border` | `#b6d2f3` | `#2b4260` | Action section borders | Semantic action |
+| `--focus-ring` | `#1d5fa8` | `#8cb8f7` | Keyboard focus ring | $\ge 5.9:1$ vs canvas |
+| `--color-highlight` | `#ffe27a` | `#ffe27a` | Quote evidence highlighter (yellow) | Evidence marker ONLY |
+| `--color-highlight-ink` | `#1b1b1b` | `#0e1620` | Text on highlighter pen | 13.5:1 (L), 14.2:1 (D) vs yellow |
+| `--color-tint-obs-bg` | `#fff6d6` | `#282210` | Observation card tint background | Evidence marker ONLY |
+| `--color-tint-obs-border` | `#e5c85c` | `#5a4a1a` | Observation card 3px left border | Evidence marker ONLY |
+| `--color-tint-obs-text` | `#593e00` | `#fde896` | Observation marker text | 9.2:1 (L), 12.9:1 (D) vs obs-bg |
 
-### 2.2 Semantic Context Tints (Non-Traffic-Light)
+### 2.2 Semantic Tool Page Hierarchy
 
-1. **Attention Tint (Highlighter Yellow Context):** Used for potential concern cards, warning alerts, and sample margin callouts.
-   - Light: Background `#FFF7D6`, Border `#8F6300`, Text `#593E00`, Accent `#8F6300` (all text $\ge 4.5:1$).
-   - Dark: Background `#2B2310`, Border `#A37F1A`, Text `#FFE885`, Accent `#FFDC4A` (all text $\ge 7:1$).
-2. **Backwards-Compatible Aliases:** Legacy variables (`--bg`, `--surface`, `--surface-muted`, `--border`, `--text`, `--text-muted`, `--primary-ledger`, `--accent-highlighter`, etc.) are mapped directly to their corresponding `--color-*` tokens in `src/app/globals.css`.
+1. **Header:** Navy (`--color-header-bg`) across both themes with brand wordmark in white, navigation links in `--color-header-nav-text`, primary button "Check an offer", segmented theme toggle with white focus rings, and no persistent outline on the logo.
+2. **Review Summary Card:** Summary header row uses subtle info tint (`--tint-info-bg`), sentence-case headings, and count chips in white/tinted surface with primary text and borders.
+3. **Observations (Findings):** Surface background with subtle observation tint (`--color-tint-obs-bg`) and 3px left border (`--color-tint-obs-border`).
+4. **Missing Details:** Table `thead` uses info tint (`--tint-info-bg`) with sans-serif font; count chip uses primary text on info tint.
+5. **Questions to Ask:** Questions cards use action tint (`--tint-action-bg`, `--tint-action-border`); count chip uses primary text on action tint.
+6. **"Check these yourself" Card:** Surface background with 3px primary top border (`border-t-[3px] border-t-[var(--color-primary)]`) and action tint numbered step circles.
+7. **Company Research Card:** Surface background with 3px primary top border; when research is recommended, card uses action tint background. Rotating SVG chevron on guidance disclosure.
+8. **Official Resources Card:** Surface background with primary-colored action links.
+9. **Limits Section:** Surface-alt background (`--color-surface-alt`) to visually reinforce boundary conditions.
+10. **"On this page" Right Rail:** Active section item is styled with action tint background (`--tint-action-bg`), primary text (`--color-primary`), and a 3px primary left border (`border-l-[3px] border-l-[var(--color-primary)]`).
+
+### 2.3 Ready-to-Swap Palettes
+Alternative palettes (Palette B "Petrol" and Palette C "Cobalt with Light Header") are documented with complete token tables and copy-paste swap instructions in `docs/design-brief.md`.
 
 ---
 
-## 3. Typography Architecture
+## 3. Typographic Architecture
 
 Fonts are loaded at build time via `next/font/google` in `src/app/layout.tsx`:
-
-- **Primary UI & Body:** `IBM Plex Sans` (weights: 400, 500, 600) — technical clarity, neutral grotesque grotesque characteristics, high legibility.
-- **Data, Lines, & Quotes:** `IBM Plex Mono` (weights: 400, 500) — mechanical precision, tabular alignment for document quotes, character counts, and line numbers.
-- **Editorial Headlines:** `Newsreader` (weights: 400, 600) — warm, authoritative editorial display serif reserved for landing page hero titles.
+- **Primary UI & Body:** `IBM Plex Sans` (400, 500, 600) — technical clarity, neutral grotesque grotesque characteristics, high legibility.
+- **Data, Lines, & Quotes:** `IBM Plex Mono` (400, 500) — mechanical precision, tabular alignment. **Restricted strictly** to offer document text, verbatim quotes, line numbers, telephone/portal codes, and character counters. All UI labels, table headers, badges, and eyebrows use the sans face.
+- **Editorial Headlines:** `Newsreader` (400, 600) — warm, authoritative editorial display serif reserved for landing page hero titles.
 
 ### 3.1 Typographic Metrics & Scale
-- **Base Body Text:** 15px (`font-size: 15px`), line-height 1.6 (`leading-relaxed`).
-- **Secondary Text & Labels:** 13px (`text-xs` / `text-[13px]`).
-- **Absolute Floor:** Nothing smaller than 12px anywhere in the interface.
-- **Letter Spacing:** No negative tracking on UI controls or body prose (`letter-spacing: 0`); headlines constrained to `tracking-[-0.01em]`.
-- **Prose Constraints:** Prose paragraphs and observation interpretations are strictly constrained to `max-w-[70ch]` to maintain comfortable reading eye-travel.
-- **Tabular Figures:** All counts, line numbers, scores, and metrics use `tabular-nums` for rock-solid visual stability.
+Tailwind v4's font-size scale is explicitly overridden in `src/app/globals.css`:
+- **`text-xs`**: 13px, line-height 1.5 (secondary labels, table text, metadata, count chips)
+- **`text-sm`**: 14px, line-height 1.55 (tool secondary copy, card body text, subheadings)
+- **`text-base`**: 16px, line-height 1.6 (root html/body font size, tool primary body prose)
+- **Landing Page Scale**: Lead paragraphs 19–20px (`sm:text-[19px]`), landing body 17px (`text-[17px]`), buttons 15px (`text-[15px]`).
+- **Absolute Floor**: **13px minimum anywhere in the interface.** Zero instances of sub-13px classes (`text-2xs`, `text-3xs`, `text-[10px]`, `text-[11px]`, `text-[12px]`) or inline font sizes smaller than 13px. An automated test in `tests/token-audit.test.ts` scans all source files under `src/` on every build to guarantee this floor.
+- **Prose Constraints**: Prose paragraphs and observation interpretations are strictly constrained to `max-w-[70ch]` for comfortable reading eye-travel.
 
 ---
+
+## 4. Layout Architecture & Section Alignment
+
+### 4.1 Global Responsive Container Primitive
+Every page and major section is wrapped in `src/components/layout/Container.tsx`:
+$$\text{width} = \min(100\% - 2 \times \text{gutter}, 2000\text{px}) \quad \text{where} \quad \text{gutter} = \text{clamp}(16\text{px}, 2.5\text{vw}, 48\text{px})$$
+
+### 4.2 Alignment Rules
+1. **Left-Edge Alignment:** Section titles, descriptions, and headers start at the container's left edge (no arbitrary floating center offsets for left-aligned content).
+2. **Full-Width Grids:** Cards, tables, and step blocks span the full width of the container.
+3. **FAQ Section:** Two-column grid on desktop ($\ge 1024$px) using `items-start` so that expanding one question does not cause the sibling question in the adjacent column to stretch vertically.
+4. **Column Balance:** Hero document card and scroll scene inspection columns maintain balanced visual proportions across viewports.
+5. **Alternating Section Bands:** Landing sections alternate between canvas (`--color-canvas`) and surface (`--color-surface`) backgrounds, with the hero featuring a pale tinted band (`--tint-info-bg/40`).
+
+---
+
+## 5. Removal of Template Tells
+
+All common AI / template design artifacts have been eliminated:
+1. **No All-Caps Tracked Eyebrows:** Eyebrows are written in clean sentence-case sans without `uppercase` or tracking (`tracking-wider`, `tracking-widest`).
+2. **No Duplicate Numbering:** Steps use single, clear primary-filled number circles (`1`, `2`, `3`) instead of redundant "01" and "Step 1 of 3" combinations.
+3. **No Arrow or Triangle Glyphs:** Text glyphs (`&rarr;`, `→`, `▲`, `▼`) have been replaced with accessible SVG chevrons or clean copy without decorative glyphs.
+4. **Custom Disclosure Chevrons:** All `<details>` / `<summary>` disclosure controls use custom rotating SVG chevrons with `list-none [&::-webkit-details-marker]:hidden` to suppress default browser markers in WebKit/Safari.
+5. **No Dot-Grid Textures:** Removed decorative dot-matrix background patterns (`.paper-pattern`) in favor of clean paper surfaces.
 
 ## 4. Layout Architecture
 

@@ -74,7 +74,7 @@ export default function RootLayout({
       className={`${ibmPlexSans.variable} ${newsreader.variable} ${ibmPlexMono.variable} h-full antialiased`}
     >
       <head>
-        <meta name="theme-color" content="#1f2933" />
+        <meta name="theme-color" content="#10263f" />
         <script
           dangerouslySetInnerHTML={{
             __html: THEME_INLINE_SCRIPT,

@@ -19,9 +19,9 @@ export default async function Image() {
           flexDirection: "column",
           justifyContent: "space-between",
           padding: "60px 80px",
-          backgroundColor: "#F4EFE4",
+          backgroundColor: "#F2F5F9",
           fontFamily: "sans-serif",
-          color: "#17150F",
+          color: "#14202E",
         }}
       >
         {/* Top Header / Wordmark */}
@@ -45,8 +45,8 @@ export default async function Image() {
                 width: "44px",
                 height: "44px",
                 borderRadius: "8px",
-                border: "2.5px solid #17150F",
-                backgroundColor: "#FAF7F0",
+                border: "2.5px solid #10263F",
+                backgroundColor: "#FFFFFF",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -58,8 +58,8 @@ export default async function Image() {
                   width: "12px",
                   height: "12px",
                   borderRadius: "50%",
-                  backgroundColor: "#FFD84A",
-                  border: "2px solid #17150F",
+                  backgroundColor: "#FFE27A",
+                  border: "2px solid #10263F",
                   position: "absolute",
                   bottom: "6px",
                   right: "6px",
@@ -71,7 +71,7 @@ export default async function Image() {
                 fontSize: "32px",
                 fontWeight: 700,
                 letterSpacing: "-0.02em",
-                color: "#17150F",
+                color: "#14202E",
               }}
             >
               {APP_NAME}
@@ -82,11 +82,11 @@ export default async function Image() {
             style={{
               padding: "6px 16px",
               borderRadius: "9999px",
-              backgroundColor: "#EAE4D5",
-              border: "1px solid #DCD5C5",
+              backgroundColor: "#EAF0F7",
+              border: "1px solid #CFD8E3",
               fontSize: "16px",
               fontWeight: 600,
-              color: "#57534A",
+              color: "#4B5B6D",
             }}
           >
             Student & Job Seeker Offer Utility
@@ -108,7 +108,7 @@ export default async function Image() {
               fontWeight: 800,
               lineHeight: 1.1,
               letterSpacing: "-0.03em",
-              color: "#17150F",
+              color: "#14202E",
             }}
           >
             {TAGLINE}
@@ -117,7 +117,7 @@ export default async function Image() {
             style={{
               fontSize: "26px",
               lineHeight: 1.4,
-              color: "#57534A",
+              color: "#4B5B6D",
             }}
           >
             Paste an internship or job offer to spot upfront deposit requests, urgent
@@ -132,7 +132,7 @@ export default async function Image() {
             alignItems: "center",
             justifyContent: "space-between",
             paddingTop: "24px",
-            borderTop: "2px solid #DCD5C5",
+            borderTop: "2px solid #CFD8E3",
           }}
         >
           <div style={{ display: "flex", gap: "28px" }}>
@@ -143,7 +143,7 @@ export default async function Image() {
                 gap: "8px",
                 fontSize: "18px",
                 fontWeight: 600,
-                color: "#1E5C46",
+                color: "#1D5FA8",
               }}
             >
               <span>•</span>
@@ -156,7 +156,7 @@ export default async function Image() {
                 gap: "8px",
                 fontSize: "18px",
                 fontWeight: 600,
-                color: "#1E5C46",
+                color: "#1D5FA8",
               }}
             >
               <span>•</span>
@@ -169,7 +169,7 @@ export default async function Image() {
                 gap: "8px",
                 fontSize: "18px",
                 fontWeight: 600,
-                color: "#1E5C46",
+                color: "#1D5FA8",
               }}
             >
               <span>•</span>
@@ -180,7 +180,7 @@ export default async function Image() {
           <div
             style={{
               fontSize: "16px",
-              color: "#57534A",
+              color: "#4B5B6D",
               fontWeight: 500,
             }}
           >

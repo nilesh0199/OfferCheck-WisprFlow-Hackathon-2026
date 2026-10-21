@@ -388,7 +388,7 @@ export function HeroInteractiveDocument() {
         ref={cardRef}
         onPointerMove={handlePointerMove}
         onPointerLeave={handlePointerLeave}
-        className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 sm:p-7 shadow-md transition-[transform,box-shadow] duration-200 ease-out paper-pattern relative overflow-hidden"
+        className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 sm:p-7 shadow-xs transition-[transform,box-shadow] duration-200 ease-out relative overflow-hidden"
         style={{ transformStyle: "preserve-3d" }}
       >
         {/* Animated Magnifying Lens & Trail Layer */}
@@ -419,12 +419,12 @@ export function HeroInteractiveDocument() {
         <div className="flex flex-wrap items-center justify-between gap-2 pb-4 mb-4 border-b border-[var(--border)] text-xs">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-[var(--accent-highlighter)] ring-2 ring-[var(--border)]" />
-            <span className="font-mono text-2xs uppercase tracking-wider text-[var(--text-muted)] font-semibold">
-              Offer Document
+            <span className="font-sans text-xs text-[var(--text-muted)] font-medium">
+              Offer document
             </span>
           </div>
 
-          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-medium bg-[var(--tint-attention-bg)] text-[var(--tint-attention-text)] border border-[var(--tint-attention-border)]">
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--tint-attention-bg)] text-[var(--tint-attention-text)] border border-[var(--tint-attention-border)]">
             Synthetic example, not a real offer
           </span>
         </div>
@@ -480,7 +480,7 @@ export function HeroInteractiveDocument() {
                 <h4 className="text-xs font-bold text-[var(--text)] font-sans">
                   {activeAnnotation?.title}
                 </h4>
-                <span className="text-xs font-mono uppercase tracking-wider text-[var(--text-muted)]">
+                <span className="text-xs font-sans text-[var(--text-muted)] font-medium">
                   Observation
                 </span>
               </div>

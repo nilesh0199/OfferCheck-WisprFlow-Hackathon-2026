@@ -31,16 +31,13 @@ export function WhatWeDoNotDoSection() {
   ];
 
   return (
-    <section className="py-16 sm:py-24 border-t border-[var(--border)] transition-colors">
+    <section className="py-16 sm:py-24 border-t border-[var(--border)] bg-[var(--color-canvas)] transition-colors">
       <Container className="space-y-12">
-        <div className="max-w-2xl space-y-3">
-          <span className="font-mono text-2xs uppercase tracking-wider text-[var(--text-muted)] font-semibold">
-            Epistemic Limits
-          </span>
+        <div className="space-y-3">
           <h2 className="text-2xl sm:text-3xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]">
             What OfferCheck will not do
           </h2>
-          <p className="text-sm sm:text-base text-[var(--text-muted)] leading-relaxed">
+          <p className="text-[17px] text-[var(--text-muted)] leading-relaxed max-w-2xl">
             Honest boundaries are essential for safety. Here is what this tool
             explicitly avoids doing.
           </p>
@@ -54,10 +51,10 @@ export function WhatWeDoNotDoSection() {
             >
               <div className="space-y-2">
                 <div className="w-2 h-2 rounded-full bg-[var(--text-muted)] mb-2" />
-                <h3 className="text-sm font-bold text-[var(--text)]">
+                <h3 className="text-base font-bold text-[var(--text)]">
                   {limit.title}
                 </h3>
-                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                <p className="text-sm text-[var(--text-muted)] leading-relaxed">
                   {limit.description}
                 </p>
               </div>

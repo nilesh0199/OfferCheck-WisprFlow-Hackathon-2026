@@ -164,9 +164,9 @@ export function CompanyResearchCard({
   return (
     <div
       id="section-research"
-      className={`rounded border transition-colors overflow-hidden ${
+      className={`rounded border border-t-[3px] border-t-[var(--color-primary)] transition-colors overflow-hidden ${
         isRecommended
-          ? "border-[var(--tint-attention-border)] bg-[var(--surface)] shadow-2xs"
+          ? "border-[var(--color-tint-action-border)] bg-[var(--tint-action-bg)] shadow-2xs"
           : "border-[var(--border)] bg-[var(--surface)] shadow-2xs"
       }`}
     >
@@ -181,9 +181,9 @@ export function CompanyResearchCard({
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <span
-                className={`inline-flex items-center px-2 py-0.5 rounded text-2xs font-mono font-medium border ${
+                className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-medium border ${
                   isRecommended
-                    ? "bg-[var(--tint-attention-bg)] text-[var(--text)] border-[var(--tint-attention-border)]"
+                    ? "bg-[var(--surface)] text-[var(--text)] border-[var(--border)]"
                     : "bg-[var(--surface-muted)] text-[var(--text-muted)] border-[var(--border)]"
                 }`}
               >
@@ -208,7 +208,7 @@ export function CompanyResearchCard({
         {/* Recommended Reasons List */}
         {isRecommended && reasons.length > 0 && (
           <div className="rounded border border-[var(--tint-attention-border)] bg-[var(--tint-attention-bg)] p-3 text-xs text-[var(--text)] space-y-1.5">
-            <div className="font-semibold text-2xs uppercase tracking-wider text-[var(--text)] flex items-center gap-1.5">
+            <div className="font-semibold text-xs text-[var(--text)] flex items-center gap-1.5">
               <InfoIcon className="w-3.5 h-3.5 text-[var(--tint-attention-accent)]" />
               <span>Why research is recommended for this offer:</span>
             </div>
@@ -263,7 +263,7 @@ export function CompanyResearchCard({
               maxLength={100}
               className="w-full rounded-xs border border-[var(--border-strong)] bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--text)] placeholder-[var(--text-muted)]/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[36px]"
             />
-            <p className="text-2xs text-[var(--text-muted)]">
+            <p className="text-xs text-[var(--text-muted)]">
               Enter the company name stated in the communication or interview.
             </p>
           </div>
@@ -273,7 +273,7 @@ export function CompanyResearchCard({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-1">
           {/* Depth Mode Segmented Control */}
           <div className="flex items-center gap-2 text-xs">
-            <span className="text-[var(--text-muted)] font-medium text-2xs uppercase tracking-wider">Depth:</span>
+            <span className="text-[var(--text-muted)] font-medium text-xs">Depth:</span>
             <div className="inline-flex items-center rounded border border-[var(--border)] bg-[var(--surface-muted)] p-0.5 text-xs">
               <button
                 type="button"
@@ -353,7 +353,7 @@ export function CompanyResearchCard({
         </div>
 
         {isCompanyMissing && (
-          <p className="text-2xs text-[var(--text-muted)] italic">
+          <p className="text-xs text-[var(--text-muted)] italic">
             Enter a company name above to enable prompt copying.
           </p>
         )}
@@ -379,8 +379,8 @@ export function CompanyResearchCard({
       {isDetailsExpanded && (
         <div className="p-4 sm:p-5 space-y-5 border-t border-[var(--border)] bg-[var(--surface-alt)]">
           <div className="space-y-3">
-            <h4 className="text-2xs font-mono uppercase tracking-wider text-[var(--text-muted)] font-semibold">
-              Edit Research Details (Included in Prompt)
+            <h4 className="text-xs font-sans text-[var(--text-muted)] font-semibold">
+              Edit research details (included in prompt)
             </h4>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -484,7 +484,7 @@ export function CompanyResearchCard({
           {/* Observations on Supplied Channels */}
           {observations.length > 0 && (
             <div className="rounded border border-[var(--border)] bg-[var(--surface)] p-3 space-y-1 text-xs text-[var(--text)]">
-              <div className="flex items-center gap-1.5 font-semibold text-[var(--text)] text-2xs uppercase tracking-wider">
+              <div className="flex items-center gap-1.5 font-semibold text-[var(--text)] text-xs">
                 <InfoIcon className="w-3.5 h-3.5 text-[var(--text-muted)] shrink-0" />
                 <span>Observations on supplied channels</span>
               </div>
@@ -522,7 +522,7 @@ export function CompanyResearchCard({
           </div>
 
           {/* Privacy Notice */}
-          <div className="pt-2 border-t border-[var(--border)] text-2xs text-[var(--text-muted)] leading-relaxed">
+          <div className="pt-2 border-t border-[var(--border)] text-xs text-[var(--text-muted)] leading-relaxed">
             <strong className="text-[var(--text)] font-semibold">Privacy notice: </strong>
             Perplexity is an external service with its own terms and may ask you to
             sign in. Only the details above are included in the prompt, never your
@@ -532,14 +532,21 @@ export function CompanyResearchCard({
           {/* Static Guide: How to Read the Answer */}
           <div className="pt-1">
             <details className="group rounded border border-[var(--border)] bg-[var(--surface)] p-3 transition-colors">
-              <summary className="flex items-center justify-between gap-3 font-semibold text-xs text-[var(--text)] cursor-pointer list-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded">
+              <summary className="flex items-center justify-between gap-3 font-semibold text-xs text-[var(--text)] cursor-pointer list-none [&::-webkit-details-marker]:hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded">
                 <div className="flex items-center gap-1.5">
                   <HelpCircleIcon className="w-3.5 h-3.5 text-[var(--text-muted)]" />
                   <span>How to read the research answer</span>
                 </div>
-                <span className="text-[var(--text-muted)] group-open:rotate-180 transition-transform duration-200 font-mono text-2xs">
-                  ▼
-                </span>
+                <svg
+                  className="w-3.5 h-3.5 text-[var(--text-muted)] group-open:rotate-180 transition-transform duration-200 motion-reduce:transition-none shrink-0"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  aria-hidden="true"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
               </summary>
               <div className="mt-2.5 pt-2.5 border-t border-[var(--border)] space-y-1.5 text-xs text-[var(--text-muted)] leading-relaxed">
                 <p>

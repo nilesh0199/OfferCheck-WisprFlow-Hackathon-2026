@@ -78,7 +78,7 @@ export function QuestionsSection({
             className="text-sm sm:text-base font-bold text-[var(--text)] flex items-center gap-2"
           >
             <span>Section C: Questions to verify</span>
-            <span className="inline-flex items-center rounded-xs bg-[var(--surface-muted)] px-2 py-0.5 text-2xs font-mono font-medium text-[var(--text-muted)] border border-[var(--border)]">
+            <span className="inline-flex items-center rounded-xs bg-[var(--tint-action-bg)] px-2 py-0.5 text-xs font-mono font-medium text-[var(--color-primary)] border border-[var(--color-tint-action-border)]">
               {questions.length} {questions.length === 1 ? "question" : "questions"}
             </span>
           </h3>
@@ -96,7 +96,7 @@ export function QuestionsSection({
           >
             {copiedAll ? (
               <>
-                <CheckIcon className="w-3.5 h-3.5 text-[var(--primary-ledger)]" />
+                <CheckIcon className="w-3.5 h-3.5 text-[var(--color-primary)]" />
                 <span>Copied</span>
               </>
             ) : (
@@ -114,7 +114,7 @@ export function QuestionsSection({
           <p className="font-medium text-[var(--text)]">
             No specific verification questions were drafted.
           </p>
-          <p className="mt-1 text-2xs text-[var(--text-muted)]">
+          <p className="mt-1 text-xs text-[var(--text-muted)]">
             Review the limits and missing information sections for general verification areas.
           </p>
         </div>
@@ -129,15 +129,15 @@ export function QuestionsSection({
             return (
               <div
                 key={q.id}
-                className="rounded border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 transition-colors"
+                className="rounded border border-[var(--color-tint-action-border)] bg-[var(--tint-action-bg)] p-3.5 shadow-2xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 transition-colors"
               >
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-2xs font-mono font-bold text-[var(--text-muted)]">
+                    <span className="text-xs font-mono font-bold text-[var(--text-muted)]">
                       #{idx + 1}
                     </span>
                     {relatedCategory && (
-                      <span className="inline-flex items-center rounded-xs bg-[var(--surface-muted)] px-1.5 py-0.5 text-2xs font-medium text-[var(--text-muted)] border border-[var(--border)]">
+                      <span className="inline-flex items-center rounded-xs bg-[var(--surface)] px-1.5 py-0.5 text-xs font-medium text-[var(--text-muted)] border border-[var(--border)]">
                         Relates to: {relatedCategory}
                       </span>
                     )}
@@ -155,7 +155,7 @@ export function QuestionsSection({
                 >
                   {isCopied ? (
                     <>
-                      <CheckIcon className="w-3.5 h-3.5 text-[var(--primary-ledger)]" />
+                      <CheckIcon className="w-3.5 h-3.5 text-[var(--color-primary)]" />
                       <span>Copied</span>
                     </>
                   ) : (
@@ -172,12 +172,12 @@ export function QuestionsSection({
       )}
 
       {/* Contextual Self-Checks Checklist */}
-      <div className="mt-4 rounded border border-[var(--border)] bg-[var(--surface-muted)] p-4 space-y-2.5 transition-colors">
+      <div className="mt-4 rounded border border-[var(--border)] border-t-[3px] border-t-[var(--color-primary)] bg-[var(--surface)] p-4 space-y-2.5 transition-colors shadow-2xs">
         <div>
           <h4 className="text-xs font-bold text-[var(--text)]">
             Check these yourself (prioritised checklist)
           </h4>
-          <p className="mt-0.5 text-2xs text-[var(--text-muted)]">
+          <p className="mt-0.5 text-xs text-[var(--text-muted)]">
             Independent checks you can do right now using official public channels.
           </p>
         </div>
@@ -185,7 +185,7 @@ export function QuestionsSection({
         <ol className="space-y-2 text-xs text-[var(--text)] leading-relaxed list-none">
           {selfChecks.map((check, idx) => (
             <li key={check.id} className="flex items-start gap-2.5">
-              <span className="flex items-center justify-center w-4 h-4 rounded-full bg-[var(--surface)] text-[var(--text)] border border-[var(--border)] text-2xs font-mono font-bold shrink-0 mt-0.5">
+              <span className="flex items-center justify-center w-5 h-5 rounded-full bg-[var(--tint-action-bg)] text-[var(--color-primary)] border border-[var(--color-tint-action-border)] text-xs font-mono font-bold shrink-0 mt-0.5">
                 {idx + 1}
               </span>
               <span>{check.text}</span>

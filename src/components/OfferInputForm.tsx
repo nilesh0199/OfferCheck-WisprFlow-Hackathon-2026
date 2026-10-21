@@ -168,7 +168,7 @@ export function OfferInputForm({
             </div>
 
             {transcribeWarnings.length > 0 && (
-              <ul className="list-disc pl-4 space-y-0.5 text-2xs opacity-90 border-t border-[var(--border)] pt-1.5 text-left">
+              <ul className="list-disc pl-4 space-y-0.5 text-xs opacity-90 border-t border-[var(--border)] pt-1.5 text-left">
                 {transcribeWarnings.map((warning, i) => (
                   <li key={i}>{warning}</li>
                 ))}
@@ -176,7 +176,7 @@ export function OfferInputForm({
             )}
 
             {isTooLong && (
-              <p className="text-2xs font-semibold text-amber-700 dark:text-amber-400 border-t border-[var(--border)] pt-1 text-left">
+              <p className="text-xs font-semibold text-[var(--color-tint-attention-accent)] border-t border-[var(--border)] pt-1 text-left">
                 The combined text exceeds the limit by {(charCount - MAX_INPUT_CHARS).toLocaleString()} characters. Please edit or trim it before analyzing.
               </p>
             )}
@@ -195,6 +195,12 @@ export function OfferInputForm({
             rows={10}
             value={offerText}
             onChange={(e) => setOfferText(e.target.value)}
+            onKeyDown={(e) => {
+              if ((e.ctrlKey || e.metaKey) && e.key === "Enter" && !isAnalyzeDisabled) {
+                e.preventDefault();
+                onAnalyze();
+              }
+            }}
             readOnly={isLoading}
             aria-describedby="char-count-meta privacy-callout"
             aria-invalid={isTooLong || isTooShort}
@@ -203,7 +209,7 @@ export function OfferInputForm({
               isLoading
                 ? "opacity-60 cursor-not-allowed border-[var(--border)]"
                 : isTooLong
-                ? "border-amber-600 focus-visible:ring-amber-600"
+                ? "border-[var(--color-tint-attention-border)] focus-visible:ring-[var(--color-tint-attention-border)]"
                 : "border-[var(--border)] focus:border-[var(--text)]"
             }`}
           />
@@ -223,7 +229,7 @@ export function OfferInputForm({
             <span
               aria-live="polite"
               className={`font-mono tabular-nums ${
-                isTooLong ? "font-bold text-amber-600" : ""
+                isTooLong ? "font-bold text-[var(--color-tint-attention-accent)]" : ""
               }`}
             >
               {charCount.toLocaleString()} / {MAX_INPUT_CHARS.toLocaleString()} characters
@@ -238,7 +244,7 @@ export function OfferInputForm({
               <h3 className="text-xs sm:text-sm font-semibold text-[var(--text)]">
                 Attach files (optional)
               </h3>
-              <p className="text-2xs sm:text-xs text-[var(--text-muted)]">
+              <p className="text-xs text-[var(--text-muted)]">
                 Attach up to 5 screenshots or PDFs (max 4 MB total) to extract text and add it below your notes.
               </p>
             </div>
@@ -263,14 +269,14 @@ export function OfferInputForm({
                 className="rounded-lg border border-[var(--border)] bg-[var(--tint-attention-bg)] p-3 text-xs text-[var(--tint-attention-text)] space-y-1"
               >
                 <p>{transcribeError}</p>
-                <p className="text-2xs opacity-75 font-mono">
+                <p className="text-xs opacity-75 font-mono">
                   Reference: {transcribeErrorCode || "TRANSCRIBE_ERROR"}
                 </p>
               </div>
             )}
 
             {/* AI File Privacy Notice directly above button */}
-            <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] p-3 text-2xs text-[var(--text-muted)] leading-relaxed">
+            <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] p-3 text-xs text-[var(--text-muted)] leading-relaxed">
               <p>{AI_FILE_NOTICE}</p>
             </div>
 
@@ -338,7 +344,7 @@ export function OfferInputForm({
             className="rounded-lg border border-[var(--border)] bg-[var(--tint-attention-bg)] p-3 text-xs text-[var(--tint-attention-text)] space-y-1 text-left"
           >
             <p>{errorState.message || "An error occurred during review."}</p>
-            <p className="text-2xs opacity-75 font-mono">
+            <p className="text-xs opacity-75 font-mono">
               Reference: {errorState.code || errorState.type}
             </p>
           </div>
@@ -386,15 +392,42 @@ export function OfferInputForm({
             )}
           </div>
 
-          {isLoading && (
-            <div
-              aria-live="polite"
-              className="text-xs text-[var(--text-muted)] font-mono"
-            >
-              Elapsed: {elapsedSeconds}s
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            {!isLoading && (
+              <span className="hidden sm:inline text-xs text-[var(--text-muted)] font-mono">
+                Press <kbd className="px-1.5 py-0.5 rounded bg-[var(--surface-muted)] border border-[var(--border)] font-semibold text-[var(--text)]">Ctrl+Enter</kbd> (or <kbd className="px-1.5 py-0.5 rounded bg-[var(--surface-muted)] border border-[var(--border)] font-semibold text-[var(--text)]">⌘+Enter</kbd>) to analyze
+              </span>
+            )}
+
+            {isLoading && (
+              <div
+                aria-live="polite"
+                className="text-xs text-[var(--text-muted)] font-mono"
+              >
+                Elapsed: {elapsedSeconds}s
+              </div>
+            )}
+          </div>
         </div>
+
+        {/* Mobile Sticky Action Bar (< 640px) */}
+        {!isEmpty && !isLoading && (
+          <div
+            className="sm:hidden fixed bottom-0 left-0 right-0 z-30 border-t border-[var(--border)] bg-[var(--surface)]/95 backdrop-blur-md p-3 shadow-lg flex items-center justify-between gap-3"
+            style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
+          >
+            <span className="text-xs text-[var(--text-muted)] font-mono tabular-nums">
+              {charCount.toLocaleString()} chars
+            </span>
+            <button
+              type="submit"
+              disabled={isAnalyzeDisabled}
+              className="inline-flex items-center justify-center rounded-lg bg-[var(--accent)] text-[var(--accent-contrast)] px-5 py-2.5 text-xs font-semibold shadow-xs hover:opacity-90 active:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:opacity-40 min-h-[44px] flex-1 max-w-[200px]"
+            >
+              Analyze offer
+            </button>
+          </div>
+        )}
 
         {/* Privacy Callout */}
         <div
@@ -404,16 +437,16 @@ export function OfferInputForm({
           <div className="flex items-start gap-2.5 text-[var(--text)]">
             <LockIcon className="w-4 h-4 shrink-0 mt-0.5 opacity-80" />
             <div className="space-y-1.5 leading-relaxed">
-              <p className="font-semibold text-2xs sm:text-xs">
+              <p className="font-semibold text-xs">
                 Privacy and data handling
               </p>
               <p>
                 Remove names, phone numbers, addresses, bank details, ID numbers, passwords, and one-time passwords (OTPs) before pasting or attaching files.
               </p>
-              <p className="text-2xs opacity-90 border-t border-[var(--border)] pt-1.5">
+              <p className="text-xs opacity-90 border-t border-[var(--border)] pt-1.5">
                 {AI_DATA_NOTICE}
               </p>
-              <p className="text-2xs opacity-80">
+              <p className="text-xs opacity-80">
                 OfferCheck reviews pasted text only. It cannot confirm that a sender is genuine.
               </p>
             </div>

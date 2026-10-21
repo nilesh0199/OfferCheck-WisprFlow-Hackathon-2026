@@ -46,14 +46,14 @@ export function OfficialResourcesSection({
       <div>
         <h3
           id="resources-heading"
-          className="text-base sm:text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2"
+          className="text-base sm:text-lg font-semibold text-[var(--text)] flex items-center gap-2"
         >
           <span>Next steps and official resources</span>
-          <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+          <span className="inline-flex items-center rounded-full bg-[var(--surface-muted)] text-[var(--text-muted)] border border-[var(--border)] px-2.5 py-0.5 text-xs font-medium">
             {selected.length} {selected.length === 1 ? "resource" : "resources"}
           </span>
         </h3>
-        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+        <p className="mt-1 text-xs text-[var(--text-muted)]">
           These are links to official sites. OfferCheck does not check or vouch for any sender.
         </p>
       </div>
@@ -75,7 +75,7 @@ export function OfficialResourcesSection({
       <div className="pt-2">
         <Link
           href="/resources"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--primary-ledger)] dark:text-emerald-400 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 min-h-[44px]"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--primary-ledger)] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 min-h-[44px]"
         >
           <span>View all official resources &amp; reporting guides</span>
           <span aria-hidden="true">&rarr;</span>

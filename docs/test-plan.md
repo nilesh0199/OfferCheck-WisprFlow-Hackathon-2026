@@ -329,7 +329,14 @@ This document tracks all implemented, live, and planned automated tests for Offe
 | `UI: Scroll scene switches to stacked cards on mobile and viewports <640px height` | Manual check that no sticky pinning occurs on mobile or short screens | Manual |
 | `UI: prefers-reduced-motion disables entrance motion, hides lens/replay, and renders stacked scene` | Manual check verifying immediate settled state when reduced motion is preferred | Manual |
 | `UI: CSS failsafe reveals highlights after 3.8s if JS is blocked` | Manual check verifying static fallback visibility | Manual |
-| `Mobile layout and responsiveness` | Tests responsive layout, tap targets, and typography down to ~360px viewport | Planned |
+| `wcag-contrast: all text token pairs meet >= 4.5:1 contrast in light and dark mode` | Verifies canvas/surface background against text, text-muted, text-subtle, and primary tokens meet WCAG 2.1 AA/AAA | Implemented |
+| `wcag-contrast: UI borders, focus rings, and divider tokens meet >= 3:1 contrast` | Verifies border, border-strong, and focus-ring tokens against canvas/surface satisfy non-text contrast | Implemented |
+| `wcag-contrast: yellow highlight tokens maintain dark ink contrast >= 4.5:1` | Verifies accent-highlight and highlight-ink pairing meets WCAG text readability standards | Implemented |
+| `token-audit: zero raw hex colors and zero un-tokenised tailwind color classes in production components` | Verifies scanner finds no hardcoded palette classes or raw hex values across src/ | Implemented |
+| `line-offset: calculates 1-based line numbers from zero-based character offsets` | Verifies line number mapping for start/middle/end offsets, empty text, CRLF newlines, out-of-bounds, and Unicode | Implemented |
+| `UI: Bi-directional evidence linking between observation cards and offer viewer lines` | Manual check that hovering/focusing observation highlights line in viewer and clicking quote scrolls to observation | Manual |
+| `UI: Widescreen fluid container scaling up to 2000px without horizontal overflow` | Manual check verifying fluid container clamping across mobile, tablet, desktop, and ultra-wide displays | Manual |
+| `UI: Mobile bottom action bar on viewports <640px with safe area insets` | Manual check verifying sticky bottom bar renders with proper touch targets and safe area padding | Manual |
 
 ---
 

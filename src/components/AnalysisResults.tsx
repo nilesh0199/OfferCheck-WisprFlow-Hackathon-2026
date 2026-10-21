@@ -16,14 +16,20 @@ import { CopyIcon, CheckIcon } from "./Icons";
 interface AnalysisResultsProps {
   analysis: ValidatedAnalysis;
   analyzedSnapshotText: string;
+  activeConcernId?: string | null;
+  onHoverConcern?: (id: string | null) => void;
 }
 
 export function AnalysisResults({
   analysis,
   analyzedSnapshotText,
+  activeConcernId: externalActiveConcernId,
+  onHoverConcern,
 }: AnalysisResultsProps) {
   const resultsHeadingRef = useRef<HTMLHeadingElement>(null);
-  const [activeConcernId, setActiveConcernId] = useState<string | null>(null);
+  const [internalActiveConcernId, setInternalActiveConcernId] = useState<string | null>(null);
+  const activeConcernId = externalActiveConcernId ?? internalActiveConcernId;
+
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [copiedSummary, setCopiedSummary] = useState(false);
   const [showClipboardFallback, setShowClipboardFallback] = useState(false);
@@ -47,12 +53,19 @@ export function AnalysisResults({
   }, [analysis]);
 
   const handleShowInText = (concernId: string) => {
-    setActiveConcernId(concernId);
+    setInternalActiveConcernId(concernId);
+    onHoverConcern?.(concernId);
+    // Try scrolling desktop rail element into view
+    const railElement = document.getElementById(`rail-highlight-${concernId}`);
+    if (railElement) {
+      railElement.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+    // Also open bottom drawer for mobile/tablet
     setIsViewerOpen(true);
     setTimeout(() => {
       const element = document.getElementById(`highlight-concern-${concernId}`);
       if (element) {
-        element.scrollIntoView({ behavior: "smooth", block: "center" });
+        element.scrollIntoView({ behavior: "smooth", block: "nearest" });
       }
     }, 50);
   };
@@ -163,10 +176,10 @@ export function AnalysisResults({
         className="rounded border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 shadow-2xs space-y-3 transition-colors"
       >
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] pb-2.5">
-          <h3 className="text-2xs font-mono font-semibold uppercase tracking-wider text-[var(--text-muted)]">
+          <h3 className="text-xs font-mono font-semibold uppercase tracking-wider text-[var(--text-muted)]">
             Review summary
           </h3>
-          <div className="flex flex-wrap items-center gap-1.5 font-mono text-2xs">
+          <div className="flex flex-wrap items-center gap-1.5 font-mono text-xs tabular-nums">
             <span className="inline-flex items-center rounded-xs bg-[var(--surface-muted)] px-2 py-0.5 font-medium text-[var(--text-muted)] border border-[var(--border)]">
               {sortedConcerns.length} observations
             </span>
@@ -192,7 +205,7 @@ export function AnalysisResults({
         </p>
 
         {analysis.droppedCount > 0 && (
-          <p className="text-2xs text-[var(--text-muted)] pt-2 border-t border-[var(--border)]">
+          <p className="text-xs text-[var(--text-muted)] pt-2 border-t border-[var(--border)]">
             Notice: {analysis.droppedCount} item(s) were removed because their
             supporting quotes could not be matched character-for-character to
             your text.
@@ -216,7 +229,7 @@ export function AnalysisResults({
         aria-label="Results sections jump navigation"
         className="sticky top-14 z-10 lg:hidden flex items-center gap-2 overflow-x-auto py-2 px-1 bg-[var(--surface)]/95 backdrop-blur-xs border-y border-[var(--border)] text-xs font-medium custom-scrollbar"
       >
-        <span className="text-[var(--text-muted)] shrink-0 font-mono text-2xs uppercase">Jump:</span>
+        <span className="text-[var(--text-muted)] shrink-0 font-mono text-xs uppercase">Jump:</span>
         <a
           href="#section-summary"
           className="rounded-xs px-2 py-1 text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] shrink-0"
@@ -275,6 +288,8 @@ export function AnalysisResults({
       <ConcernsSection
         concerns={sortedConcerns}
         onShowInText={handleShowInText}
+        activeConcernId={activeConcernId}
+        onHoverConcern={onHoverConcern}
       />
 
       {/* Section B: Missing or unclear information */}

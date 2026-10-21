@@ -32,16 +32,15 @@ export function HeroInteractiveDocument() {
     annotations[0]?.id ?? ""
   );
   const [isAnimating, setIsAnimating] = useState<boolean>(true);
-  const [isReducedMotion, setIsReducedMotion] = useState<boolean>(false);
   const [hasPlayedOnce, setHasPlayedOnce] = useState<boolean>(false);
 
   // Debug motion logging (development only, logs once)
   const hasLoggedMotionPathRef = useRef<boolean>(false);
   const logMotionPath = useCallback(
-    (path: "entrance: playing" | "entrance: reduced-motion (finished state)" | "entrance: failsafe") => {
+    (path: string) => {
       if (process.env.NODE_ENV !== "production" && !hasLoggedMotionPathRef.current) {
         hasLoggedMotionPathRef.current = true;
-        console.log(path);
+        console.log(`[OfferCheck Hero] ${path}`);
       }
     },
     []
@@ -55,6 +54,8 @@ export function HeroInteractiveDocument() {
   const animRafRef = useRef<number | null>(null);
   const isReducedMotionRef = useRef<boolean>(false);
   const isAnimatingRef = useRef<boolean>(true);
+  const mountTimeRef = useRef<number>(0);
+  const initialScrollYRef = useRef<number>(0);
 
   // Tilt & Parallax via requestAnimationFrame
   const tiltRafRef = useRef<number | null>(null);
@@ -207,7 +208,6 @@ export function HeroInteractiveDocument() {
     const updateCapabilities = () => {
       const reduced = motionQuery.matches;
       isReducedMotionRef.current = reduced;
-      setIsReducedMotion(reduced);
       if (reduced) {
         completeAnimation(false);
         logMotionPath("entrance: reduced-motion (finished state)");
@@ -218,12 +218,26 @@ export function HeroInteractiveDocument() {
     motionQuery.addEventListener("change", updateCapabilities);
     pointerQuery.addEventListener("change", updateCapabilities);
 
+    mountTimeRef.current = Date.now();
+    initialScrollYRef.current = typeof window !== "undefined" ? window.scrollY : 0;
+
     // Initial measurement after fonts/render settle
     let timerId: NodeJS.Timeout | null = null;
     if (!isReducedMotionRef.current) {
-      timerId = setTimeout(() => {
+      const launch = () => {
+        initialScrollYRef.current = window.scrollY;
         startEntranceAnimation(false);
-      }, 60);
+      };
+
+      if (typeof document !== "undefined" && document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(() => {
+          timerId = setTimeout(launch, 100);
+        }).catch(() => {
+          timerId = setTimeout(launch, 100);
+        });
+      } else {
+        timerId = setTimeout(launch, 100);
+      }
     } else {
       completeAnimation(false);
       logMotionPath("entrance: reduced-motion (finished state)");
@@ -237,25 +251,34 @@ export function HeroInteractiveDocument() {
       }
     }, 3800);
 
-    // Skip on user interaction (pointerdown, keydown, scroll > 10px, or visibilitychange)
-    const initialScrollY = window.scrollY;
-
+    // Skip on real user interaction (ignore first 300ms of browser restoration/synthetic events)
     const handleSkipPointer = () => {
-      if (isAnimatingRef.current) completeAnimation(true);
+      if (Date.now() - mountTimeRef.current < 300) return;
+      if (isAnimatingRef.current) {
+        logMotionPath("entrance: skipped by user pointer");
+        completeAnimation(true);
+      }
     };
 
     const handleSkipKey = () => {
-      if (isAnimatingRef.current) completeAnimation(true);
+      if (Date.now() - mountTimeRef.current < 300) return;
+      if (isAnimatingRef.current) {
+        logMotionPath("entrance: skipped by user key");
+        completeAnimation(true);
+      }
     };
 
     const handleSkipScroll = () => {
-      if (isAnimatingRef.current && Math.abs(window.scrollY - initialScrollY) > 10) {
+      if (Date.now() - mountTimeRef.current < 300) return;
+      if (isAnimatingRef.current && Math.abs(window.scrollY - initialScrollYRef.current) > 10) {
+        logMotionPath("entrance: skipped by user scroll");
         completeAnimation(true);
       }
     };
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === "hidden" && isAnimatingRef.current) {
+        logMotionPath("entrance: skipped by tab backgrounding");
         completeAnimation(true);
       }
     };
@@ -352,7 +375,7 @@ export function HeroInteractiveDocument() {
         <style>{`
           .hero-doc-highlight-span {
             background-color: var(--accent-highlighter) !important;
-            color: #17150F !important;
+            color: var(--color-highlight-ink) !important;
           }
           .hero-lens-layer {
             display: none !important;
@@ -435,7 +458,7 @@ export function HeroInteractiveDocument() {
                 className={`hero-doc-highlight-span inline text-left cursor-pointer rounded-xs px-0.5 -mx-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] transition-all duration-200 ${
                   isRevealed
                     ? isSelected
-                      ? "bg-[var(--accent-highlighter)] text-[#17150F] shadow-xs font-semibold ring-1 ring-[#17150F]/20"
+                      ? "bg-[var(--accent-highlighter)] text-[var(--color-highlight-ink)] shadow-xs font-semibold ring-1 ring-[var(--color-highlight-ink)]/20"
                       : "bg-[var(--accent-highlighter)]/25 text-[var(--text)] hover:bg-[var(--accent-highlighter)]/50 border-b-2 border-[var(--accent-highlighter)]"
                     : "bg-transparent text-[var(--text)] border-b-2 border-transparent"
                 }`}
@@ -449,7 +472,7 @@ export function HeroInteractiveDocument() {
         {/* Margin Note Card (Slide-in Callout) */}
         <div className="mt-6 pt-4 border-t border-[var(--border)]">
           <div className="flex items-start gap-3 rounded-xl border border-[var(--tint-attention-border)] bg-[var(--tint-attention-bg)] p-3.5 shadow-xs transition-all duration-200 min-h-[76px]">
-            <div className="w-5 h-5 rounded-full bg-[var(--accent-highlighter)] text-[#17150F] flex items-center justify-center shrink-0 mt-0.5 font-bold text-xs">
+            <div className="w-5 h-5 rounded-full bg-[var(--accent-highlighter)] text-[var(--color-highlight-ink)] flex items-center justify-center shrink-0 mt-0.5 font-bold text-xs">
               !
             </div>
             <div className="space-y-1 text-left flex-1 min-w-0">
@@ -457,7 +480,7 @@ export function HeroInteractiveDocument() {
                 <h4 className="text-xs font-bold text-[var(--text)] font-sans">
                   {activeAnnotation?.title}
                 </h4>
-                <span className="text-2xs font-mono uppercase tracking-wider text-[var(--text-muted)]">
+                <span className="text-xs font-mono uppercase tracking-wider text-[var(--text-muted)]">
                   Observation
                 </span>
               </div>
@@ -481,23 +504,23 @@ export function HeroInteractiveDocument() {
         </div>
 
         {/* Interactive Helper Hint & Replay Button */}
-        <div className="mt-3 flex items-center justify-between text-2xs text-[var(--text-muted)]">
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--text-muted)]">
           <div className="flex items-center gap-1.5">
-            <InfoCircleIcon className="w-3.5 h-3.5 opacity-70" />
+            <InfoCircleIcon className="w-3.5 h-3.5 opacity-70 shrink-0" />
             <span>Hover or tap highlighted phrases to see observations</span>
           </div>
 
           <button
             type="button"
             onClick={() => startEntranceAnimation(true)}
-            className="text-2xs font-mono underline hover:text-[var(--text)] focus:outline-none focus-visible:ring-1 focus-visible:ring-[var(--focus-ring)] rounded px-1 transition-colors"
+            className="inline-flex items-center text-xs font-mono underline hover:text-[var(--text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-2 px-2.5 min-h-[44px] transition-colors"
             aria-label={
-              isReducedMotion && !hasPlayedOnce
-                ? "Play hero document entrance animation"
-                : "Replay hero document entrance animation"
+              hasPlayedOnce
+                ? "Replay hero document entrance animation"
+                : "Play hero document entrance animation"
             }
           >
-            {isReducedMotion && !hasPlayedOnce ? "Play animation" : "Replay animation"}
+            {hasPlayedOnce ? "Replay animation" : "Play animation"}
           </button>
         </div>
       </div>

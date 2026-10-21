@@ -78,7 +78,7 @@ export function LandingNav() {
 
           <Link
             href="/check"
-            className="inline-flex items-center justify-center rounded-xs bg-[var(--primary-ledger)] text-white px-3.5 py-1.5 text-xs font-medium shadow-2xs hover:bg-[var(--primary-ledger-hover)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[36px]"
+            className="inline-flex items-center justify-center rounded-xs bg-[var(--color-primary)] text-[var(--color-primary-contrast)] px-3.5 py-1.5 text-xs font-medium shadow-2xs hover:bg-[var(--color-primary-hover)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[36px]"
           >
             Check an offer
           </Link>

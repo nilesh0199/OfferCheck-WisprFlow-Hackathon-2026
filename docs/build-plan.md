@@ -206,3 +206,21 @@ This phased build plan outlines the implementation roadmap for OfferCheck, an in
   - Indian/British English spelling applied across `REVIEW_LIMITS` and user-facing copy (`organisation`, `authorised`, `recognise`, `prioritise`, `behaviour`, `colour`).
   - Storage claims updated in hero strip, privacy section, FAQ, `README.md`, and `docs/privacy-and-responsible-use.md` to state that offer text and files are memory-only, with theme choice as the sole item in browser storage (`localStorage`).
   - Comprehensive unit test suites in `tests/theme.test.ts` and `tests/research-nudge.test.ts`; all offline tests, typecheck, lint, and build pass cleanly.
+
+---
+
+## Phase 11: UI Foundations Pass (Design System v4)
+- **Status:** Complete
+- **Goal:** Refine visual craft, contrast, typography, widescreen responsive canvas, `/check` 3-zone desk layout with bi-directional evidence linking, and hero motion resilience without modifying the analysis pipeline or adding dependencies.
+- **Acceptance Criteria:**
+  - Author `docs/design-brief.md` (< 120 lines) synthesizing guidance from design skills (`frontend-design`, `ui-ux-pro-max`, `design-taste-frontend`, `nextjs-app-router-patterns`) with explicit rationale for adopted and rejected suggestions.
+  - Semantic token architecture in `src/app/globals.css` with explicit `color-scheme: light` and `color-scheme: dark`. Zero raw hex or default palette utility classes in production markup.
+  - Contrast verification in `tests/wcag-contrast.test.ts` proving text $\ge 4.5:1$ (AA/AAA) and borders/focus rings $\ge 3:1$ in both light and dark themes.
+  - Token audit test in `tests/token-audit.test.ts` verifying no un-tokenised color classes leak into production components.
+  - Typographic system updated in `src/app/layout.tsx` to `IBM_Plex_Sans`, `IBM_Plex_Mono`, and `Newsreader` (Google Fonts via `next/font`), establishing 15px base body text, 13px secondary text, absolute minimum 12px, tabular numbers for numeric metrics, and prose containers constrained to `max-w-[70ch]`.
+  - Full-width fluid responsive container primitive in `src/components/layout/Container.tsx` with dynamic padding clamp and 2000px max width replacing narrow wrappers.
+  - Responsive `/check` workspace layout: Pre-review balanced 7/12 input card and 5/12 helper card (with sample picker, review expectations, privacy note); Post-review desktop ($\ge 1280$px) 3-zone layout with ~400px sticky left rail offer viewer, fluid centre column with prose capped at 70ch, and ~260px sticky right rail summary and actions.
+  - Bi-directional evidence linking between observation cards and verbatim offer viewer with line numbering via pure `lineOfOffset` helper and test suite in `tests/line-offset.test.ts`.
+  - Mobile touch targets $\ge 44$px across all interactive controls, sticky bottom action bar on viewports $<640$px with `env(safe-area-inset-bottom)`, and `overflow-x: clip` preventing horizontal scrolling.
+  - Hero motion resilience: wait for `document.fonts.ready` + 100ms before measuring highlight targets, 300ms gesture grace period to ignore scroll restoration on reload, persistent ghost button, and `overflow-x: clip` on `html, body` restoring native CSS `position: sticky` on the scroll scene.
+  - Offline Vitest test suites, TypeScript typecheck, ESLint, and Next.js Turbopack production build pass cleanly.

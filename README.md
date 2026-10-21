@@ -5,7 +5,7 @@
 A free, no-sign-in review assistant that helps students and first-time job seekers read an internship or job offer carefully before they pay money or share documents.
 
 - **Live Demo:** [offer-check-wispr-flow-hackathon-20.vercel.app](https://offer-check-wispr-flow-hackathon-20.vercel.app) *(Note: Please confirm this is still your production deployment URL).*
-- **Routes:** `/` (landing page and overview) · `/check` (review workspace)
+- **Routes:** `/` (landing page and overview) · `/check` (review workspace) · `/resources` (official verification portals and reporting channels)
 
 ---
 
@@ -57,8 +57,10 @@ When you are starting out, an offer can feel like a rare chance, and you may not
 | **"Check these yourself" steps** | Implemented | Contextually prioritised verification steps based on identified concerns (payment, sensitive data, off-platform messaging). |
 | **Official resources** | Implemented | Direct links and helpline numbers for AICTE, NCS (1514), MCA Company Search, and the National Cyber Crime Reporting Portal (1930). Zero runtime network calls. |
 | **Company research nudge & handoff** | Implemented | Evaluates offer cues (unnamed employer, free email without a website, or internship without a supervisor) to recommend independent research. Prepares an external Perplexity prompt with an always-visible key-value summary, depth switcher, and required company field. Raw offer text is strictly excluded. |
-| **Theme system (Light, Dark, System)** | Implemented | Default light console theme with warm enterprise paper aesthetics, dark warm charcoal theme, anti-FOUC inline script, `<meta name="theme-color">` syncing, and an accessible top-right segmented `ThemeToggle` (`role="radiogroup"`) across all headers. |
-| **Balanced workspace layout** | Implemented | 5/12 left, 7/12 right desktop layout. Post-review left panel provides a sticky "Your offer" read-only highlight snapshot, "Edit text" toggle, "New review" confirmation, and an "On this page" scroll-spy nav. |
+| **Theme & semantic token system** | Implemented | Dual-theme system (Light, Dark, System; Light default) with explicit `color-scheme` in `globals.css` and zero raw palette classes. Contrast ratios verified to meet or exceed WCAG 2.1 AA/AAA standards (text $\ge 4.5:1$, borders/focus $\ge 3:1$). Anti-FOUC inline script and accessible `ThemeToggle`. |
+| **Three-zone workspace layout** | Implemented | Fluid full-width container `min(100% - 2*gutter, 2000px)`. Pre-review 7/12 input + 5/12 sample offers & guidance. Post-review 3-zone desk on desktop ($\ge 1280$px): sticky left rail document viewer with line numbers and quote highlights, centre fluid results with prose $\le 70$ch, sticky right rail section nav and quick actions ('Copy summary', 'Print / PDF'). |
+| **Bi-directional evidence linking** | Implemented | Hovering or focusing an observation card in the findings column highlights the quote in the left rail document and scrolls to its line. Clicking a highlighted phrase in the document rail scrolls to and focuses the corresponding observation card. |
+| **Typography architecture** | Implemented | Build-time self-hosted Google Fonts: `IBM Plex Sans` for readable UI and body prose, `IBM Plex Mono` for code/quotes/line numbers, and `Newsreader` for landing headlines. 15px base text, 13px secondary, min 12px, tabular numbers. |
 | **Landing page and routes** | Implemented | Asymmetric landing page at `/` with an interactive annotated paper card, non-blocking hero entrance animation with opt-in playback for reduced-motion visitors, and a scroll-driven line-by-line inspection scene; tool workspace at `/check`; in-memory session persistence across routes via `SessionProvider`. |
 | **Safeguards** | Implemented | Sliding-window rate limiting (8/15m, 30/24h) with salted SHA-256 IP hashing, model circuit breaker, in-memory concurrency guard (max 4), input hygiene (blocking NUL/control characters), and security headers. |
 | **Job-offer specifics** | Partially implemented | The review prompt treats salary, probation period, joining date and contract terms as missing details when unstated, and display labels say "Stipend or salary" and "Duration or contract term". There are no job-offer sample texts and no job-offer evaluation yet; clauses such as service bonds or training-fee agreements are not specifically handled. |

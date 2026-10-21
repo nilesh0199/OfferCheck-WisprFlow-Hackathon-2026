@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col justify-between overflow-x-hidden transition-colors">
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col justify-between transition-colors">
       <LandingNav />
 
       <main className="flex-1">
@@ -49,7 +49,7 @@ export default function LandingPage() {
               <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
                 <Link
                   href="/check"
-                  className="inline-flex items-center justify-center rounded-xl bg-[var(--primary-ledger)] text-white px-6 py-3 text-sm font-medium shadow-xs hover:bg-[var(--primary-ledger-hover)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px]"
+                  className="inline-flex items-center justify-center rounded-xl bg-[var(--color-primary)] text-[var(--color-primary-contrast)] px-6 py-3 text-sm font-medium shadow-xs hover:bg-[var(--color-primary-hover)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px]"
                 >
                   Check an offer
                 </Link>
@@ -61,7 +61,7 @@ export default function LandingPage() {
                 </a>
               </div>
 
-              <div className="pt-2 flex items-center gap-4 text-2xs text-[var(--text-muted)] font-mono">
+              <div className="pt-2 flex items-center gap-4 text-xs text-[var(--text-muted)] font-mono">
                 <span>• Nothing saved after you leave</span>
                 <span>• No accounts</span>
                 <span>• Free</span>

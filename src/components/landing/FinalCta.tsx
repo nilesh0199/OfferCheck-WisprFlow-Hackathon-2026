@@ -17,7 +17,7 @@ export function FinalCta() {
         <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
             href="/check"
-            className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-[var(--primary-ledger)] text-white px-7 py-3.5 text-sm font-medium shadow-xs hover:bg-[var(--primary-ledger-hover)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px]"
+            className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-[var(--color-primary)] text-[var(--color-primary-contrast)] px-7 py-3.5 text-sm font-medium shadow-xs hover:bg-[var(--color-primary-hover)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px]"
           >
             Check an offer
           </Link>
@@ -29,7 +29,7 @@ export function FinalCta() {
           </a>
         </div>
 
-        <p className="text-2xs text-[var(--text-muted)] pt-2">
+        <p className="text-xs text-[var(--text-muted)] pt-2">
           Free · No sign-in required · Tab memory only
         </p>
       </Container>

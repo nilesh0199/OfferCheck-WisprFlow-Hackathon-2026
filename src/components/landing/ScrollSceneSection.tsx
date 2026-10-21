@@ -119,12 +119,12 @@ export function ScrollSceneSection() {
     const part6 = exampleText.slice(idx3 + s3.length);
 
     return (
-      <div className="font-mono text-2xs leading-relaxed text-[var(--text)] whitespace-pre-wrap select-text">
+      <div className="font-mono text-xs leading-relaxed text-[var(--text)] whitespace-pre-wrap select-text">
         <span>{part0}</span>
         <span
           className={`transition-all duration-200 px-0.5 rounded-xs ${
             activeStep === 0
-              ? "bg-[var(--accent-highlighter)] text-[#17150F] font-semibold ring-1 ring-[#17150F]/20"
+              ? "bg-[var(--accent-highlighter)] text-[var(--color-highlight-ink)] font-semibold ring-1 ring-[var(--color-highlight-ink)]/20"
               : "bg-[var(--accent-highlighter)]/20 text-[var(--text)]"
           }`}
         >
@@ -134,7 +134,7 @@ export function ScrollSceneSection() {
         <span
           className={`transition-all duration-200 px-0.5 rounded-xs ${
             activeStep === 1
-              ? "bg-[var(--accent-highlighter)] text-[#17150F] font-semibold ring-1 ring-[#17150F]/20"
+              ? "bg-[var(--accent-highlighter)] text-[var(--color-highlight-ink)] font-semibold ring-1 ring-[var(--color-highlight-ink)]/20"
               : "bg-[var(--accent-highlighter)]/20 text-[var(--text)]"
           }`}
         >
@@ -144,7 +144,7 @@ export function ScrollSceneSection() {
         <span
           className={`transition-all duration-200 px-0.5 rounded-xs ${
             activeStep === 2
-              ? "bg-[var(--accent-highlighter)] text-[#17150F] font-semibold ring-1 ring-[#17150F]/20"
+              ? "bg-[var(--accent-highlighter)] text-[var(--color-highlight-ink)] font-semibold ring-1 ring-[var(--color-highlight-ink)]/20"
               : "bg-[var(--accent-highlighter)]/20 text-[var(--text)]"
           }`}
         >
@@ -238,9 +238,9 @@ export function ScrollSceneSection() {
                         <div className="flex items-center justify-between gap-2 pb-1.5 mb-1.5 border-b border-[var(--border)]/60 text-xs">
                           <div className="flex items-center gap-2">
                             <span
-                              className={`flex items-center justify-center w-5 h-5 rounded-full font-mono text-2xs font-bold ${
+                              className={`flex items-center justify-center w-5 h-5 rounded-full font-mono text-xs font-bold ${
                                 isActive
-                                  ? "bg-[var(--accent-highlighter)] text-[#17150F]"
+                                  ? "bg-[var(--accent-highlighter)] text-[var(--color-highlight-ink)]"
                                   : "bg-[var(--surface)] text-[var(--text-muted)] border border-[var(--border)]"
                               }`}
                             >
@@ -250,12 +250,12 @@ export function ScrollSceneSection() {
                               {step.title}
                             </span>
                           </div>
-                          <span className="font-mono text-2xs uppercase text-[var(--text-muted)] font-medium">
+                          <span className="font-mono text-xs uppercase text-[var(--text-muted)] font-medium">
                             {step.label}
                           </span>
                         </div>
 
-                        <p className="text-2xs sm:text-xs text-[var(--text-muted)] leading-relaxed font-sans">
+                        <p className="text-xs text-[var(--text-muted)] leading-relaxed font-sans">
                           {step.note}
                         </p>
                       </li>
@@ -264,7 +264,7 @@ export function ScrollSceneSection() {
                 </ol>
 
                 {/* Progress Indicator Track */}
-                <div className="flex items-center gap-2 pt-1 text-2xs font-mono text-[var(--text-muted)]">
+                <div className="flex items-center gap-2 pt-1 text-xs font-mono text-[var(--text-muted)]">
                   <span>Step {activeStep + 1} of {SCENE_STEPS.length}</span>
                   <div className="flex items-center gap-1.5 ml-2">
                     {SCENE_STEPS.map((_, idx) => (
@@ -295,7 +295,7 @@ export function ScrollSceneSection() {
         <div className="py-16 sm:py-24">
           <Container className="space-y-10">
             <div className="max-w-2xl space-y-3">
-              <span className="font-mono text-2xs uppercase tracking-wider text-[var(--primary-ledger)] font-semibold">
+              <span className="font-mono text-xs uppercase tracking-wider text-[var(--primary-ledger)] font-semibold">
                 Line-by-Line Inspection
               </span>
               <h2 className="text-2xl sm:text-3xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]">
@@ -315,23 +315,23 @@ export function ScrollSceneSection() {
                 >
                   <div className="flex items-center justify-between gap-2 pb-2 border-b border-[var(--border)]">
                     <div className="flex items-center gap-2.5">
-                      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[var(--accent-highlighter)] text-[#17150F] font-mono text-xs font-bold">
+                      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[var(--accent-highlighter)] text-[var(--color-highlight-ink)] font-mono text-xs font-bold">
                         {step.stepNumber}
                       </span>
                       <h3 className="font-sans font-bold text-sm sm:text-base text-[var(--text)]">
                         {step.title}
                       </h3>
                     </div>
-                    <span className="font-mono text-2xs uppercase text-[var(--text-muted)] font-medium">
+                    <span className="font-mono text-xs uppercase text-[var(--text-muted)] font-medium">
                       {step.label}
                     </span>
                   </div>
 
                   <div className="p-3 rounded-lg bg-[var(--surface-muted)]/60 border border-[var(--border)]/60 font-mono text-xs leading-relaxed text-[var(--text)]">
-                    <span className="text-[var(--text-muted)] text-2xs block mb-1">
+                    <span className="text-[var(--text-muted)] text-xs block mb-1">
                       Target phrase from synthetic Example 1:
                     </span>
-                    <span className="bg-[var(--accent-highlighter)] text-[#17150F] px-1 py-0.5 rounded font-semibold inline">
+                    <span className="bg-[var(--accent-highlighter)] text-[var(--color-highlight-ink)] px-1 py-0.5 rounded font-semibold inline">
                       &quot;{step.phrase}&quot;
                     </span>
                   </div>

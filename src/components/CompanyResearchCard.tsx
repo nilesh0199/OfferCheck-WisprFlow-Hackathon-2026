@@ -306,7 +306,7 @@ export function CompanyResearchCard({
               type="button"
               onClick={handleCopy}
               disabled={isCompanyMissing}
-              className="inline-flex items-center justify-center gap-1.5 rounded-xs bg-[var(--primary-ledger)] text-white px-3.5 py-1.5 text-xs font-medium shadow-2xs hover:bg-[var(--primary-ledger-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[36px]"
+              className="inline-flex items-center justify-center gap-1.5 rounded-xs bg-[var(--color-primary)] text-[var(--color-primary-contrast)] px-3.5 py-1.5 text-xs font-medium shadow-2xs hover:bg-[var(--color-primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[36px]"
               aria-label={
                 isCompanyMissing
                   ? "Enter a company name above to generate the research prompt"
@@ -315,12 +315,12 @@ export function CompanyResearchCard({
             >
               {copied ? (
                 <>
-                  <CheckIcon className="w-3.5 h-3.5 text-white" />
+                  <CheckIcon className="w-3.5 h-3.5 text-current" />
                   <span>Prompt copied!</span>
                 </>
               ) : (
                 <>
-                  <CopyIcon className="w-3.5 h-3.5 text-white" />
+                  <CopyIcon className="w-3.5 h-3.5 text-current" />
                   <span>Copy research prompt</span>
                 </>
               )}

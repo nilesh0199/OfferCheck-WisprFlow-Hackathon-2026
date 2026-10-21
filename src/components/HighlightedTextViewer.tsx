@@ -88,7 +88,7 @@ export function HighlightedTextViewer({
                 id={seg.concernId ? `highlight-concern-${seg.concernId}` : undefined}
                 className={`rounded-xs px-1 py-0.5 font-medium transition-all ${
                   isTargeted
-                    ? "bg-[var(--accent-highlighter)] text-slate-950 ring-2 ring-[var(--focus-ring)]"
+                    ? "bg-[var(--accent-highlighter)] text-[var(--color-highlight-ink)] ring-2 ring-[var(--focus-ring)]"
                     : "bg-[var(--tint-attention-bg)] text-[var(--text)] border border-[var(--tint-attention-border)]"
                 }`}
                 title={

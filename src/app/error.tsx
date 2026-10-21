@@ -47,7 +47,7 @@ export default function ErrorBoundary({
             <button
               type="button"
               onClick={() => reset()}
-              className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-[var(--primary-ledger)] text-white px-5 py-2.5 text-xs font-medium shadow-xs hover:bg-[var(--primary-ledger-hover)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px]"
+              className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-[var(--color-primary)] text-[var(--color-primary-contrast)] px-5 py-2.5 text-xs font-medium shadow-xs hover:bg-[var(--color-primary-hover)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px]"
             >
               Try again
             </button>

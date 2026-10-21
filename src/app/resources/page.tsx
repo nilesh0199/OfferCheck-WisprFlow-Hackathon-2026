@@ -43,7 +43,7 @@ export default function ResourcesPage() {
             </Link>
             <Link
               href="/check"
-              className="hover:text-[var(--text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 px-1.5 font-semibold text-[var(--primary-ledger)] dark:text-emerald-400"
+              className="hover:text-[var(--text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 px-1.5 font-semibold text-[var(--color-primary)]"
             >
               Check an offer
             </Link>

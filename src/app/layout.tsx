@@ -1,28 +1,28 @@
 import type { Metadata } from "next";
-import { Instrument_Serif, Instrument_Sans, IBM_Plex_Mono } from "next/font/google";
+import { Newsreader, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { APP_NAME, TAGLINE } from "@/lib/config";
 import { THEME_INLINE_SCRIPT } from "@/lib/theme";
 import { SessionProvider } from "@/components/SessionProvider";
 import { ScrollToTop } from "@/components/ScrollToTop";
 
-const instrumentSerif = Instrument_Serif({
+const newsreader = Newsreader({
   subsets: ["latin"],
-  weight: "400",
+  weight: ["400", "600"],
   variable: "--font-serif",
   display: "swap",
 });
 
-const instrumentSans = Instrument_Sans({
+const ibmPlexSans = IBM_Plex_Sans({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600"],
   variable: "--font-sans",
   display: "swap",
 });
 
 const ibmPlexMono = IBM_Plex_Mono({
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500"],
   variable: "--font-mono",
   display: "swap",
 });
@@ -71,7 +71,7 @@ export default function RootLayout({
       lang="en"
       data-theme="light"
       suppressHydrationWarning
-      className={`${instrumentSans.variable} ${instrumentSerif.variable} ${ibmPlexMono.variable} h-full antialiased`}
+      className={`${ibmPlexSans.variable} ${newsreader.variable} ${ibmPlexMono.variable} h-full antialiased`}
     >
       <head>
         <meta name="theme-color" content="#1f2933" />

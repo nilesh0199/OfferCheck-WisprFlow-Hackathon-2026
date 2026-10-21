@@ -68,7 +68,7 @@ export function FaqSection() {
                   <p>
                     <Link
                       href={faq.linkHref}
-                      className="inline-flex items-center text-xs font-semibold text-[var(--primary-ledger)] dark:text-emerald-400 underline underline-offset-2 hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 min-h-[44px]"
+                      className="inline-flex items-center text-xs font-semibold text-[var(--color-primary)] underline underline-offset-2 hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 min-h-[44px]"
                     >
                       {faq.linkLabel}
                     </Link>

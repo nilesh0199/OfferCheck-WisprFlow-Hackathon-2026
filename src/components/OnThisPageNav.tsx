@@ -10,9 +10,15 @@ export interface PageSectionItem {
 
 export interface OnThisPageNavProps {
   sections: readonly PageSectionItem[];
+  onCopySummary?: () => void;
+  copiedSummary?: boolean;
 }
 
-export function OnThisPageNav({ sections }: OnThisPageNavProps) {
+export function OnThisPageNav({
+  sections,
+  onCopySummary,
+  copiedSummary = false,
+}: OnThisPageNavProps) {
   const [activeId, setActiveId] = useState<string>(sections[0]?.id || "");
 
   useEffect(() => {
@@ -47,10 +53,10 @@ export function OnThisPageNav({ sections }: OnThisPageNavProps) {
   return (
     <nav
       aria-label="On this page navigation"
-      className="rounded border border-[var(--border)] bg-[var(--surface)] p-4 shadow-2xs space-y-2 transition-colors"
+      className="rounded border border-[var(--border)] bg-[var(--surface)] p-4 shadow-2xs space-y-3 transition-colors"
     >
       <div className="border-b border-[var(--border)] pb-2">
-        <h4 className="text-2xs font-mono uppercase tracking-wider text-[var(--text-muted)] font-semibold">
+        <h4 className="text-xs font-mono uppercase tracking-wider text-[var(--text-muted)] font-semibold">
           On this page
         </h4>
       </div>
@@ -64,13 +70,13 @@ export function OnThisPageNav({ sections }: OnThisPageNavProps) {
                 href={`#${section.id}`}
                 className={`flex items-center justify-between rounded-xs px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] ${
                   isActive
-                    ? "bg-[var(--surface-muted)] text-[var(--text)] font-semibold border-l-2 border-l-[var(--primary-ledger)] pl-2"
+                    ? "bg-[var(--surface-muted)] text-[var(--text)] font-semibold border-l-2 border-l-[var(--color-primary)] pl-2"
                     : "text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-muted)]/60"
                 }`}
               >
                 <span className="truncate">{section.label}</span>
                 {typeof section.count === "number" && (
-                  <span className="font-mono text-2xs text-[var(--text-muted)] opacity-80 shrink-0 ml-2">
+                  <span className="font-mono text-xs tabular-nums text-[var(--text-muted)] opacity-80 shrink-0 ml-2">
                     {section.count}
                   </span>
                 )}
@@ -79,6 +85,33 @@ export function OnThisPageNav({ sections }: OnThisPageNavProps) {
           );
         })}
       </ul>
+
+      {/* Quick Actions (Copy summary, Print / PDF) */}
+      <div className="pt-3 border-t border-[var(--border)] space-y-2">
+        <h4 className="text-xs font-mono uppercase tracking-wider text-[var(--text-muted)] font-semibold">
+          Quick actions
+        </h4>
+        <div className="space-y-1.5">
+          {onCopySummary && (
+            <button
+              type="button"
+              onClick={onCopySummary}
+              className="w-full inline-flex items-center justify-between rounded-xs border border-[var(--border)] bg-[var(--surface-muted)]/60 px-2.5 py-1.5 text-xs font-medium text-[var(--text)] hover:bg-[var(--surface-muted)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[36px]"
+            >
+              <span>{copiedSummary ? "Summary copied!" : "Copy summary"}</span>
+              <span className="font-mono text-xs text-[var(--text-muted)]">TXT</span>
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="w-full inline-flex items-center justify-between rounded-xs border border-[var(--border)] bg-[var(--surface-muted)]/60 px-2.5 py-1.5 text-xs font-medium text-[var(--text)] hover:bg-[var(--surface-muted)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[36px]"
+          >
+            <span>Print / PDF</span>
+            <span className="font-mono text-xs text-[var(--text-muted)]">PDF</span>
+          </button>
+        </div>
+      </div>
     </nav>
   );
 }

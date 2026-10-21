@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Instrument_Serif, Instrument_Sans, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { APP_NAME, TAGLINE } from "@/lib/config";
+import { THEME_INLINE_SCRIPT } from "@/lib/theme";
 import { SessionProvider } from "@/components/SessionProvider";
 import { ScrollToTop } from "@/components/ScrollToTop";
 
@@ -68,8 +69,18 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      data-theme="light"
+      suppressHydrationWarning
       className={`${instrumentSans.variable} ${instrumentSerif.variable} ${ibmPlexMono.variable} h-full antialiased`}
     >
+      <head>
+        <meta name="theme-color" content="#1f2933" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: THEME_INLINE_SCRIPT,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col font-sans bg-[var(--bg)] text-[var(--text)] transition-colors">
         <SessionProvider>
           <ScrollToTop />

@@ -3,6 +3,7 @@ import { ValidatedAnalysis } from "@/lib/analysis/schema";
 import { buildReviewSummary } from "@/lib/analysis/summary";
 import { sentenceCase } from "@/lib/analysis/sentence-case";
 import { sortConcernsByPriority } from "@/lib/analysis/priorities";
+import { getResearchNudge } from "@/lib/research/nudge";
 import { ConcernsSection } from "./ConcernsSection";
 import { MissingInfoSection } from "./MissingInfoSection";
 import { QuestionsSection } from "./QuestionsSection";
@@ -32,6 +33,12 @@ export function AnalysisResults({
   const sortedConcerns = useMemo(
     () => sortConcernsByPriority(analysis.concerns),
     [analysis.concerns]
+  );
+
+  // Compute contextual research nudge pure function
+  const nudge = useMemo(
+    () => getResearchNudge({ analysis, sourceText: analyzedSnapshotText }),
+    [analysis, analyzedSnapshotText]
   );
 
   // Focus the results heading programmatically when results are mounted or updated
@@ -66,46 +73,59 @@ export function AnalysisResults({
     }
   };
 
+  const isRecommended = nudge.level === "recommended";
+
   return (
-    <div className="space-y-6 pt-2">
+    <div className="space-y-6 pt-1">
       {/* Live announcement region for copy status */}
       <div className="sr-only" aria-live="polite" role="status">
         {liveAnnouncement}
       </div>
 
       {/* Results Header and Focus Target */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-4 dark:border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[var(--border)] pb-4">
         <div>
           <h2
             ref={resultsHeadingRef}
             tabIndex={-1}
-            className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 outline-none focus:outline-none"
+            className="text-lg sm:text-xl font-bold tracking-tight text-[var(--text)] outline-none focus:outline-none"
           >
             Offer review results
           </h2>
-          <p className="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            This is a review of the text you pasted. It is not a safety assessment.
+          <p className="mt-0.5 text-xs text-[var(--text-muted)]">
+            This is a review of the text provided. It is not a safety assessment.
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={handleCopySummary}
-          className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-xs sm:text-sm font-medium text-slate-900 shadow-xs hover:bg-slate-50 active:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700 min-h-[44px] shrink-0"
-          aria-label="Copy review summary to clipboard"
-        >
-          {copiedSummary ? (
-            <>
-              <CheckIcon className="w-4 h-4 text-slate-700 dark:text-slate-300" />
-              <span>Copied</span>
-            </>
-          ) : (
-            <>
-              <CopyIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-              <span>Copy review summary</span>
-            </>
-          )}
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="inline-flex items-center justify-center gap-1.5 rounded-xs border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-medium text-[var(--text)] shadow-2xs hover:bg-[var(--surface-muted)] active:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[34px] shrink-0 no-print"
+            aria-label="Export review to PDF"
+          >
+            <span>Export review (PDF)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleCopySummary}
+            className="inline-flex items-center justify-center gap-1.5 rounded-xs border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-medium text-[var(--text)] shadow-2xs hover:bg-[var(--surface-muted)] active:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[34px] shrink-0 no-print"
+            aria-label="Copy review summary to clipboard"
+          >
+            {copiedSummary ? (
+              <>
+                <CheckIcon className="w-3.5 h-3.5 text-[var(--primary-ledger)]" />
+                <span>Copied</span>
+              </>
+            ) : (
+              <>
+                <CopyIcon className="w-3.5 h-3.5 text-[var(--text-muted)]" />
+                <span>Copy review summary</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Clipboard Fallback Area if navigator.clipboard fails */}
@@ -113,63 +133,66 @@ export function AnalysisResults({
         <div
           role="region"
           aria-label="Manual copy review summary area"
-          className="rounded-xl border border-slate-300 bg-slate-50 p-4 space-y-2 dark:border-slate-700 dark:bg-slate-900"
+          className="rounded border border-[var(--border)] bg-[var(--surface-muted)] p-3.5 space-y-2"
         >
           <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+            <p className="text-xs font-semibold text-[var(--text)]">
               Select and copy the review summary below:
             </p>
             <button
               type="button"
               onClick={() => setShowClipboardFallback(false)}
-              className="text-xs text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 rounded p-1"
+              className="text-xs text-[var(--text-muted)] hover:text-[var(--text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded p-1"
             >
               Close
             </button>
           </div>
           <textarea
             readOnly
-            rows={6}
+            rows={5}
             value={buildReviewSummary(analysis, analyzedSnapshotText)}
             onFocus={(e) => e.target.select()}
-            className="w-full rounded-lg border border-slate-300 bg-white p-2.5 font-mono text-xs text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 custom-scrollbar"
+            className="w-full rounded-xs border border-[var(--border)] bg-[var(--surface)] p-2 font-mono text-xs text-[var(--text)] custom-scrollbar"
           />
         </div>
       )}
 
       {/* Summary Card with Neutral Count Chips */}
-      <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-3.5 transition-colors">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+      <div
+        id="section-summary"
+        className="rounded border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 shadow-2xs space-y-3 transition-colors"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] pb-2.5">
+          <h3 className="text-2xs font-mono font-semibold uppercase tracking-wider text-[var(--text-muted)]">
             Review summary
           </h3>
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+          <div className="flex flex-wrap items-center gap-1.5 font-mono text-2xs">
+            <span className="inline-flex items-center rounded-xs bg-[var(--surface-muted)] px-2 py-0.5 font-medium text-[var(--text-muted)] border border-[var(--border)]">
               {sortedConcerns.length} observations
             </span>
-            <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+            <span className="inline-flex items-center rounded-xs bg-[var(--surface-muted)] px-2 py-0.5 font-medium text-[var(--text-muted)] border border-[var(--border)]">
               {analysis.missingInfo.length} missing details
             </span>
-            <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+            <span className="inline-flex items-center rounded-xs bg-[var(--surface-muted)] px-2 py-0.5 font-medium text-[var(--text-muted)] border border-[var(--border)]">
               {analysis.verificationQuestions.length} questions
             </span>
           </div>
         </div>
 
         {analysis.overallNote && (
-          <p className="text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
+          <p className="text-xs sm:text-sm text-[var(--text)] leading-relaxed font-medium">
             {sentenceCase(analysis.overallNote)}
           </p>
         )}
 
-        <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+        <p className="text-xs text-[var(--text-muted)] leading-relaxed">
           {sortedConcerns.length === 0
             ? "No specific concerns were identified in the text provided. This is not a safety assessment."
             : "Review the potential concerns and questions below before proceeding with this offer."}
         </p>
 
         {analysis.droppedCount > 0 && (
-          <p className="text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <p className="text-2xs text-[var(--text-muted)] pt-2 border-t border-[var(--border)]">
             Notice: {analysis.droppedCount} item(s) were removed because their
             supporting quotes could not be matched character-for-character to
             your text.
@@ -177,45 +200,72 @@ export function AnalysisResults({
         )}
       </div>
 
-      {/* Sticky Jump Navigation */}
+      {/* Recommended Placement: Top under summary */}
+      {isRecommended && (
+        <CompanyResearchCard
+          offerText={analyzedSnapshotText}
+          entities={analysis.entities}
+          level="recommended"
+          reasons={nudge.reasons}
+          defaultCollapsed={false}
+        />
+      )}
+
+      {/* Mobile-Only Horizontal Jump Navigation (Hidden on desktop where Left Panel has OnThisPageNav) */}
       <nav
         aria-label="Results sections jump navigation"
-        className="sticky top-16 z-10 flex items-center gap-2 overflow-x-auto py-2 px-1 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-xs border-y border-slate-200/80 dark:border-slate-800 text-xs font-medium custom-scrollbar"
+        className="sticky top-14 z-10 lg:hidden flex items-center gap-2 overflow-x-auto py-2 px-1 bg-[var(--surface)]/95 backdrop-blur-xs border-y border-[var(--border)] text-xs font-medium custom-scrollbar"
       >
-        <span className="text-slate-400 dark:text-slate-500 shrink-0">Jump to:</span>
+        <span className="text-[var(--text-muted)] shrink-0 font-mono text-2xs uppercase">Jump:</span>
+        <a
+          href="#section-summary"
+          className="rounded-xs px-2 py-1 text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] shrink-0"
+        >
+          Summary
+        </a>
+        {isRecommended && (
+          <a
+            href="#section-research"
+            className="rounded-xs px-2 py-1 text-[var(--text)] font-semibold bg-[var(--tint-attention-bg)] border border-[var(--tint-attention-border)] shrink-0"
+          >
+            Research
+          </a>
+        )}
         <a
           href="#section-observations"
-          className="rounded-md px-2.5 py-1 text-slate-700 hover:bg-slate-200/70 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 shrink-0"
+          className="rounded-xs px-2 py-1 text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] shrink-0"
         >
           Observations ({sortedConcerns.length})
         </a>
         <a
           href="#section-missing"
-          className="rounded-md px-2.5 py-1 text-slate-700 hover:bg-slate-200/70 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 shrink-0"
+          className="rounded-xs px-2 py-1 text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] shrink-0"
         >
-          Missing details ({analysis.missingInfo.length})
+          Missing ({analysis.missingInfo.length})
         </a>
         <a
           href="#section-questions"
-          className="rounded-md px-2.5 py-1 text-slate-700 hover:bg-slate-200/70 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 shrink-0"
+          className="rounded-xs px-2 py-1 text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] shrink-0"
         >
           Questions ({analysis.verificationQuestions.length})
         </a>
-        <a
-          href="#section-research"
-          className="rounded-md px-2.5 py-1 text-slate-700 hover:bg-slate-200/70 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 shrink-0"
-        >
-          Research
-        </a>
+        {!isRecommended && (
+          <a
+            href="#section-research"
+            className="rounded-xs px-2 py-1 text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] shrink-0"
+          >
+            Research
+          </a>
+        )}
         <a
           href="#section-resources"
-          className="rounded-md px-2.5 py-1 text-slate-700 hover:bg-slate-200/70 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 shrink-0"
+          className="rounded-xs px-2 py-1 text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] shrink-0"
         >
           Resources
         </a>
         <a
           href="#section-limits"
-          className="rounded-md px-2.5 py-1 text-slate-700 hover:bg-slate-200/70 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 shrink-0"
+          className="rounded-xs px-2 py-1 text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] shrink-0"
         >
           Limits
         </a>
@@ -236,12 +286,16 @@ export function AnalysisResults({
         concerns={sortedConcerns}
       />
 
-      {/* Optional: Company research prompt handoff */}
-      <CompanyResearchCard
-        offerText={analyzedSnapshotText}
-        entities={analysis.entities}
-        defaultCollapsed={false}
-      />
+      {/* Optional Placement: After questions if not recommended */}
+      {!isRecommended && (
+        <CompanyResearchCard
+          offerText={analyzedSnapshotText}
+          entities={analysis.entities}
+          level="optional"
+          reasons={[]}
+          defaultCollapsed={false}
+        />
+      )}
 
       {/* Section: Next steps and official resources */}
       <OfficialResourcesSection

@@ -201,4 +201,76 @@ describe("Resources page structure and post-payment steps", () => {
       }
     }
   });
+
+  it("ensures MCA action links to exact verified URL with label 'Open the MCA company or LLP name search'", async () => {
+    const { VERIFICATION_RESOURCES } = await import("@/data/verification-resources");
+    const mca = VERIFICATION_RESOURCES.find((r) => r.id === "mca");
+    expect(mca).toBeDefined();
+    const linkAction = mca?.actions.find((a) => a.type === "link");
+    expect(linkAction?.label).toBe("Open the MCA company or LLP name search");
+    expect(linkAction?.value).toBe(
+      "https://www.mca.gov.in/content/mca/global/en/mca/fo-llp-services/company-llp-name-search.html"
+    );
+  });
+
+  it("parses docs/resources-verification.md and asserts each verified URL appears in the data", async () => {
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    const { VERIFICATION_RESOURCES } = await import("@/data/verification-resources");
+
+    const recordPath = path.resolve(process.cwd(), "docs/resources-verification.md");
+    const content = fs.readFileSync(recordPath, "utf-8");
+
+    const urlMatches = Array.from(
+      content.matchAll(/-\s+\*\*Verified URL:\*\*\s+`([^`]+)`/g)
+    ).map((m) => m[1]);
+
+    expect(urlMatches.length).toBeGreaterThanOrEqual(4);
+
+    const allDataUrls = new Set<string>();
+    for (const r of VERIFICATION_RESOURCES) {
+      allDataUrls.add(r.sourceUrl);
+      for (const a of r.actions) {
+        if (a.type === "link") {
+          allDataUrls.add(a.value);
+        }
+      }
+    }
+
+    for (const expectedUrl of urlMatches) {
+      expect(
+        allDataUrls.has(expectedUrl),
+        `Expected verified URL "${expectedUrl}" from docs/resources-verification.md to exist in VERIFICATION_RESOURCES`
+      ).toBe(true);
+    }
+  });
+
+  it("ensures Privacy links to GitHub use the real default git branch and exact file path", async () => {
+    const { execSync } = await import("node:child_process");
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+
+    let branch = "main";
+    try {
+      branch = execSync("git branch --show-current", { encoding: "utf8" }).trim() || "main";
+    } catch {
+      branch = "main";
+    }
+
+    const expectedPrivacyUrl = `https://github.com/nilesh0199/OfferCheck-WisprFlow-Hackathon-2026/blob/${branch}/docs/privacy-and-responsible-use.md`;
+
+    const filesWithPrivacyLink = [
+      path.resolve(process.cwd(), "src/app/resources/page.tsx"),
+      path.resolve(process.cwd(), "src/components/landing/LandingFooter.tsx"),
+      path.resolve(process.cwd(), "src/components/landing/PrivacySection.tsx"),
+    ];
+
+    for (const file of filesWithPrivacyLink) {
+      const fileContent = fs.readFileSync(file, "utf8");
+      expect(
+        fileContent.includes(expectedPrivacyUrl),
+        `Expected ${file} to contain GitHub privacy link with branch "${branch}" and docs/privacy-and-responsible-use.md`
+      ).toBe(true);
+    }
+  });
 });

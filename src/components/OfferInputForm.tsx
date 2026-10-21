@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import {
   MAX_INPUT_CHARS,
   MIN_INPUT_CHARS,
@@ -34,8 +34,8 @@ export function OfferInputForm({
   elapsedSeconds,
 }: OfferInputFormProps) {
   const {
-    activeTab,
-    setActiveTab,
+    undoOfferText,
+    addedFileCount,
     selectedFiles,
     addSelectedFiles,
     removeSelectedFile,
@@ -43,13 +43,20 @@ export function OfferInputForm({
     transcribeStatus,
     isTranscribing,
     transcribeError,
+    transcribeErrorCode,
     transcribeWarnings,
     transcribeElapsedSeconds,
     transcriptBannerDismissed,
     handleTranscribe,
     handleCancelTranscribe,
     dismissTranscriptBanner,
+    handleUndoAppendTranscript,
+    errorState,
   } = useOfferSession();
+
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const prevTextLengthRef = useRef(offerText.length);
+  const wasTranscribingRef = useRef(isTranscribing);
 
   const charCount = offerText.length;
   const trimmed = offerText.trim();
@@ -57,7 +64,28 @@ export function OfferInputForm({
   const isTooShort = !isEmpty && trimmed.length < MIN_INPUT_CHARS;
   const isTooLong = charCount > MAX_INPUT_CHARS;
 
-  const isAnalyzeDisabled = isEmpty || isTooShort || isTooLong || isLoading || isTranscribing;
+  const isAnalyzeDisabled =
+    isEmpty || isTooShort || isTooLong || isLoading || isTranscribing;
+
+  // Auto-scroll textarea to start of appended text and focus after successful transcription
+  useEffect(() => {
+    if (wasTranscribingRef.current && !isTranscribing && transcribeStatus === "success") {
+      if (textareaRef.current) {
+        const prevLen = prevTextLengthRef.current;
+        const appendStart = prevLen > 0 ? prevLen + 2 : 0;
+        textareaRef.current.focus();
+        try {
+          textareaRef.current.setSelectionRange(appendStart, appendStart);
+          const linesBefore = offerText.slice(0, appendStart).split("\n").length;
+          textareaRef.current.scrollTop = Math.max(0, (linesBefore - 2) * 20);
+        } catch {
+          // Ignore
+        }
+      }
+    }
+    prevTextLengthRef.current = offerText.length;
+    wasTranscribingRef.current = isTranscribing;
+  }, [offerText, isTranscribing, transcribeStatus]);
 
   const getDisabledReason = (): string | null => {
     if (isLoading) return null;
@@ -80,383 +108,318 @@ export function OfferInputForm({
 
   return (
     <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 shadow-xs space-y-4">
-      {/* Tab Switcher (if documentUpload feature is enabled) */}
-      {FEATURES.documentUpload ? (
-        <div className="space-y-3 pb-3 border-b border-[var(--border)]">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <h2
-                id="offer-text-heading"
-                className="text-base font-semibold text-[var(--text)]"
-              >
-                Offer input
-              </h2>
-              <p className="text-xs text-[var(--text-muted)] mt-0.5">
-                Paste offer text or upload screenshots and PDFs.
-              </p>
-            </div>
-          </div>
-
-          {/* Segmented Control */}
-          <div
-            role="tablist"
-            aria-label="Input method"
-            className="inline-flex rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] p-1 text-xs font-medium w-full sm:w-auto"
+      {/* Header and Sample Picker */}
+      <div className="space-y-3 pb-3 border-b border-[var(--border)]">
+        <div>
+          <h2
+            id="offer-text-heading"
+            className="text-base font-semibold text-[var(--text)]"
           >
-            <button
-              type="button"
-              role="tab"
-              aria-selected={activeTab === "paste"}
-              aria-controls="paste-tab-panel"
-              id="tab-paste"
-              onClick={() => setActiveTab("paste")}
-              disabled={isLoading || isTranscribing}
-              className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-md px-3.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[36px] ${
-                activeTab === "paste"
-                  ? "bg-[var(--surface)] text-[var(--text)] shadow-xs font-semibold"
-                  : "text-[var(--text-muted)] hover:text-[var(--text)]"
-              }`}
-            >
-              <span>Paste text</span>
-              {offerText.length > 0 && (
-                <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--primary-ledger)]" />
-              )}
-            </button>
-
-            <button
-              type="button"
-              role="tab"
-              aria-selected={activeTab === "upload"}
-              aria-controls="upload-tab-panel"
-              id="tab-upload"
-              onClick={() => setActiveTab("upload")}
-              disabled={isLoading || isTranscribing}
-              className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-md px-3.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[36px] ${
-                activeTab === "upload"
-                  ? "bg-[var(--surface)] text-[var(--text)] shadow-xs font-semibold"
-                  : "text-[var(--text-muted)] hover:text-[var(--text)]"
-              }`}
-            >
-              <span>Upload files</span>
-              {selectedFiles.length > 0 && (
-                <span className="inline-flex items-center justify-center rounded-full bg-[var(--surface)] border border-[var(--border)] px-1.5 text-2xs tabular-nums text-[var(--text)] font-semibold">
-                  {selectedFiles.length}
-                </span>
-              )}
-            </button>
-          </div>
-
-          {activeTab === "paste" && (
-            <SamplePicker
-              currentText={offerText}
-              onSelectSample={(sampleText) => setOfferText(sampleText)}
-              disabled={isLoading || isTranscribing}
-            />
-          )}
+            Offer input
+          </h2>
+          <p className="text-xs text-[var(--text-muted)] mt-0.5">
+            Paste text, attach files, or both.
+          </p>
         </div>
-      ) : (
-        /* Legacy Header without tabs */
-        <div className="space-y-3 pb-3 border-b border-[var(--border)]">
-          <div>
-            <h2
-              id="offer-text-heading"
-              className="text-base font-semibold text-[var(--text)]"
-            >
-              Offer text
-            </h2>
-            <p className="text-xs text-[var(--text-muted)] mt-0.5">
-              Paste the raw message, email, or offer letter below.
-            </p>
-          </div>
 
-          <SamplePicker
-            currentText={offerText}
-            onSelectSample={(sampleText) => setOfferText(sampleText)}
-            disabled={isLoading}
-          />
-        </div>
-      )}
+        <SamplePicker
+          currentText={offerText}
+          onSelectSample={(sampleText) => setOfferText(sampleText)}
+          disabled={isLoading || isTranscribing}
+        />
+      </div>
 
-      {/* TAB PANEL 1: PASTE TEXT */}
-      {activeTab === "paste" && (
-        <form
-          id="paste-tab-panel"
-          role="tabpanel"
-          aria-labelledby="tab-paste"
-          onSubmit={handleAnalyzeSubmit}
-          className="space-y-4"
-        >
-          {/* Post-transcription Banner */}
-          {transcribeStatus === "success" && !transcriptBannerDismissed && (
-            <div
-              role="status"
-              className="rounded-lg border border-[var(--border)] bg-[var(--tint-attention-bg)] p-3.5 text-xs text-[var(--tint-attention-text)] space-y-2"
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div className="space-y-1">
-                  <p className="font-semibold text-2xs sm:text-xs">
-                    Text extracted from your files
-                  </p>
-                  <p>
-                    Review and edit the text below before analyzing. Crop or remove personal details, phone numbers, and account numbers first.
-                  </p>
-                </div>
+      <form onSubmit={handleAnalyzeSubmit} className="space-y-4">
+        {/* Post-transcription Success Banner with Undo */}
+        {transcribeStatus === "success" && !transcriptBannerDismissed && (
+          <div
+            role="status"
+            aria-live="polite"
+            className="rounded-lg border border-[var(--border)] bg-[var(--tint-attention-bg)] p-3.5 text-xs text-[var(--tint-attention-text)] space-y-2 transition-colors"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="space-y-1 text-left">
+                <p className="font-semibold text-xs text-[var(--text)]">
+                  Text added from {addedFileCount || 1} file{addedFileCount === 1 ? "" : "s"}
+                </p>
+                <p className="leading-relaxed">
+                  Text from {addedFileCount || 1} file{addedFileCount === 1 ? "" : "s"} was added below your text. Check it against the originals, fix any mistakes and remove personal details. The review uses exactly this text.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                {undoOfferText !== null && (
+                  <button
+                    type="button"
+                    onClick={handleUndoAppendTranscript}
+                    className="inline-flex items-center justify-center rounded-md border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-xs font-semibold text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[32px] transition-colors"
+                  >
+                    Undo
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={dismissTranscriptBanner}
-                  aria-label="Dismiss extracted text notice"
-                  className="rounded p-1 text-[var(--tint-attention-text)] hover:opacity-75 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
+                  aria-label="Dismiss banner"
+                  className="rounded p-1 text-[var(--text-muted)] hover:text-[var(--text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
                 >
-                  <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-                    <path
-                      fillRule="evenodd"
-                      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
+                  <span aria-hidden="true" className="text-sm font-bold leading-none">&times;</span>
                 </button>
               </div>
-
-              {transcribeWarnings.length > 0 && (
-                <ul className="list-disc pl-4 space-y-0.5 text-2xs opacity-90 border-t border-[var(--border)] pt-1.5">
-                  {transcribeWarnings.map((warning, i) => (
-                    <li key={i}>{warning}</li>
-                  ))}
-                </ul>
-              )}
             </div>
-          )}
 
-          {/* Textarea Area */}
-          <div className="space-y-2">
-            <label htmlFor="offer-text" className="sr-only">
-              Paste the internship or job offer
-            </label>
-            <textarea
-              id="offer-text"
-              name="offer-text"
-              rows={10}
-              value={offerText}
-              onChange={(e) => setOfferText(e.target.value)}
-              readOnly={isLoading}
-              aria-describedby="char-count-meta privacy-callout"
-              aria-invalid={isTooLong || isTooShort}
-              placeholder="Paste the email, message or offer letter here (remove names, phone numbers, bank details and ID numbers first)"
-              className={`w-full h-64 sm:h-72 min-h-[14rem] max-h-[22rem] resize-y rounded-lg border p-3.5 text-xs sm:text-sm font-mono leading-relaxed transition-colors custom-scrollbar overflow-y-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] bg-[var(--surface-muted)] text-[var(--text)] ${
-                isLoading
-                  ? "opacity-60 cursor-not-allowed border-[var(--border)]"
-                  : isTooLong
-                  ? "border-amber-600 focus-visible:ring-amber-600"
-                  : "border-[var(--border)] focus:border-[var(--text)]"
+            {transcribeWarnings.length > 0 && (
+              <ul className="list-disc pl-4 space-y-0.5 text-2xs opacity-90 border-t border-[var(--border)] pt-1.5 text-left">
+                {transcribeWarnings.map((warning, i) => (
+                  <li key={i}>{warning}</li>
+                ))}
+              </ul>
+            )}
+
+            {isTooLong && (
+              <p className="text-2xs font-semibold text-amber-700 dark:text-amber-400 border-t border-[var(--border)] pt-1 text-left">
+                The combined text exceeds the limit by {(charCount - MAX_INPUT_CHARS).toLocaleString()} characters. Please edit or trim it before analyzing.
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Textarea Area */}
+        <div className="space-y-2 text-left">
+          <label htmlFor="offer-text" className="sr-only">
+            Paste the internship or job offer
+          </label>
+          <textarea
+            ref={textareaRef}
+            id="offer-text"
+            name="offer-text"
+            rows={10}
+            value={offerText}
+            onChange={(e) => setOfferText(e.target.value)}
+            readOnly={isLoading}
+            aria-describedby="char-count-meta privacy-callout"
+            aria-invalid={isTooLong || isTooShort}
+            placeholder="Paste the email, message or offer letter here (remove names, phone numbers, bank details and ID numbers first)"
+            className={`w-full h-64 sm:h-72 min-h-[14rem] max-h-[22rem] resize-y rounded-lg border p-3.5 text-xs sm:text-sm font-mono leading-relaxed transition-colors custom-scrollbar overflow-y-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] bg-[var(--surface-muted)] text-[var(--text)] ${
+              isLoading
+                ? "opacity-60 cursor-not-allowed border-[var(--border)]"
+                : isTooLong
+                ? "border-amber-600 focus-visible:ring-amber-600"
+                : "border-[var(--border)] focus:border-[var(--text)]"
+            }`}
+          />
+
+          {/* Counter and Guidance Row */}
+          <div
+            id="char-count-meta"
+            className="flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--text-muted)]"
+          >
+            <span>
+              {disabledReason ? (
+                <span>{disabledReason}</span>
+              ) : (
+                <span>Ready for review.</span>
+              )}
+            </span>
+            <span
+              aria-live="polite"
+              className={`font-mono tabular-nums ${
+                isTooLong ? "font-bold text-amber-600" : ""
               }`}
+            >
+              {charCount.toLocaleString()} / {MAX_INPUT_CHARS.toLocaleString()} characters
+            </span>
+          </div>
+        </div>
+
+        {/* Attach Files (Optional) Area */}
+        {FEATURES.documentUpload && (
+          <div className="pt-4 border-t border-[var(--border)] space-y-3 text-left">
+            <div className="space-y-0.5">
+              <h3 className="text-xs sm:text-sm font-semibold text-[var(--text)]">
+                Attach files (optional)
+              </h3>
+              <p className="text-2xs sm:text-xs text-[var(--text-muted)]">
+                Attach up to 5 screenshots or PDFs (max 4 MB total) to extract text and add it below your notes.
+              </p>
+            </div>
+
+            <FileUploadDropzone
+              onFilesSelected={addSelectedFiles}
+              currentCount={selectedFiles.length}
+              disabled={isTranscribing || isLoading}
             />
 
-            {/* Counter and Guidance Row */}
-            <div
-              id="char-count-meta"
-              className="flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--text-muted)]"
-            >
-              <span>
-                {disabledReason ? (
-                  <span>{disabledReason}</span>
-                ) : (
-                  <span>Ready for review.</span>
-                )}
-              </span>
-              <span
-                aria-live="polite"
-                className={`font-mono tabular-nums ${
-                  isTooLong ? "font-bold text-amber-600" : ""
-                }`}
-              >
-                {charCount.toLocaleString()} / {MAX_INPUT_CHARS.toLocaleString()} characters
-              </span>
-            </div>
-          </div>
+            <SelectedFileList
+              files={selectedFiles}
+              onRemove={removeSelectedFile}
+              onClearAll={clearSelectedFiles}
+              disabled={isTranscribing || isLoading}
+            />
 
-          {/* Action Row */}
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[var(--border)]">
-            <div className="flex items-center gap-2.5">
-              {!isLoading ? (
-                <>
-                  <button
-                    type="submit"
-                    disabled={isAnalyzeDisabled}
-                    className="inline-flex items-center justify-center rounded-lg bg-[var(--accent)] text-[var(--accent-contrast)] px-5 py-2.5 text-xs sm:text-sm font-semibold shadow-xs hover:opacity-90 active:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity min-h-[44px]"
-                  >
-                    Analyze offer
-                  </button>
-                  <button
-                    type="button"
-                    onClick={onClear}
-                    disabled={isEmpty && !offerText}
-                    className="inline-flex items-center justify-center rounded-lg border border-transparent px-3.5 py-2.5 text-xs sm:text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:opacity-30 min-h-[44px]"
-                  >
-                    Clear
-                  </button>
-                </>
-              ) : (
-                <div className="flex items-center gap-2.5">
-                  <button
-                    type="button"
-                    disabled
-                    className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] text-[var(--accent-contrast)] px-5 py-2.5 text-xs sm:text-sm font-semibold cursor-wait min-h-[44px]"
-                  >
-                    <SpinnerIcon className="w-4 h-4 animate-spin text-[var(--accent-contrast)]" />
-                    <span>Analyzing...</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={onCancel}
-                    className="inline-flex items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-xs sm:text-sm font-medium text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px]"
-                  >
-                    Cancel
-                  </button>
+            {transcribeError && (
+              <div
+                role="alert"
+                aria-live="polite"
+                className="rounded-lg border border-[var(--border)] bg-[var(--tint-attention-bg)] p-3 text-xs text-[var(--tint-attention-text)] space-y-1"
+              >
+                <p>{transcribeError}</p>
+                <p className="text-2xs opacity-75 font-mono">
+                  Reference: {transcribeErrorCode || "TRANSCRIBE_ERROR"}
+                </p>
+              </div>
+            )}
+
+            {/* AI File Privacy Notice directly above button */}
+            <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] p-3 text-2xs text-[var(--text-muted)] leading-relaxed">
+              <p>{AI_FILE_NOTICE}</p>
+            </div>
+
+            {/* Action Row for Transcribe */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+              <div className="flex items-center gap-2.5">
+                {!isTranscribing ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleTranscribe}
+                      disabled={selectedFiles.length === 0 || isLoading}
+                      className="inline-flex items-center justify-center rounded-lg bg-[var(--accent)] text-[var(--accent-contrast)] px-4 py-2 text-xs sm:text-sm font-medium shadow-xs hover:opacity-90 active:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:opacity-40 disabled:cursor-not-allowed transition-opacity min-h-[44px]"
+                    >
+                      Add text from files
+                    </button>
+                    {selectedFiles.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={clearSelectedFiles}
+                        className="inline-flex items-center justify-center rounded-lg border border-transparent px-3 py-2 text-xs font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px]"
+                      >
+                        Clear files
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <div className="flex items-center gap-2.5">
+                    <button
+                      type="button"
+                      disabled
+                      className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] text-[var(--accent-contrast)] px-4 py-2 text-xs sm:text-sm font-medium cursor-wait min-h-[44px]"
+                    >
+                      <SpinnerIcon className="w-4 h-4 animate-spin text-[var(--accent-contrast)]" />
+                      <span>Adding text from files...</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCancelTranscribe}
+                      className="inline-flex items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs font-medium text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px]"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {isTranscribing && (
+                <div
+                  aria-live="polite"
+                  className="text-xs text-[var(--text-muted)] font-mono"
+                >
+                  Elapsed: {transcribeElapsedSeconds}s
                 </div>
               )}
             </div>
+          </div>
+        )}
 
-            {isLoading && (
-              <div
-                aria-live="polite"
-                className="text-xs text-[var(--text-muted)] font-mono"
-              >
-                Elapsed: {elapsedSeconds}s
+        {/* Analysis Error Alert */}
+        {errorState && (
+          <div
+            role="alert"
+            aria-live="polite"
+            className="rounded-lg border border-[var(--border)] bg-[var(--tint-attention-bg)] p-3 text-xs text-[var(--tint-attention-text)] space-y-1 text-left"
+          >
+            <p>{errorState.message || "An error occurred during review."}</p>
+            <p className="text-2xs opacity-75 font-mono">
+              Reference: {errorState.code || errorState.type}
+            </p>
+          </div>
+        )}
+
+        {/* Main Analyze Action Row */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[var(--border)]">
+          <div className="flex items-center gap-2.5">
+            {!isLoading ? (
+              <>
+                <button
+                  type="submit"
+                  disabled={isAnalyzeDisabled}
+                  className="inline-flex items-center justify-center rounded-lg bg-[var(--accent)] text-[var(--accent-contrast)] px-5 py-2.5 text-xs sm:text-sm font-semibold shadow-xs hover:opacity-90 active:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity min-h-[44px]"
+                >
+                  Analyze offer
+                </button>
+                <button
+                  type="button"
+                  onClick={onClear}
+                  disabled={isEmpty && !offerText}
+                  className="inline-flex items-center justify-center rounded-lg border border-transparent px-3.5 py-2.5 text-xs sm:text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:opacity-30 min-h-[44px]"
+                >
+                  Clear
+                </button>
+              </>
+            ) : (
+              <div className="flex items-center gap-2.5">
+                <button
+                  type="button"
+                  disabled
+                  className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] text-[var(--accent-contrast)] px-5 py-2.5 text-xs sm:text-sm font-semibold cursor-wait min-h-[44px]"
+                >
+                  <SpinnerIcon className="w-4 h-4 animate-spin text-[var(--accent-contrast)]" />
+                  <span>Analyzing...</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={onCancel}
+                  className="inline-flex items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-xs sm:text-sm font-medium text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px]"
+                >
+                  Cancel
+                </button>
               </div>
             )}
           </div>
 
-          {/* Privacy Callout */}
-          <div
-            id="privacy-callout"
-            className="rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] p-3.5 text-xs text-[var(--text-muted)] space-y-2"
-          >
-            <div className="flex items-start gap-2.5 text-[var(--text)]">
-              <LockIcon className="w-4 h-4 shrink-0 mt-0.5 opacity-80" />
-              <div className="space-y-1.5 leading-relaxed">
-                <p className="font-semibold text-2xs sm:text-xs">
-                  Privacy and data handling
-                </p>
-                <p>
-                  Remove names, phone numbers, addresses, bank details, ID numbers, passwords, and one-time passwords (OTPs) before pasting.
-                </p>
-                <p className="text-2xs opacity-90 border-t border-[var(--border)] pt-1.5">
-                  {AI_DATA_NOTICE}
-                </p>
-                <p className="text-2xs opacity-80">
-                  OfferCheck reviews pasted text only. It cannot confirm that a sender is genuine.
-                </p>
-              </div>
-            </div>
-          </div>
-        </form>
-      )}
-
-      {/* TAB PANEL 2: UPLOAD FILES */}
-      {activeTab === "upload" && (
-        <div
-          id="upload-tab-panel"
-          role="tabpanel"
-          aria-labelledby="tab-upload"
-          className="space-y-4"
-        >
-          {/* Dropzone */}
-          <FileUploadDropzone
-            onFilesSelected={addSelectedFiles}
-            currentCount={selectedFiles.length}
-            disabled={isTranscribing}
-          />
-
-          {/* Selected File List */}
-          <SelectedFileList
-            files={selectedFiles}
-            onRemove={removeSelectedFile}
-            onClearAll={clearSelectedFiles}
-            disabled={isTranscribing}
-          />
-
-          {/* Transcription Error Alert */}
-          {transcribeError && (
+          {isLoading && (
             <div
-              role="alert"
-              className="rounded-lg border border-[var(--border)] bg-[var(--tint-attention-bg)] p-3 text-xs text-[var(--tint-attention-text)]"
+              aria-live="polite"
+              className="text-xs text-[var(--text-muted)] font-mono"
             >
-              {transcribeError}
+              Elapsed: {elapsedSeconds}s
             </div>
           )}
+        </div>
 
-          {/* Action Row for Upload */}
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[var(--border)]">
-            <div className="flex items-center gap-2.5">
-              {!isTranscribing ? (
-                <>
-                  <button
-                    type="button"
-                    onClick={handleTranscribe}
-                    disabled={selectedFiles.length === 0}
-                    className="inline-flex items-center justify-center rounded-lg bg-[var(--accent)] text-[var(--accent-contrast)] px-5 py-2.5 text-xs sm:text-sm font-semibold shadow-xs hover:opacity-90 active:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity min-h-[44px]"
-                  >
-                    Extract text from files
-                  </button>
-                  <button
-                    type="button"
-                    onClick={clearSelectedFiles}
-                    disabled={selectedFiles.length === 0}
-                    className="inline-flex items-center justify-center rounded-lg border border-transparent px-3.5 py-2.5 text-xs sm:text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:opacity-30 min-h-[44px]"
-                  >
-                    Clear files
-                  </button>
-                </>
-              ) : (
-                <div className="flex items-center gap-2.5">
-                  <button
-                    type="button"
-                    disabled
-                    className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] text-[var(--accent-contrast)] px-5 py-2.5 text-xs sm:text-sm font-semibold cursor-wait min-h-[44px]"
-                  >
-                    <SpinnerIcon className="w-4 h-4 animate-spin text-[var(--accent-contrast)]" />
-                    <span>Extracting text...</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleCancelTranscribe}
-                    className="inline-flex items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-xs sm:text-sm font-medium text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px]"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {isTranscribing && (
-              <div
-                aria-live="polite"
-                className="text-xs text-[var(--text-muted)] font-mono"
-              >
-                Elapsed: {transcribeElapsedSeconds}s
-              </div>
-            )}
-          </div>
-
-          {/* AI File Privacy Notice */}
-          <div
-            id="file-privacy-callout"
-            className="rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] p-3.5 text-xs text-[var(--text-muted)] space-y-2"
-          >
-            <div className="flex items-start gap-2.5 text-[var(--text)]">
-              <LockIcon className="w-4 h-4 shrink-0 mt-0.5 opacity-80" />
-              <div className="space-y-1.5 leading-relaxed">
-                <p className="font-semibold text-2xs sm:text-xs">
-                  File privacy and data handling
-                </p>
-                <p className="text-2xs opacity-90">
-                  {AI_FILE_NOTICE}
-                </p>
-              </div>
+        {/* Privacy Callout */}
+        <div
+          id="privacy-callout"
+          className="rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] p-3.5 text-xs text-[var(--text-muted)] space-y-2 text-left"
+        >
+          <div className="flex items-start gap-2.5 text-[var(--text)]">
+            <LockIcon className="w-4 h-4 shrink-0 mt-0.5 opacity-80" />
+            <div className="space-y-1.5 leading-relaxed">
+              <p className="font-semibold text-2xs sm:text-xs">
+                Privacy and data handling
+              </p>
+              <p>
+                Remove names, phone numbers, addresses, bank details, ID numbers, passwords, and one-time passwords (OTPs) before pasting or attaching files.
+              </p>
+              <p className="text-2xs opacity-90 border-t border-[var(--border)] pt-1.5">
+                {AI_DATA_NOTICE}
+              </p>
+              <p className="text-2xs opacity-80">
+                OfferCheck reviews pasted text only. It cannot confirm that a sender is genuine.
+              </p>
             </div>
           </div>
         </div>
-      )}
+      </form>
     </div>
   );
 }

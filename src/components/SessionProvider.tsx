@@ -14,7 +14,6 @@ import {
   INITIAL_SESSION_STATE,
   SessionErrorState,
   AnalysisStatus,
-  InputTab,
   TranscribeStatus,
   SelectedFileItem,
 } from "@/lib/session-reducer";
@@ -32,11 +31,13 @@ interface TranscribeApiResponse {
   ok?: boolean;
   transcript?: string;
   warnings?: string[];
-  error?: { message?: string };
+  error?: { code?: string; message?: string };
 }
 
 export interface OfferSessionContextValue {
   offerText: string;
+  undoOfferText: string | null;
+  addedFileCount: number;
   analyzedSnapshotText: string;
   analysis: ValidatedAnalysis | null;
   status: AnalysisStatus;
@@ -49,10 +50,9 @@ export interface OfferSessionContextValue {
   handleAnalyze: () => Promise<void>;
   handleCancel: () => void;
   handleClear: () => void;
+  handleUndoAppendTranscript: () => void;
 
-  // Phase 8 file upload & transcription:
-  activeTab: InputTab;
-  setActiveTab: (tab: InputTab) => void;
+  // File upload & transcription:
   selectedFiles: SelectedFileItem[];
   addSelectedFiles: (files: File[]) => void;
   removeSelectedFile: (id: string) => void;
@@ -60,6 +60,7 @@ export interface OfferSessionContextValue {
   transcribeStatus: TranscribeStatus;
   isTranscribing: boolean;
   transcribeError: string | null;
+  transcribeErrorCode: string | null;
   transcribeWarnings: string[];
   transcribeElapsedSeconds: number;
   transcriptBannerDismissed: boolean;
@@ -122,10 +123,6 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: "SET_OFFER_TEXT", payload: text });
   }, []);
 
-  const setActiveTab = useCallback((tab: InputTab) => {
-    dispatch({ type: "SET_ACTIVE_TAB", payload: tab });
-  }, []);
-
   const addSelectedFiles = useCallback((files: File[]) => {
     const items: SelectedFileItem[] = files.map((file) => {
       let previewUrl: string | undefined;
@@ -172,6 +169,10 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
 
   const dismissTranscriptBanner = useCallback(() => {
     dispatch({ type: "DISMISS_TRANSCRIPT_BANNER" });
+  }, []);
+
+  const handleUndoAppendTranscript = useCallback(() => {
+    dispatch({ type: "UNDO_APPEND_TRANSCRIPT" });
   }, []);
 
   const handleCancelTranscribe = useCallback(() => {
@@ -245,9 +246,19 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
           payload: {
             transcript: data.transcript ?? "",
             warnings: data.warnings ?? [],
+            fileCount: compressedFiles.length,
           },
         });
       } else {
+        const code =
+          data?.error?.code ||
+          (response.status === 429
+            ? "RATE_LIMITED_CLIENT"
+            : response.status === 503
+            ? "BUSY"
+            : response.status === 413
+            ? "TOTAL_TOO_LARGE"
+            : "TRANSCRIBE_FAILED");
         const msg =
           data?.error?.message ||
           (response.status === 429
@@ -259,7 +270,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
             : "Unable to transcribe uploaded files. Please check the files or try pasting the text directly.");
         dispatch({
           type: "TRANSCRIBE_ERROR",
-          payload: msg,
+          payload: { message: msg, code },
         });
       }
     } catch (err: unknown) {
@@ -269,7 +280,10 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       if (timedOut) {
         dispatch({
           type: "TRANSCRIBE_ERROR",
-          payload: "The transcription request timed out. Please try uploading fewer or smaller files.",
+          payload: {
+            message: "The transcription request timed out. Please try uploading fewer or smaller files.",
+            code: "TIMEOUT",
+          },
         });
       } else if (
         err instanceof Error &&
@@ -279,7 +293,10 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       } else {
         dispatch({
           type: "TRANSCRIBE_ERROR",
-          payload: "A network error occurred while uploading your files. Please check your connection and try again.",
+          payload: {
+            message: "A network error occurred while uploading your files. Please check your connection and try again.",
+            code: "NETWORK_ERROR",
+          },
         });
       }
     } finally {
@@ -415,6 +432,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
             payload: {
               type: "RATE_LIMITED_CLIENT",
               message: data.error.message,
+              code: "RATE_LIMITED_CLIENT",
             },
           });
         } else if (code === "BUSY") {
@@ -423,37 +441,42 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
             payload: {
               type: "RATE_LIMITED",
               message: data.error.message,
+              code: "BUSY",
             },
           });
         } else if (status === 429 || code === "RATE_LIMITED") {
           dispatch({
             type: "ANALYSIS_ERROR",
-            payload: { type: "RATE_LIMITED" },
+            payload: { type: "RATE_LIMITED", code: "RATE_LIMITED" },
           });
         } else if (status === 504 || code === "TIMEOUT") {
           dispatch({
             type: "ANALYSIS_ERROR",
-            payload: { type: "TIMEOUT" },
+            payload: { type: "TIMEOUT", code: "TIMEOUT" },
           });
         } else if (code === "NOT_CONFIGURED" || status >= 500) {
           dispatch({
             type: "ANALYSIS_ERROR",
-            payload: { type: "UNAVAILABLE" },
+            payload: { type: "UNAVAILABLE", code: code || "UPSTREAM_ERROR" },
           });
         } else if (code === "TOO_SHORT") {
           dispatch({
             type: "ANALYSIS_ERROR",
-            payload: { type: "TOO_SHORT", message: data.error.message },
+            payload: { type: "TOO_SHORT", message: data.error.message, code: "TOO_SHORT" },
           });
         } else if (code === "TOO_LONG") {
           dispatch({
             type: "ANALYSIS_ERROR",
-            payload: { type: "TOO_LONG", message: data.error.message },
+            payload: { type: "TOO_LONG", message: data.error.message, code: "TOO_LONG" },
           });
         } else {
           dispatch({
             type: "ANALYSIS_ERROR",
-            payload: { type: "GENERIC", message: data.error.message },
+            payload: {
+              type: "GENERIC",
+              message: data.error.message,
+              code: code || "UNKNOWN_ERROR",
+            },
           });
         }
       } else {
@@ -499,6 +522,8 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const contextValue: OfferSessionContextValue = useMemo(
     () => ({
       offerText: state.offerText,
+      undoOfferText: state.undoOfferText,
+      addedFileCount: state.addedFileCount,
       analyzedSnapshotText: state.analyzedSnapshotText,
       analysis: state.analysis,
       status: state.status,
@@ -511,8 +536,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       handleAnalyze,
       handleCancel,
       handleClear,
-      activeTab: state.activeTab,
-      setActiveTab,
+      handleUndoAppendTranscript,
       selectedFiles: state.selectedFiles,
       addSelectedFiles,
       removeSelectedFile,
@@ -520,6 +544,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       transcribeStatus: state.transcribeStatus,
       isTranscribing: state.transcribeStatus === "loading",
       transcribeError: state.transcribeError,
+      transcribeErrorCode: state.transcribeErrorCode,
       transcribeWarnings: state.transcribeWarnings,
       transcribeElapsedSeconds: state.transcribeElapsedSeconds,
       transcriptBannerDismissed: state.transcriptBannerDismissed,
@@ -529,6 +554,8 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     }),
     [
       state.offerText,
+      state.undoOfferText,
+      state.addedFileCount,
       state.analyzedSnapshotText,
       state.analysis,
       state.status,
@@ -540,14 +567,14 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       handleAnalyze,
       handleCancel,
       handleClear,
-      state.activeTab,
-      setActiveTab,
+      handleUndoAppendTranscript,
       state.selectedFiles,
       addSelectedFiles,
       removeSelectedFile,
       clearSelectedFiles,
       state.transcribeStatus,
       state.transcribeError,
+      state.transcribeErrorCode,
       state.transcribeWarnings,
       state.transcribeElapsedSeconds,
       state.transcriptBannerDismissed,

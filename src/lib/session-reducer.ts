@@ -1,8 +1,8 @@
 import { ValidatedAnalysis } from "./analysis/schema";
 import { ErrorType } from "@/components/ErrorAlert";
+import { appendTranscript } from "./upload/transcribe";
 
 export type AnalysisStatus = "idle" | "loading" | "success" | "error";
-export type InputTab = "paste" | "upload";
 export type TranscribeStatus = "idle" | "loading" | "success" | "error";
 
 export interface SelectedFileItem {
@@ -14,19 +14,22 @@ export interface SelectedFileItem {
 export interface SessionErrorState {
   type: ErrorType;
   message?: string;
+  code?: string;
 }
 
 export interface OfferSessionState {
   offerText: string;
+  undoOfferText: string | null;
+  addedFileCount: number;
   analyzedSnapshotText: string;
   analysis: ValidatedAnalysis | null;
   status: AnalysisStatus;
   errorState: SessionErrorState | null;
   elapsedSeconds: number;
-  activeTab: InputTab;
   selectedFiles: SelectedFileItem[];
   transcribeStatus: TranscribeStatus;
   transcribeError: string | null;
+  transcribeErrorCode: string | null;
   transcribeWarnings: string[];
   transcribeElapsedSeconds: number;
   transcriptBannerDismissed: boolean;
@@ -34,15 +37,17 @@ export interface OfferSessionState {
 
 export const INITIAL_SESSION_STATE: OfferSessionState = {
   offerText: "",
+  undoOfferText: null,
+  addedFileCount: 0,
   analyzedSnapshotText: "",
   analysis: null,
   status: "idle",
   errorState: null,
   elapsedSeconds: 0,
-  activeTab: "paste",
   selectedFiles: [],
   transcribeStatus: "idle",
   transcribeError: null,
+  transcribeErrorCode: null,
   transcribeWarnings: [],
   transcribeElapsedSeconds: 0,
   transcriptBannerDismissed: false,
@@ -59,7 +64,6 @@ export type OfferSessionAction =
   | { type: "ANALYSIS_ERROR"; payload: SessionErrorState }
   | { type: "CANCEL_ANALYSIS" }
   | { type: "CLEAR_SESSION" }
-  | { type: "SET_ACTIVE_TAB"; payload: InputTab }
   | { type: "ADD_SELECTED_FILES"; payload: SelectedFileItem[] }
   | { type: "REMOVE_SELECTED_FILE"; payload: string }
   | { type: "CLEAR_SELECTED_FILES" }
@@ -67,11 +71,12 @@ export type OfferSessionAction =
   | { type: "TICK_TRANSCRIBE_ELAPSED"; payload: number }
   | {
       type: "TRANSCRIBE_SUCCESS";
-      payload: { transcript: string; warnings: string[] };
+      payload: { transcript: string; warnings: string[]; fileCount?: number };
     }
-  | { type: "TRANSCRIBE_ERROR"; payload: string }
+  | { type: "TRANSCRIBE_ERROR"; payload: { message: string; code?: string } | string }
   | { type: "CANCEL_TRANSCRIBE" }
-  | { type: "DISMISS_TRANSCRIPT_BANNER" };
+  | { type: "DISMISS_TRANSCRIPT_BANNER" }
+  | { type: "UNDO_APPEND_TRANSCRIPT" };
 
 /**
  * Pure reducer for managing offer analysis session state in memory.
@@ -86,6 +91,7 @@ export function offerSessionReducer(
       return {
         ...state,
         offerText: action.payload,
+        undoOfferText: null, // User manual edit clears the single-level undo
       };
 
     case "START_ANALYSIS":
@@ -128,12 +134,6 @@ export function offerSessionReducer(
     case "CLEAR_SESSION":
       return INITIAL_SESSION_STATE;
 
-    case "SET_ACTIVE_TAB":
-      return {
-        ...state,
-        activeTab: action.payload,
-      };
-
     case "ADD_SELECTED_FILES": {
       // Append files up to maximum limit of 5
       const combined = [...state.selectedFiles, ...action.payload].slice(0, 5);
@@ -141,6 +141,7 @@ export function offerSessionReducer(
         ...state,
         selectedFiles: combined,
         transcribeError: null,
+        transcribeErrorCode: null,
       };
     }
 
@@ -155,6 +156,7 @@ export function offerSessionReducer(
         ...state,
         selectedFiles: [],
         transcribeError: null,
+        transcribeErrorCode: null,
       };
 
     case "START_TRANSCRIBE":
@@ -162,6 +164,7 @@ export function offerSessionReducer(
         ...state,
         transcribeStatus: "loading",
         transcribeError: null,
+        transcribeErrorCode: null,
         transcribeElapsedSeconds: 0,
       };
 
@@ -171,29 +174,55 @@ export function offerSessionReducer(
         transcribeElapsedSeconds: action.payload,
       };
 
-    case "TRANSCRIBE_SUCCESS":
+    case "TRANSCRIBE_SUCCESS": {
+      const fileCount = action.payload.fileCount ?? state.selectedFiles.length ?? 1;
+      const combined = appendTranscript(state.offerText, action.payload.transcript);
       return {
         ...state,
         transcribeStatus: "success",
-        offerText: action.payload.transcript,
+        undoOfferText: state.offerText, // Store pre-append state for 1-level undo
+        offerText: combined,
+        addedFileCount: fileCount,
         transcribeWarnings: action.payload.warnings,
-        activeTab: "paste",
+        selectedFiles: [], // Pending files are cleared on success
         transcriptBannerDismissed: false,
         transcribeError: null,
+        transcribeErrorCode: null,
+      };
+    }
+
+    case "UNDO_APPEND_TRANSCRIPT":
+      if (state.undoOfferText === null) {
+        return state;
+      }
+      return {
+        ...state,
+        offerText: state.undoOfferText,
+        undoOfferText: null,
+        addedFileCount: 0,
+        transcriptBannerDismissed: true,
       };
 
-    case "TRANSCRIBE_ERROR":
+    case "TRANSCRIBE_ERROR": {
+      const message =
+        typeof action.payload === "string" ? action.payload : action.payload.message;
+      const code =
+        typeof action.payload === "object" ? action.payload.code ?? null : null;
       return {
         ...state,
         transcribeStatus: "error",
-        transcribeError: action.payload,
+        transcribeError: message,
+        transcribeErrorCode: code,
+        // Files kept after failure as specified
       };
+    }
 
     case "CANCEL_TRANSCRIBE":
       return {
         ...state,
         transcribeStatus: "idle",
         transcribeError: "File transcription was cancelled.",
+        transcribeErrorCode: "CANCELLED",
       };
 
     case "DISMISS_TRANSCRIPT_BANNER":

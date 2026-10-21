@@ -352,3 +352,121 @@ export function computeEntranceState(
     done: false,
   };
 }
+
+export interface HeroMotionState {
+  readonly isReducedMotion: boolean;
+  readonly isAnimating: boolean;
+  readonly hasPlayedOnce: boolean;
+  readonly revealedCount: number;
+  readonly activeAnnotationIndex: number;
+}
+
+export type HeroMotionAction =
+  | { type: "INIT"; prefersReducedMotion: boolean; totalAnnotations: number }
+  | { type: "USER_PLAY_CLICKED" }
+  | { type: "AUTO_PLAY_STARTED" }
+  | { type: "ANIMATION_STEP"; revealedCount: number; observationIndex: number }
+  | { type: "ANIMATION_COMPLETE"; totalAnnotations: number }
+  | { type: "MOTION_PREFERENCE_CHANGED"; prefersReducedMotion: boolean; totalAnnotations: number };
+
+export function heroMotionReducer(
+  state: HeroMotionState,
+  action: HeroMotionAction
+): HeroMotionState {
+  switch (action.type) {
+    case "INIT": {
+      if (action.prefersReducedMotion) {
+        // Reduced motion: initial state is finished state, never auto-plays
+        return {
+          isReducedMotion: true,
+          isAnimating: false,
+          hasPlayedOnce: false,
+          revealedCount: action.totalAnnotations,
+          activeAnnotationIndex: 0,
+        };
+      }
+      // Motion allowed: starts unrevealed, ready for auto-play
+      return {
+        isReducedMotion: false,
+        isAnimating: true,
+        hasPlayedOnce: false,
+        revealedCount: 0,
+        activeAnnotationIndex: 0,
+      };
+    }
+
+    case "USER_PLAY_CLICKED": {
+      // User-initiated motion is allowed even when isReducedMotion is true
+      return {
+        ...state,
+        isAnimating: true,
+        revealedCount: 0,
+        activeAnnotationIndex: 0,
+      };
+    }
+
+    case "AUTO_PLAY_STARTED": {
+      if (state.isReducedMotion) {
+        // Automatic start never happens in reduced-motion mode
+        return state;
+      }
+      return {
+        ...state,
+        isAnimating: true,
+        revealedCount: 0,
+        activeAnnotationIndex: 0,
+      };
+    }
+
+    case "ANIMATION_STEP": {
+      if (!state.isAnimating) return state;
+      return {
+        ...state,
+        revealedCount: action.revealedCount,
+        activeAnnotationIndex: action.observationIndex,
+      };
+    }
+
+    case "ANIMATION_COMPLETE": {
+      return {
+        ...state,
+        isAnimating: false,
+        hasPlayedOnce: true,
+        revealedCount: action.totalAnnotations,
+      };
+    }
+
+    case "MOTION_PREFERENCE_CHANGED": {
+      if (action.prefersReducedMotion) {
+        return {
+          ...state,
+          isReducedMotion: true,
+          isAnimating: false,
+          revealedCount: action.totalAnnotations,
+        };
+      }
+      return {
+        ...state,
+        isReducedMotion: false,
+      };
+    }
+
+    default:
+      return state;
+  }
+}
+
+/**
+ * Pure helper to determine the hero button label.
+ * - In reduced-motion mode before playback has run: "Play animation"
+ * - In normal motion or after playback has run: "Replay animation"
+ */
+export function getHeroButtonLabel(state: {
+  isReducedMotion: boolean;
+  hasPlayedOnce: boolean;
+}): "Play animation" | "Replay animation" {
+  if (state.isReducedMotion && !state.hasPlayedOnce) {
+    return "Play animation";
+  }
+  return "Replay animation";
+}

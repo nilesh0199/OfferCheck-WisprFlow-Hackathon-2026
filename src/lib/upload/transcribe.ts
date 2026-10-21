@@ -14,9 +14,31 @@ import {
   GeminiModelClient,
   ModelAttemptRecord,
 } from "@/lib/analysis/gemini";
-import { ModelCircuitBreaker, defaultCircuitBreaker } from "@/lib/analysis/model-health";
+import { ModelCircuitBreaker, defaultTranscribeCircuitBreaker } from "@/lib/analysis/model-health";
 import { validateUploadSet } from "./validate-set";
 import { joinTranscripts, sanitizeTranscript, FileTranscriptItem } from "./format-transcript";
+
+/**
+ * Pure helper function to append a new transcript to existing textarea text.
+ * - If transcript is empty or whitespace-only, returns existingText unchanged.
+ * - If existingText is empty or whitespace-only, returns the transcript.
+ * - Otherwise, preserves existing text, trims trailing newlines, inserts exactly one blank line ("\n\n",
+ *   no extra markers), and appends the transcript at the end.
+ */
+export function appendTranscript(
+  existingText: string,
+  transcript: string
+): string {
+  const cleanTranscript = (transcript ?? "").trim();
+  if (!cleanTranscript) {
+    return existingText ?? "";
+  }
+  if (!existingText || !existingText.trim()) {
+    return cleanTranscript;
+  }
+  const base = existingText.replace(/\n*$/, "");
+  return `${base}\n\n${cleanTranscript}`;
+}
 
 export const TranscribeFileItemSchema = z.object({
   file_index: z.number().int().nonnegative(),
@@ -164,7 +186,7 @@ export async function transcribeFiles(
         ? [deps.modelName.trim()]
         : parseModelChain(process.env.GEMINI_MODELS, process.env.GEMINI_MODEL);
 
-  const breaker = deps?.circuitBreaker ?? defaultCircuitBreaker;
+  const breaker = deps?.circuitBreaker ?? defaultTranscribeCircuitBreaker;
   const { modelsToTry } = breaker.filterModels(rawModels);
   const models = modelsToTry.slice(0, MAX_MODEL_ATTEMPTS);
 

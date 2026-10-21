@@ -293,6 +293,36 @@ describe("analyzeOfferText offline validation and fallback handling", () => {
     }
   });
 
+  it("model-specific 400 (e.g. unsupported modality or schema) falls through to next model and succeeds", async () => {
+    const errModelSpecific400 = new Error("Invalid argument: document modality not supported for this model");
+    (errModelSpecific400 as unknown as { status: number }).status = 400;
+
+    const mockCreate = vi
+      .fn()
+      .mockRejectedValueOnce(errModelSpecific400) // primary model fails with model-specific 400
+      .mockResolvedValueOnce({ output_text: mockValidModelJson }); // secondary model succeeds
+
+    const fakeClient: GeminiModelClient = {
+      interactions: { create: mockCreate },
+    };
+
+    const res = await analyzeOfferText(validOfferText, {
+      apiKey: "fake-key",
+      client: fakeClient,
+      modelChain: ["model-1", "model-2"],
+    });
+
+    expect(mockCreate).toHaveBeenCalledTimes(2);
+    expect(res.ok).toBe(true);
+    if (res.ok) {
+      expect(res.modelUsed).toBe("model-2");
+      expect(res.attempts).toHaveLength(2);
+      expect(res.attempts[0].outcome).toBe("UPSTREAM_ERROR");
+      expect(res.attempts[0].httpStatus).toBe(400);
+      expect(res.attempts[1].outcome).toBe("SUCCESS");
+    }
+  });
+
   it("primary 429 -> secondary used and modelUsed reported", async () => {
     const rateLimitError = new Error("Resource exhausted: 429 quota exceeded");
     (rateLimitError as unknown as { status: number }).status = 429;

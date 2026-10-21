@@ -199,17 +199,29 @@ export const GEMINI_RESPONSE_SCHEMA = cleanJsonSchemaForGemini(
 
 /**
  * Safe logging helper that outputs metadata only (code, status, attempt number, model id, elapsedMs).
- * NEVER logs user text, model output, or credentials.
+ * NEVER logs user text, file names, bytes, transcripts, model output, or credentials.
+ * For upstream 4xx errors, includes upstream error text truncated to 120 chars only when NODE_ENV !== "production".
  */
-function logSafeAttemptError(
+export function logSafeAttemptError(
   code: AnalyzeErrorCode,
   httpStatus: number,
   attemptNumber: number,
   modelId: string,
-  elapsedMs: number
+  elapsedMs: number,
+  upstreamStatusText?: string
 ): void {
+  let extra = "";
+  if (
+    process.env.NODE_ENV !== "production" &&
+    httpStatus >= 400 &&
+    httpStatus < 500 &&
+    upstreamStatusText
+  ) {
+    const clean = upstreamStatusText.replace(/[\r\n\t]+/g, " ").trim().slice(0, 120);
+    extra = `, upstream=${clean}`;
+  }
   console.error(
-    `[OfferCheck] Analysis attempt failed: code=${code}, httpStatus=${httpStatus}, attempt=${attemptNumber}, model=${modelId}, elapsedMs=${elapsedMs}`
+    `[OfferCheck] Analysis attempt failed: code=${code}, httpStatus=${httpStatus}, attempt=${attemptNumber}, model=${modelId}, elapsedMs=${elapsedMs}${extra}`
   );
 }
 
@@ -228,6 +240,40 @@ function getErrorStatus(err: unknown): number | undefined {
 
 function isNonRetryableStatus(status?: number): boolean {
   return status === 400 || status === 401 || status === 403;
+}
+
+/**
+ * Determines whether a 400 response from Gemini is model-specific (e.g. unsupported modality,
+ * unsupported MIME type, unsupported thinking level or schema for that specific model).
+ * Model-specific 400s fall through to the next model in the fallback chain.
+ * Malformed requests caused by our own invalid request syntax or encoding do not loop.
+ */
+export function isModelSpecific400(err: unknown): boolean {
+  if (!err) return false;
+  const msg = (
+    typeof err === "object" && err !== null
+      ? String((err as Record<string, unknown>).message || "") +
+        " " +
+        JSON.stringify((err as Record<string, unknown>).error || "") +
+        " " +
+        JSON.stringify((err as Record<string, unknown>).body || "")
+      : String(err)
+  ).toLowerCase();
+
+  return (
+    msg.includes("not supported") ||
+    msg.includes("unsupported") ||
+    msg.includes("modality") ||
+    msg.includes("mime type") ||
+    msg.includes("mime_type") ||
+    msg.includes("document") ||
+    msg.includes("image") ||
+    msg.includes("thinking") ||
+    msg.includes("generation_config") ||
+    msg.includes("response_format") ||
+    msg.includes("schema") ||
+    msg.includes("model")
+  );
 }
 
 function isTimeoutError(err: unknown): boolean {
@@ -470,13 +516,41 @@ export async function runModelFallbackChain<T>({
       const elapsedMs = Date.now() - attemptStart;
       const status = getErrorStatus(err);
 
-      // 400, 401, 403: Configuration or request errors; FAIL IMMEDIATELY (no fallback)
+      // 400, 401, 403: Configuration or request errors
       if (isNonRetryableStatus(status)) {
         const isAuth = status === 401 || status === 403;
+        const errMessage = (err as Error)?.message || String(err);
+
+        // If 400 is model-specific (e.g. unsupported modality, thinking level, schema for this specific model),
+        // fall through to the next model in the fallback chain.
+        // A 400 caused by our own malformed request syntax or invalid encoding must NOT loop.
+        if (status === 400 && isModelSpecific400(err)) {
+          const outcomeCode: AnalyzeErrorCode = "UPSTREAM_ERROR";
+          logSafeAttemptError(
+            outcomeCode,
+            400,
+            attempts.length + 1,
+            currentModel,
+            elapsedMs,
+            errMessage
+          );
+          circuitBreaker.recordFailure(currentModel, outcomeCode, 400);
+          attempts.push({
+            model: currentModel,
+            outcome: outcomeCode,
+            httpStatus: 400,
+            elapsedMs,
+            error: errMessage,
+          });
+          continue;
+        }
+
         const code: AnalyzeErrorCode = isAuth ? "NOT_CONFIGURED" : "UPSTREAM_ERROR";
         const finalStatus = isAuth ? 500 : 400;
         const message = isAuth
           ? "Offer review service is currently unavailable. Please try again later."
+          : actionNoun === "transcription"
+          ? "Unable to transcribe files due to an invalid request format."
           : "Unable to process the offer review due to an invalid request format.";
 
         logSafeAttemptError(
@@ -484,14 +558,15 @@ export async function runModelFallbackChain<T>({
           status ?? finalStatus,
           attempts.length + 1,
           currentModel,
-          elapsedMs
+          elapsedMs,
+          errMessage
         );
         attempts.push({
           model: currentModel,
           outcome: code,
           httpStatus: status ?? finalStatus,
           elapsedMs,
-          error: String((err as Error)?.message || err),
+          error: errMessage,
         });
 
         return {
@@ -506,6 +581,7 @@ export async function runModelFallbackChain<T>({
       // Retryable errors: Rate limits (429), timeouts, 503, or upstream network errors
       let outcomeCode: AnalyzeErrorCode;
       let httpStatus = status ?? 502;
+      const errMessage = (err as Error)?.message || String(err);
 
       if (isTimeoutError(err)) {
         outcomeCode = "TIMEOUT";
@@ -523,7 +599,8 @@ export async function runModelFallbackChain<T>({
         httpStatus,
         attempts.length + 1,
         currentModel,
-        elapsedMs
+        elapsedMs,
+        errMessage
       );
       circuitBreaker.recordFailure(currentModel, outcomeCode, httpStatus);
       attempts.push({

@@ -14,85 +14,88 @@ export function ConcernsSection({
   onShowInText,
 }: ConcernsSectionProps) {
   return (
-    <section id="section-observations" aria-labelledby="concerns-heading" className="space-y-4">
+    <section id="section-observations" aria-labelledby="concerns-heading" className="space-y-3.5">
       <div className="flex items-center justify-between">
         <h3
           id="concerns-heading"
-          className="text-base sm:text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2"
+          className="text-sm sm:text-base font-bold text-[var(--text)] flex items-center gap-2"
         >
           <span>Section A: Potential concerns</span>
-          <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+          <span className="inline-flex items-center rounded-xs bg-[var(--surface-muted)] px-2 py-0.5 text-2xs font-mono font-medium text-[var(--text-muted)] border border-[var(--border)]">
             {concerns.length} {concerns.length === 1 ? "item" : "items"}
           </span>
         </h3>
       </div>
 
       {concerns.length === 0 ? (
-        <div className="rounded-xl border border-slate-200 bg-white p-5 text-sm text-slate-600 shadow-xs dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
-          <p className="text-slate-600 dark:text-slate-400">
-            No concerns listed for this text. See the missing details below.
+        <div className="rounded border border-[var(--border)] bg-[var(--surface)] p-4 text-xs text-[var(--text-muted)] shadow-2xs">
+          <p className="text-[var(--text)] font-medium">
+            No specific concerns were identified in the text provided.
+          </p>
+          <p className="mt-1 text-2xs text-[var(--text-muted)]">
+            Review missing details and verification questions below before proceeding.
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {concerns.map((concern, idx) => {
             const categoryLabel = getConcernCategoryLabel(concern.category);
             return (
               <div
                 key={concern.id}
                 id={`concern-card-${concern.id}`}
-                className="rounded-xl border border-amber-200/80 border-l-4 border-l-amber-500 bg-amber-50/40 p-5 shadow-xs dark:border-amber-900/60 dark:border-l-amber-500 dark:bg-stone-900/40 space-y-3 transition-colors"
+                className="rounded border border-[var(--border)] border-l-[3px] border-l-[var(--tint-attention-border)] bg-[var(--tint-attention-bg)] p-4 sm:p-5 shadow-2xs space-y-2.5 transition-colors"
               >
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-200/60 pb-3 dark:border-amber-900/50">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] pb-2.5">
                   <div className="flex items-center gap-2">
                     <AttentionIcon
-                      className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0"
+                      className="w-4 h-4 text-[var(--tint-attention-accent)] shrink-0"
                       size={16}
                     />
-                    <span className="inline-flex items-center justify-center rounded-md bg-amber-100/80 px-2 py-0.5 text-xs font-semibold text-amber-900 dark:bg-amber-950/80 dark:text-amber-200">
+                    <span className="inline-flex items-center justify-center rounded-xs bg-[var(--surface)] px-1.5 py-0.5 text-2xs font-mono font-semibold text-[var(--text)] border border-[var(--border)]">
                       #{idx + 1}
                     </span>
-                    <span className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-slate-100">
+                    <span className="text-xs sm:text-sm font-semibold text-[var(--text)]">
                       {categoryLabel}
                     </span>
                   </div>
                   <button
                     type="button"
                     onClick={() => onShowInText(concern.id)}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-medium text-slate-800 shadow-xs hover:bg-slate-50 active:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 min-h-[36px]"
+                    className="inline-flex items-center gap-1.5 rounded-xs border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-xs font-medium text-[var(--text)] shadow-2xs hover:bg-[var(--surface-muted)] active:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[32px]"
                     aria-label={`Scroll to quote for concern ${idx + 1}: ${categoryLabel}`}
                   >
-                    <SearchIcon className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                    <SearchIcon className="w-3.5 h-3.5 text-[var(--text-muted)]" />
                     <span>Show in text</span>
                   </button>
                 </div>
 
                 {/* Observation */}
                 <div>
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  <h4 className="text-2xs font-mono uppercase tracking-wider text-[var(--text-muted)] font-semibold">
                     What the text says
                   </h4>
-                  <p className="mt-1 text-sm text-slate-800 dark:text-slate-200 leading-relaxed">
+                  <p className="mt-0.5 text-xs sm:text-sm text-[var(--text)] leading-relaxed">
                     {sentenceCase(concern.observation)}
                   </p>
                 </div>
 
                 {/* Interpretation */}
-                <div>
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    Why it may matter
+                <div className="pt-2 border-t border-[var(--border)]">
+                  <h4 className="text-2xs font-mono uppercase tracking-wider text-[var(--text-muted)] font-semibold">
+                    Why caution is recommended
                   </h4>
-                  <p className="mt-1 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                  <p className="mt-0.5 text-xs text-[var(--text-muted)] leading-relaxed">
                     {sentenceCase(concern.interpretation)}
                   </p>
                 </div>
 
-                {/* Verbatim Quote */}
-                <div className="rounded-lg bg-white/80 p-3.5 dark:bg-slate-950/60 border border-amber-200/70 dark:border-amber-900/40">
-                  <div className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
-                    From your text:
-                  </div>
-                  <blockquote className="text-xs sm:text-sm italic font-mono text-slate-800 dark:text-slate-200 break-words">
+                {/* Direct Quote Reference */}
+                <div className="pt-1.5 border-t border-[var(--border)] flex items-baseline gap-2 text-2xs text-[var(--text-muted)]">
+                  <span className="font-semibold text-[var(--text)] font-sans uppercase">
+                    Quote:
+                  </span>
+                  <blockquote className="italic font-mono break-words border-l border-[var(--border)] pl-2">
                     &ldquo;{concern.quote}&rdquo;
                   </blockquote>
                 </div>

@@ -13,7 +13,7 @@ export function WhatYouGetSection() {
       badge: "Term Checklist",
       title: "Missing details kept separate",
       body: "Essential terms often omitted in informal offers—like compensation or stipend amounts, expected working hours, duration or contract terms, and physical office addresses—are tracked in a dedicated checklist.",
-      detail: "Helps you know what standard information is missing before accepting.",
+      detail: "Helps you identify key employment details that were not stated in the communication.",
     },
     {
       badge: "Clarification Drafts",

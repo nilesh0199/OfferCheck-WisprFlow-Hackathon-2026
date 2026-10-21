@@ -138,3 +138,6 @@ export class ModelCircuitBreaker {
 
 /** Default singleton instance used across analysis requests */
 export const defaultCircuitBreaker = new ModelCircuitBreaker();
+
+/** Default singleton instance used across transcription requests (isolated from analysis) */
+export const defaultTranscribeCircuitBreaker = new ModelCircuitBreaker();

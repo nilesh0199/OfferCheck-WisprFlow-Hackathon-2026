@@ -41,17 +41,17 @@ export function HighlightedTextViewer({
     <details
       open={isOpen}
       onToggle={(e) => onToggle?.(e.currentTarget.open)}
-      className="group rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 transition-colors"
+      className="group rounded border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 shadow-2xs transition-colors"
     >
-      <summary className="cursor-pointer font-semibold text-sm text-slate-900 dark:text-slate-100 flex items-center justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:focus-visible:ring-slate-400 rounded-md min-h-[44px] list-none select-none">
+      <summary className="cursor-pointer font-bold text-xs sm:text-sm text-[var(--text)] flex items-center justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 min-h-[36px] list-none select-none">
         <div className="flex items-center gap-2">
-          <FileTextIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" size={16} />
+          <FileTextIcon className="w-4 h-4 text-[var(--text-muted)]" size={16} />
           <span>Your text, with quotes highlighted</span>
-          <span className="text-xs font-normal text-slate-500 dark:text-slate-400">
+          <span className="text-2xs font-mono font-normal text-[var(--text-muted)]">
             ({text.length.toLocaleString()} characters)
           </span>
         </div>
-        <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+        <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
           <span>{isOpen ? "Hide" : "Show"}</span>
           <ChevronDownIcon
             className={`w-4 h-4 transition-transform duration-150 ${
@@ -61,8 +61,8 @@ export function HighlightedTextViewer({
         </div>
       </summary>
 
-      <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2">
-        <p className="text-xs text-slate-500 dark:text-slate-400">
+      <div className="mt-3 pt-3 border-t border-[var(--border)] space-y-2">
+        <p className="text-2xs text-[var(--text-muted)]">
           Quotes referenced in the observations above are highlighted below in the snapshot of text analyzed.
         </p>
 
@@ -70,7 +70,7 @@ export function HighlightedTextViewer({
           tabIndex={0}
           role="region"
           aria-label="Analyzed text with highlighted quotations"
-          className="max-h-96 w-full overflow-y-auto rounded-lg border border-slate-200 bg-slate-50 p-4 font-mono text-xs sm:text-sm leading-relaxed text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100 whitespace-pre-wrap break-words custom-scrollbar focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
+          className="max-h-96 w-full overflow-y-auto rounded border border-[var(--border)] bg-[var(--surface-muted)] p-3.5 font-mono text-xs leading-relaxed text-[var(--text)] whitespace-pre-wrap break-words custom-scrollbar focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
         >
           {segments.map((seg, idx) => {
             if (!seg.isHighlighted) {
@@ -86,10 +86,10 @@ export function HighlightedTextViewer({
               <mark
                 key={idx}
                 id={seg.concernId ? `highlight-concern-${seg.concernId}` : undefined}
-                className={`rounded px-1 py-0.5 font-semibold transition-all ${
+                className={`rounded-xs px-1 py-0.5 font-medium transition-all ${
                   isTargeted
-                    ? "bg-amber-300 text-slate-950 ring-2 ring-slate-900 dark:bg-amber-400 dark:text-slate-950 dark:ring-slate-100"
-                    : "bg-amber-100 text-slate-900 dark:bg-amber-950/80 dark:text-amber-200"
+                    ? "bg-[var(--accent-highlighter)] text-slate-950 ring-2 ring-[var(--focus-ring)]"
+                    : "bg-[var(--tint-attention-bg)] text-[var(--text)] border border-[var(--tint-attention-border)]"
                 }`}
                 title={
                   seg.concernIds && seg.concernIds.length > 1

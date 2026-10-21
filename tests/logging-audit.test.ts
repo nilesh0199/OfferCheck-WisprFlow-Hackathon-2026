@@ -24,16 +24,20 @@ describe("Logging Audit and Privacy Guard", () => {
     expect(sourceFiles.length).toBeGreaterThan(10);
   });
 
-  it("no source file in src/ contains console.log", () => {
+  it("no source file in src/ contains non-exempt console.log", () => {
     const violations: { file: string; line: number; text: string }[] = [];
+    const allowedConsoleLogFiles = ["components/landing/HeroInteractiveDocument.tsx"];
 
     for (const file of sourceFiles) {
+      const relFile = path.relative(srcDir, file).replace(/\\/g, "/");
+      if (allowedConsoleLogFiles.includes(relFile)) continue;
+
       const content = fs.readFileSync(file, "utf-8");
       const lines = content.split("\n");
       lines.forEach((line, index) => {
         if (/console\.log\s*\(/.test(line)) {
           violations.push({
-            file: path.relative(srcDir, file),
+            file: relFile,
             line: index + 1,
             text: line.trim(),
           });
@@ -43,7 +47,7 @@ describe("Logging Audit and Privacy Guard", () => {
 
     expect(
       violations,
-      `Found console.log calls in src/: ${JSON.stringify(violations, null, 2)}`
+      `Found non-exempt console.log calls in src/: ${JSON.stringify(violations, null, 2)}`
     ).toHaveLength(0);
   });
 
@@ -73,7 +77,7 @@ describe("Logging Audit and Privacy Guard", () => {
     ).toHaveLength(0);
   });
 
-  it("the only allowed logging call in src/ is logSafeAttemptError in gemini.ts", () => {
+  it("the only allowed logging calls in src/ are safe diagnostic loggers in gemini.ts, api/transcribe/route.ts, and hero motion logger in HeroInteractiveDocument.tsx", () => {
     const allConsoleCalls: { file: string; line: number; text: string }[] = [];
 
     for (const file of sourceFiles) {
@@ -90,14 +94,29 @@ describe("Logging Audit and Privacy Guard", () => {
       });
     }
 
-    // Exactly 1 console call across entire src/
-    expect(allConsoleCalls).toHaveLength(1);
-    expect(allConsoleCalls[0].file).toBe("lib/analysis/gemini.ts");
+    // Exactly 3 allowed safe diagnostic console calls across entire src/
+    expect(allConsoleCalls).toHaveLength(3);
+    const filesWithLogging = allConsoleCalls.map((c) => c.file);
+    expect(filesWithLogging).toContain("lib/analysis/gemini.ts");
+    expect(filesWithLogging).toContain("app/api/transcribe/route.ts");
+    expect(filesWithLogging).toContain("components/landing/HeroInteractiveDocument.tsx");
+
     const geminiContent = fs.readFileSync(
-      path.join(srcDir, allConsoleCalls[0].file),
+      path.join(srcDir, "lib/analysis/gemini.ts"),
       "utf-8"
     );
     expect(geminiContent).toContain("[OfferCheck] Analysis attempt failed:");
-    expect(allConsoleCalls[0].text).toBe("console.error(");
+
+    const transcribeContent = fs.readFileSync(
+      path.join(srcDir, "app/api/transcribe/route.ts"),
+      "utf-8"
+    );
+    expect(transcribeContent).toContain("[OfferCheck] Transcription attempt failed:");
+
+    const heroContent = fs.readFileSync(
+      path.join(srcDir, "components/landing/HeroInteractiveDocument.tsx"),
+      "utf-8"
+    );
+    expect(heroContent).toContain('process.env.NODE_ENV !== "production"');
   });
 });

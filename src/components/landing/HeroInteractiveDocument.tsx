@@ -33,6 +33,19 @@ export function HeroInteractiveDocument() {
   );
   const [isAnimating, setIsAnimating] = useState<boolean>(true);
   const [isReducedMotion, setIsReducedMotion] = useState<boolean>(false);
+  const [hasPlayedOnce, setHasPlayedOnce] = useState<boolean>(false);
+
+  // Debug motion logging (development only, logs once)
+  const hasLoggedMotionPathRef = useRef<boolean>(false);
+  const logMotionPath = useCallback(
+    (path: "entrance: playing" | "entrance: reduced-motion (finished state)" | "entrance: failsafe") => {
+      if (process.env.NODE_ENV !== "production" && !hasLoggedMotionPathRef.current) {
+        hasLoggedMotionPathRef.current = true;
+        console.log(path);
+      }
+    },
+    []
+  );
 
   // Refs for animation loop and measurement
   const cardRef = useRef<HTMLDivElement | null>(null);
@@ -52,19 +65,26 @@ export function HeroInteractiveDocument() {
   );
 
   // Complete animation instantly to end state
-  const completeAnimation = useCallback(() => {
-    if (animRafRef.current) {
-      cancelAnimationFrame(animRafRef.current);
-      animRafRef.current = null;
-    }
-    isAnimatingRef.current = false;
-    setIsAnimating(false);
-    setRevealedCount(annotations.length);
-    if (lensContainerRef.current) {
-      lensContainerRef.current.style.opacity = "0";
-      lensContainerRef.current.style.display = "none";
-    }
-  }, [annotations.length]);
+  const completeAnimation = useCallback(
+    (markPlayed: boolean = false) => {
+      if (animRafRef.current) {
+        cancelAnimationFrame(animRafRef.current);
+        animRafRef.current = null;
+      }
+      const wasAnimating = isAnimatingRef.current;
+      isAnimatingRef.current = false;
+      setIsAnimating(false);
+      setRevealedCount(annotations.length);
+      if (wasAnimating || markPlayed) {
+        setHasPlayedOnce(true);
+      }
+      if (lensContainerRef.current) {
+        lensContainerRef.current.style.opacity = "0";
+        lensContainerRef.current.style.display = "none";
+      }
+    },
+    [annotations.length]
+  );
 
   // Measure targets and construct path
   const measurePath = useCallback(() => {
@@ -93,83 +113,91 @@ export function HeroInteractiveDocument() {
       pathRef.current = path;
       return path;
     } catch {
-      completeAnimation();
+      logMotionPath("entrance: failsafe");
+      completeAnimation(true);
       return null;
     }
-  }, [annotations, completeAnimation]);
+  }, [annotations, completeAnimation, logMotionPath]);
 
   // Run the entrance animation loop
-  const startEntranceAnimation = useCallback(() => {
-    if (isReducedMotionRef.current) {
-      completeAnimation();
-      return;
-    }
+  const startEntranceAnimation = useCallback(
+    (userInitiated: boolean = false) => {
+      if (isReducedMotionRef.current && !userInitiated) {
+        completeAnimation(false);
+        logMotionPath("entrance: reduced-motion (finished state)");
+        return;
+      }
 
-    const path = measurePath();
-    if (!path || path.waypoints.length === 0) {
-      completeAnimation();
-      return;
-    }
+      const path = measurePath();
+      if (!path || path.waypoints.length === 0) {
+        completeAnimation(true);
+        logMotionPath("entrance: failsafe");
+        return;
+      }
 
-    setIsAnimating(true);
-    isAnimatingRef.current = true;
-    setRevealedCount(0);
-    setActiveAnnotationId(annotations[0]?.id ?? "");
+      logMotionPath("entrance: playing");
 
-    if (lensContainerRef.current) {
-      lensContainerRef.current.style.display = "block";
-      lensContainerRef.current.style.opacity = "0";
-      lensContainerRef.current.style.transform = `translate3d(${path.startPoint.x}px, ${path.startPoint.y}px, 0) translate(-40%, -40%) rotate(-12deg)`;
-    }
+      setIsAnimating(true);
+      isAnimatingRef.current = true;
+      setRevealedCount(0);
+      setActiveAnnotationId(annotations[0]?.id ?? "");
 
-    let startTime: number | null = null;
-    let lastRevealed = 0;
-    let lastObsIndex = 0;
-
-    const tick = (now: number) => {
-      if (!isAnimatingRef.current) return;
-      if (startTime === null) startTime = now;
-      const elapsed = now - startTime;
-
-      const state = computeEntranceState(elapsed, path);
-
-      // Update lens transform & opacity directly on DOM
       if (lensContainerRef.current) {
-        lensContainerRef.current.style.transform = `translate3d(${state.lens.x}px, ${state.lens.y}px, 0) translate(-40%, -40%) rotate(${state.lens.rotation.toFixed(
-          1
-        )}deg)`;
-        lensContainerRef.current.style.opacity = state.lens.opacity.toFixed(3);
+        lensContainerRef.current.style.display = "block";
+        lensContainerRef.current.style.opacity = "0";
+        lensContainerRef.current.style.transform = `translate3d(${path.startPoint.x}px, ${path.startPoint.y}px, 0) translate(-40%, -40%) rotate(-12deg)`;
       }
 
-      // Update trail position
-      if (trailRef.current) {
-        trailRef.current.style.transform = `translate3d(${state.lens.x - 8}px, ${
-          state.lens.y - 8
-        }px, 0) scale(${Math.min(1, state.lens.opacity * 1.2)})`;
-        trailRef.current.style.opacity = (state.lens.opacity * 0.4).toFixed(3);
-      }
+      let startTime: number | null = null;
+      let lastRevealed = 0;
+      let lastObsIndex = 0;
 
-      // Update revealed count and active observation if stepped
-      if (state.revealedCount !== lastRevealed) {
-        lastRevealed = state.revealedCount;
-        setRevealedCount(state.revealedCount);
-      }
+      const tick = (now: number) => {
+        if (!isAnimatingRef.current) return;
+        if (startTime === null) startTime = now;
+        const elapsed = now - startTime;
 
-      if (state.observationIndex !== lastObsIndex && annotations[state.observationIndex]) {
-        lastObsIndex = state.observationIndex;
-        setActiveAnnotationId(annotations[state.observationIndex].id);
-      }
+        const state = computeEntranceState(elapsed, path);
 
-      if (state.done) {
-        completeAnimation();
-      } else {
-        animRafRef.current = requestAnimationFrame(tick);
-      }
-    };
+        // Update lens transform & opacity directly on DOM
+        if (lensContainerRef.current) {
+          lensContainerRef.current.style.transform = `translate3d(${state.lens.x}px, ${state.lens.y}px, 0) translate(-40%, -40%) rotate(${state.lens.rotation.toFixed(
+            1
+          )}deg)`;
+          lensContainerRef.current.style.opacity = state.lens.opacity.toFixed(3);
+        }
 
-    if (animRafRef.current) cancelAnimationFrame(animRafRef.current);
-    animRafRef.current = requestAnimationFrame(tick);
-  }, [annotations, completeAnimation, measurePath]);
+        // Update trail position
+        if (trailRef.current) {
+          trailRef.current.style.transform = `translate3d(${state.lens.x - 8}px, ${
+            state.lens.y - 8
+          }px, 0) scale(${Math.min(1, state.lens.opacity * 1.2)})`;
+          trailRef.current.style.opacity = (state.lens.opacity * 0.4).toFixed(3);
+        }
+
+        // Update revealed count and active observation if stepped
+        if (state.revealedCount !== lastRevealed) {
+          lastRevealed = state.revealedCount;
+          setRevealedCount(state.revealedCount);
+        }
+
+        if (state.observationIndex !== lastObsIndex && annotations[state.observationIndex]) {
+          lastObsIndex = state.observationIndex;
+          setActiveAnnotationId(annotations[state.observationIndex].id);
+        }
+
+        if (state.done) {
+          completeAnimation(true);
+        } else {
+          animRafRef.current = requestAnimationFrame(tick);
+        }
+      };
+
+      if (animRafRef.current) cancelAnimationFrame(animRafRef.current);
+      animRafRef.current = requestAnimationFrame(tick);
+    },
+    [annotations, completeAnimation, logMotionPath, measurePath]
+  );
 
   // Capabilities & Skip Listeners setup
   useEffect(() => {
@@ -181,7 +209,8 @@ export function HeroInteractiveDocument() {
       isReducedMotionRef.current = reduced;
       setIsReducedMotion(reduced);
       if (reduced) {
-        completeAnimation();
+        completeAnimation(false);
+        logMotionPath("entrance: reduced-motion (finished state)");
       }
     };
 
@@ -193,32 +222,41 @@ export function HeroInteractiveDocument() {
     let timerId: NodeJS.Timeout | null = null;
     if (!isReducedMotionRef.current) {
       timerId = setTimeout(() => {
-        startEntranceAnimation();
+        startEntranceAnimation(false);
       }, 60);
     } else {
-      completeAnimation();
+      completeAnimation(false);
+      logMotionPath("entrance: reduced-motion (finished state)");
     }
+
+    // Failsafe timer (3800 ms): if animation was supposed to play but got stuck or never finished
+    const failsafeTimer = setTimeout(() => {
+      if (isAnimatingRef.current) {
+        logMotionPath("entrance: failsafe");
+        completeAnimation(true);
+      }
+    }, 3800);
 
     // Skip on user interaction (pointerdown, keydown, scroll > 10px, or visibilitychange)
     const initialScrollY = window.scrollY;
 
     const handleSkipPointer = () => {
-      if (isAnimatingRef.current) completeAnimation();
+      if (isAnimatingRef.current) completeAnimation(true);
     };
 
     const handleSkipKey = () => {
-      if (isAnimatingRef.current) completeAnimation();
+      if (isAnimatingRef.current) completeAnimation(true);
     };
 
     const handleSkipScroll = () => {
       if (isAnimatingRef.current && Math.abs(window.scrollY - initialScrollY) > 10) {
-        completeAnimation();
+        completeAnimation(true);
       }
     };
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === "hidden" && isAnimatingRef.current) {
-        completeAnimation();
+        completeAnimation(true);
       }
     };
 
@@ -241,6 +279,7 @@ export function HeroInteractiveDocument() {
 
     return () => {
       if (timerId) clearTimeout(timerId);
+      if (failsafeTimer) clearTimeout(failsafeTimer);
       if (resizeTimer) clearTimeout(resizeTimer);
       motionQuery.removeEventListener("change", updateCapabilities);
       pointerQuery.removeEventListener("change", updateCapabilities);
@@ -252,7 +291,7 @@ export function HeroInteractiveDocument() {
       if (animRafRef.current) cancelAnimationFrame(animRafRef.current);
       if (tiltRafRef.current) cancelAnimationFrame(tiltRafRef.current);
     };
-  }, [completeAnimation, measurePath, startEntranceAnimation]);
+  }, [completeAnimation, logMotionPath, measurePath, startEntranceAnimation]);
 
   // Tilt & Parallax when entrance is complete or idle
   const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
@@ -448,16 +487,18 @@ export function HeroInteractiveDocument() {
             <span>Hover or tap highlighted phrases to see observations</span>
           </div>
 
-          {!isReducedMotion && (
-            <button
-              type="button"
-              onClick={startEntranceAnimation}
-              className="text-2xs font-mono underline hover:text-[var(--text)] focus:outline-none focus-visible:ring-1 focus-visible:ring-[var(--focus-ring)] rounded px-1 transition-colors"
-              aria-label="Replay hero document entrance animation"
-            >
-              Replay animation
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => startEntranceAnimation(true)}
+            className="text-2xs font-mono underline hover:text-[var(--text)] focus:outline-none focus-visible:ring-1 focus-visible:ring-[var(--focus-ring)] rounded px-1 transition-colors"
+            aria-label={
+              isReducedMotion && !hasPlayedOnce
+                ? "Play hero document entrance animation"
+                : "Replay hero document entrance animation"
+            }
+          >
+            {isReducedMotion && !hasPlayedOnce ? "Play animation" : "Replay animation"}
+          </button>
         </div>
       </div>
     </div>

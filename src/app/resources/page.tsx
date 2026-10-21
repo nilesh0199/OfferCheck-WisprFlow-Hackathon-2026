@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { Container } from "@/components/Container";
 import { ResourceCard } from "@/components/ResourceCard";
 import { LogoIcon, GitHubIcon, ExternalLinkIcon } from "@/components/Icons";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { VERIFICATION_RESOURCES } from "@/data/verification-resources";
 import { POST_PAYMENT_STEPS } from "@/data/post-payment-steps";
 import { APP_NAME } from "@/lib/config";
@@ -57,6 +58,8 @@ export default function ResourcesPage() {
               <span className="hidden sm:inline">GitHub</span>
               <ExternalLinkIcon className="w-3 h-3 opacity-60" />
             </a>
+
+            <ThemeToggle />
           </div>
         </Container>
       </nav>

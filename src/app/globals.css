@@ -1,67 +1,76 @@
 @import "tailwindcss";
 
-:root {
-  /* Core surfaces and text - Light theme (Annotated Paper) */
-  --bg: #f4efe4;
-  --surface: #faf7f0;
-  --surface-muted: #eae4d5;
-  --border: #dcd5c5;
-  --border-muted: #cac0ad;
-  --text: #17150f;
-  --text-muted: #57534a;
-  --accent: #17150f;
-  --accent-contrast: #faf7f0;
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+:root,
+[data-theme="light"] {
+  /* Core surfaces and text - Console-Style Light Theme (Enterprise Canvas) */
+  --bg: #f2f3f3;
+  --surface: #ffffff;
+  --surface-alt: #f8f8f8;
+  --surface-muted: #f8f8f8;
+  --border: #d5dbdb;
+  --border-strong: #aab7b8;
+  --border-muted: #d5dbdb;
+  --text: #16191f;
+  --text-muted: #545b64;
+  --accent: #16191f;
+  --accent-contrast: #ffffff;
   --accent-highlighter: #ffd84a;
+  --header-bg: #1f2933;
+  --header-text: #ffffff;
   --primary-ledger: #1e5c46;
-  --primary-ledger-hover: #164635;
+  --primary-ledger-hover: #17493a;
   --focus-ring: #1e5c46;
 
-  /* Semantic context tints (Evidence-linked, strictly non-traffic-light) */
-  --tint-attention-bg: #fff9db;
-  --tint-attention-border: #ffd84a;
-  --tint-attention-text: #17150f;
+  /* Semantic context tints (Evidence-linked, non-traffic-light) */
+  --tint-attention-bg: #fff7d6;
+  --tint-attention-border: #b8860b;
+  --tint-attention-text: #16191f;
   --tint-attention-accent: #b8860b;
 
-  --tint-info-bg: #efe9dc;
-  --tint-info-border: #cac0ad;
-  --tint-info-text: #3d3933;
+  --tint-info-bg: #eef2f6;
+  --tint-info-border: #d5dbdb;
+  --tint-info-text: #16191f;
 
-  --tint-action-bg: #eae3d2;
-  --tint-action-border: #8c8270;
-  --tint-action-text: #17150f;
+  --tint-action-bg: #eef2f6;
+  --tint-action-border: #aab7b8;
+  --tint-action-text: #16191f;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* Core surfaces and text - Dark theme (Warm Charcoal) */
-    --bg: #14130f;
-    --surface: #1c1a15;
-    --surface-muted: #24221c;
-    --border: #333028;
-    --border-muted: #423f36;
-    --text: #f4efe4;
-    --text-muted: #a39e93;
-    --accent: #f4efe4;
-    --accent-contrast: #14130f;
-    --accent-highlighter: #ffd84a;
-    --primary-ledger: #2f7c60;
-    --primary-ledger-hover: #3d9675;
-    --focus-ring: #ffd84a;
+[data-theme="dark"] {
+  /* Core surfaces and text - Dark theme (Warm Charcoal) */
+  --bg: #14130f;
+  --surface: #1c1a15;
+  --surface-alt: #24221c;
+  --surface-muted: #24221c;
+  --border: #333028;
+  --border-strong: #4a453a;
+  --border-muted: #423f36;
+  --text: #f4efe4;
+  --text-muted: #a39e93;
+  --accent: #f4efe4;
+  --accent-contrast: #14130f;
+  --accent-highlighter: #ffd84a;
+  --header-bg: #14130f;
+  --header-text: #f4efe4;
+  --primary-ledger: #2f7c60;
+  --primary-ledger-hover: #3d9675;
+  --focus-ring: #ffd84a;
 
-    /* Semantic context tints - Dark theme */
-    --tint-attention-bg: #292414;
-    --tint-attention-border: #a38012;
-    --tint-attention-text: #fff0a6;
-    --tint-attention-accent: #ffd84a;
+  /* Semantic context tints - Dark theme */
+  --tint-attention-bg: #292414;
+  --tint-attention-border: #a38012;
+  --tint-attention-text: #fff0a6;
+  --tint-attention-accent: #ffd84a;
 
-    --tint-info-bg: #1e1c17;
-    --tint-info-border: #3d3933;
-    --tint-info-text: #d5cebf;
+  --tint-info-bg: #1e1c17;
+  --tint-info-border: #3d3933;
+  --tint-info-text: #d5cebf;
 
-    --tint-action-bg: #222019;
-    --tint-action-border: #524c40;
-    --tint-action-text: #f4efe4;
-  }
+  --tint-action-bg: #222019;
+  --tint-action-border: #524c40;
+  --tint-action-text: #f4efe4;
 }
 
 html {
@@ -133,5 +142,82 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* Dedicated Print Stylesheet */
+@media print {
+  /* Hide non-review layout chrome, navigation, buttons, and input cards */
+  nav,
+  footer,
+  header,
+  button,
+  .no-print,
+  #how-it-works,
+  #about-this-tool,
+  [role="tablist"],
+  form,
+  .lg\:sticky,
+  aside,
+  [aria-live="polite"] {
+    display: none !important;
+  }
+
+  /* Force clean black-on-white typography on full printable canvas */
+  html,
+  body {
+    background: #ffffff !important;
+    color: #111111 !important;
+    font-size: 11pt !important;
+    line-height: 1.5 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  main {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Prevent page breaks inside cards and sections */
+  section,
+  article,
+  .rounded-xl,
+  .rounded-2xl {
+    background: #ffffff !important;
+    color: #111111 !important;
+    border: 1px solid #d4d4d8 !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    page-break-after: avoid;
+    break-after: avoid;
+    color: #000000 !important;
+  }
+
+  p,
+  span,
+  li,
+  blockquote {
+    color: #111111 !important;
+  }
+
+  details {
+    display: block !important;
+  }
+
+  details summary {
+    display: none !important;
   }
 }

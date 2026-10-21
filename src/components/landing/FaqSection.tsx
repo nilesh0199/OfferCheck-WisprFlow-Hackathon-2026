@@ -14,7 +14,7 @@ export function FaqSection() {
     },
     {
       q: "Can I upload screenshots or PDFs?",
-      a: "Yes. You can upload up to 5 screenshots (PNG, JPEG, WebP) or PDF documents up to 4 MB total. OfferCheck transcribes them to text with Gemini, lets you review and edit the extracted text in the editor, and analyzes only what you confirm.",
+      a: "Yes. You can paste text, attach files, or both. You can upload up to 5 screenshots (PNG, JPEG, WebP) or PDF documents up to 4 MB total. Text read from files is added below any text already in the editor, letting you review and edit before analyzing.",
     },
     {
       q: "Can OfferCheck tell me whether a company is real?",
@@ -22,7 +22,7 @@ export function FaqSection() {
     },
     {
       q: "What if the tool finds no concerns?",
-      a: "'No concerns identified' must never be interpreted as 'safe' or 'verified'. Scammers frequently copy legitimate offer templates word for word. Always confirm the offer through official company communication channels.",
+      a: "'No concerns identified' must not be interpreted as 'safe' or 'verified'. Messages can copy official or common offer templates word for word. Confirm the offer through official company communication channels.",
     },
     {
       q: "What should I do if I have already paid or shared documents?",

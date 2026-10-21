@@ -18,9 +18,11 @@ import {
   InfoIcon,
 } from "./Icons";
 
-interface CompanyResearchCardProps {
+export interface CompanyResearchCardProps {
   offerText: string;
   entities?: ValidatedEntities;
+  level?: "recommended" | "optional";
+  reasons?: readonly string[];
   defaultCollapsed?: boolean;
 }
 
@@ -41,6 +43,8 @@ function getDomainFromUrl(url: string): string | null {
 export function CompanyResearchCard({
   offerText,
   entities,
+  level = "optional",
+  reasons = [],
   defaultCollapsed = false,
 }: CompanyResearchCardProps) {
   // Extract contact items from offerText
@@ -82,7 +86,7 @@ export function CompanyResearchCard({
 
   // Mode and view state
   const [mode, setMode] = useState<ResearchPromptMode>("short");
-  const [isCardOpen, setIsCardOpen] = useState(!defaultCollapsed);
+  const [isDetailsExpanded, setIsDetailsExpanded] = useState<boolean>(!defaultCollapsed);
   const [isPromptPreviewOpen, setIsPromptPreviewOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showFallbackTextarea, setShowFallbackTextarea] = useState(false);
@@ -120,11 +124,11 @@ export function CompanyResearchCard({
   // Build the generated prompt text
   const promptDetails: ResearchDetails = useMemo(
     () => ({
-      companyName,
-      website,
-      senderDomain,
-      role,
-      location,
+      companyName: companyName.trim(),
+      website: website.trim(),
+      senderDomain: senderDomain.trim(),
+      role: role.trim(),
+      location: location.trim(),
     }),
     [companyName, website, senderDomain, role, location]
   );
@@ -134,7 +138,10 @@ export function CompanyResearchCard({
     [promptDetails, mode]
   );
 
+  const isCompanyMissing = !companyName.trim();
+
   const handleCopy = async () => {
+    if (isCompanyMissing) return;
     try {
       await navigator.clipboard.writeText(generatedPrompt);
       setCopied(true);
@@ -152,64 +159,233 @@ export function CompanyResearchCard({
     }
   };
 
+  const isRecommended = level === "recommended";
+
   return (
     <div
       id="section-research"
-      className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-xs transition-colors overflow-hidden"
+      className={`rounded border transition-colors overflow-hidden ${
+        isRecommended
+          ? "border-[var(--tint-attention-border)] bg-[var(--surface)] shadow-2xs"
+          : "border-[var(--border)] bg-[var(--surface)] shadow-2xs"
+      }`}
     >
       {/* Live announcement region for copy status */}
       <div className="sr-only" aria-live="polite" role="status">
         {liveAnnouncement}
       </div>
 
-      {/* Card Header with Expand/Collapse toggle */}
-      <div className="p-5 sm:p-6 flex items-start justify-between gap-4 border-b border-[var(--border)]">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-mono font-medium bg-[var(--surface-muted)] text-[var(--text-muted)] border border-[var(--border)]">
-              Optional Step
-            </span>
-            <span className="text-2xs font-mono text-[var(--text-muted)]">
-              External Handoff
-            </span>
+      {/* Card Header */}
+      <div className="p-4 sm:p-5 space-y-3 border-b border-[var(--border)]">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span
+                className={`inline-flex items-center px-2 py-0.5 rounded text-2xs font-mono font-medium border ${
+                  isRecommended
+                    ? "bg-[var(--tint-attention-bg)] text-[var(--text)] border-[var(--tint-attention-border)]"
+                    : "bg-[var(--surface-muted)] text-[var(--text-muted)] border-[var(--border)]"
+                }`}
+              >
+                {isRecommended ? "Recommended next step" : "Optional next step"}
+              </span>
+            </div>
+
+            <h3 className="text-sm sm:text-base font-bold text-[var(--text)]">
+              {isRecommended
+                ? "Research the company before taking action"
+                : "Research the company (optional)"}
+            </h3>
+
+            <p className="text-xs text-[var(--text-muted)] leading-relaxed max-w-2xl">
+              {isRecommended
+                ? "Before you sign or pay, spend two minutes looking up who sent this offer."
+                : "Prepare a structured research prompt using confirmed details to look up public company records in an external assistant like Perplexity."}
+            </p>
           </div>
-          <h3 className="text-base sm:text-lg font-serif text-[var(--text)]">
-            Research the company (optional)
-          </h3>
-          <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">
-            Prepare a structured research prompt using confirmed details to look
-            up public company records in an external assistant like Perplexity.
-          </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setIsCardOpen(!isCardOpen)}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-medium text-[var(--text)] shadow-xs hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px] shrink-0"
-          aria-expanded={isCardOpen}
-          aria-label={isCardOpen ? "Collapse research card" : "Expand research card"}
-        >
-          <span>{isCardOpen ? "Collapse" : "Expand"}</span>
-          {isCardOpen ? (
-            <ChevronUpIcon className="w-4 h-4 text-[var(--text-muted)]" />
-          ) : (
-            <ChevronDownIcon className="w-4 h-4 text-[var(--text-muted)]" />
-          )}
-        </button>
+        {/* Recommended Reasons List */}
+        {isRecommended && reasons.length > 0 && (
+          <div className="rounded border border-[var(--tint-attention-border)] bg-[var(--tint-attention-bg)] p-3 text-xs text-[var(--text)] space-y-1.5">
+            <div className="font-semibold text-2xs uppercase tracking-wider text-[var(--text)] flex items-center gap-1.5">
+              <InfoIcon className="w-3.5 h-3.5 text-[var(--tint-attention-accent)]" />
+              <span>Why research is recommended for this offer:</span>
+            </div>
+            <ul className="list-disc list-inside space-y-0.5 text-xs text-[var(--text)]">
+              {reasons.map((reason, idx) => (
+                <li key={idx} className="leading-relaxed">
+                  {reason}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
-      {/* Collapsible Card Body */}
-      {isCardOpen && (
-        <div className="p-5 sm:p-6 space-y-6">
-          {/* Editable Details Form */}
-          <div className="space-y-4">
-            <h4 className="text-xs font-mono uppercase tracking-wider text-[var(--text-muted)] font-semibold">
-              Confirmed Details (Included in Prompt)
+      {/* Always-Visible Actions & Summary Section */}
+      <div className="p-4 sm:p-5 space-y-4">
+        {/* 1-Line Key-Value Summary */}
+        <div className="rounded border border-[var(--border)] bg-[var(--surface-muted)] p-2.5 text-xs text-[var(--text-muted)] flex flex-wrap items-center gap-x-4 gap-y-1.5 font-mono">
+          <span className="truncate">
+            <strong className="text-[var(--text)] font-sans font-semibold">Company:</strong>{" "}
+            {companyName.trim() || <span className="italic text-[var(--text-muted)] opacity-70">Not provided</span>}
+          </span>
+          <span className="truncate">
+            <strong className="text-[var(--text)] font-sans font-semibold">Website:</strong>{" "}
+            {website.trim() || <span className="italic text-[var(--text-muted)] opacity-70">Not provided</span>}
+          </span>
+          <span className="truncate">
+            <strong className="text-[var(--text)] font-sans font-semibold">Sender domain:</strong>{" "}
+            {senderDomain.trim() || <span className="italic text-[var(--text-muted)] opacity-70">Not provided</span>}
+          </span>
+          <span className="truncate">
+            <strong className="text-[var(--text)] font-sans font-semibold">Role:</strong>{" "}
+            {role.trim() || <span className="italic text-[var(--text-muted)] opacity-70">Not provided</span>}
+          </span>
+        </div>
+
+        {/* Required Inline Company Name Input if Missing */}
+        {isCompanyMissing && (
+          <div className="rounded border border-[var(--border-strong)] bg-[var(--tint-attention-bg)] p-3 space-y-1.5">
+            <label
+              htmlFor="inline-company-input"
+              className="block text-xs font-semibold text-[var(--text)]"
+            >
+              Company name <span className="font-normal text-[var(--text-muted)]">(required to generate research prompt)</span>:
+            </label>
+            <input
+              id="inline-company-input"
+              type="text"
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
+              placeholder="e.g. Acme Technologies Pvt. Ltd."
+              maxLength={100}
+              className="w-full rounded-xs border border-[var(--border-strong)] bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--text)] placeholder-[var(--text-muted)]/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[36px]"
+            />
+            <p className="text-2xs text-[var(--text-muted)]">
+              Enter the company name stated in the communication or interview.
+            </p>
+          </div>
+        )}
+
+        {/* Depth Selector & Action Controls */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-1">
+          {/* Depth Mode Segmented Control */}
+          <div className="flex items-center gap-2 text-xs">
+            <span className="text-[var(--text-muted)] font-medium text-2xs uppercase tracking-wider">Depth:</span>
+            <div className="inline-flex items-center rounded border border-[var(--border)] bg-[var(--surface-muted)] p-0.5 text-xs">
+              <button
+                type="button"
+                onClick={() => setMode("short")}
+                className={`rounded-xs px-2.5 py-1 text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] ${
+                  mode === "short"
+                    ? "bg-[var(--surface)] text-[var(--text)] shadow-2xs font-semibold"
+                    : "text-[var(--text-muted)] hover:text-[var(--text)]"
+                }`}
+              >
+                Short (~300 words)
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode("detailed")}
+                className={`rounded-xs px-2.5 py-1 text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] ${
+                  mode === "detailed"
+                    ? "bg-[var(--surface)] text-[var(--text)] shadow-2xs font-semibold"
+                    : "text-[var(--text-muted)] hover:text-[var(--text)]"
+                }`}
+              >
+                Detailed (~600 words)
+              </button>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={handleCopy}
+              disabled={isCompanyMissing}
+              className="inline-flex items-center justify-center gap-1.5 rounded-xs bg-[var(--primary-ledger)] text-white px-3.5 py-1.5 text-xs font-medium shadow-2xs hover:bg-[var(--primary-ledger-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[36px]"
+              aria-label={
+                isCompanyMissing
+                  ? "Enter a company name above to generate the research prompt"
+                  : "Copy research prompt to clipboard"
+              }
+            >
+              {copied ? (
+                <>
+                  <CheckIcon className="w-3.5 h-3.5 text-white" />
+                  <span>Prompt copied!</span>
+                </>
+              ) : (
+                <>
+                  <CopyIcon className="w-3.5 h-3.5 text-white" />
+                  <span>Copy research prompt</span>
+                </>
+              )}
+            </button>
+
+            <a
+              href="https://www.perplexity.ai/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1.5 rounded-xs border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] px-3 py-1.5 text-xs font-medium shadow-2xs hover:bg-[var(--surface-muted)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[36px]"
+            >
+              <span>Open Perplexity</span>
+              <ExternalLinkIcon className="w-3 h-3 opacity-70" />
+            </a>
+
+            <button
+              type="button"
+              onClick={() => setIsDetailsExpanded(!isDetailsExpanded)}
+              className="inline-flex items-center gap-1 text-xs text-[var(--text-muted)] hover:text-[var(--text)] underline underline-offset-2 py-1 px-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded"
+              aria-expanded={isDetailsExpanded}
+            >
+              <span>{isDetailsExpanded ? "Hide details" : "Edit details"}</span>
+              {isDetailsExpanded ? (
+                <ChevronUpIcon className="w-3.5 h-3.5" />
+              ) : (
+                <ChevronDownIcon className="w-3.5 h-3.5" />
+              )}
+            </button>
+          </div>
+        </div>
+
+        {isCompanyMissing && (
+          <p className="text-2xs text-[var(--text-muted)] italic">
+            Enter a company name above to enable prompt copying.
+          </p>
+        )}
+
+        {/* Clipboard Fallback Textarea if navigator.clipboard fails */}
+        {showFallbackTextarea && (
+          <div className="space-y-2 p-3 rounded border border-[var(--border)] bg-[var(--surface-muted)]">
+            <p className="text-xs text-[var(--text-muted)]">
+              Clipboard access was blocked. Please select and copy the prompt manually:
+            </p>
+            <textarea
+              ref={fallbackTextareaRef}
+              readOnly
+              value={generatedPrompt}
+              rows={5}
+              className="w-full rounded-xs border border-[var(--border)] bg-[var(--surface)] p-2 text-xs font-mono text-[var(--text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Collapsible Details Form */}
+      {isDetailsExpanded && (
+        <div className="p-4 sm:p-5 space-y-5 border-t border-[var(--border)] bg-[var(--surface-alt)]">
+          <div className="space-y-3">
+            <h4 className="text-2xs font-mono uppercase tracking-wider text-[var(--text-muted)] font-semibold">
+              Edit Research Details (Included in Prompt)
             </h4>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               {/* Company Name */}
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <label
                   htmlFor="research-company-name"
                   className="block text-xs font-medium text-[var(--text)]"
@@ -223,15 +399,12 @@ export function CompanyResearchCard({
                   onChange={(e) => setCompanyName(e.target.value)}
                   placeholder="e.g. Acme Technologies Pvt. Ltd."
                   maxLength={100}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3.5 py-2 text-xs text-[var(--text)] placeholder-[var(--text-muted)]/60 shadow-2xs focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[40px]"
+                  className="w-full rounded-xs border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--text)] placeholder-[var(--text-muted)]/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[36px]"
                 />
-                <p className="text-2xs text-[var(--text-muted)]">
-                  As stated in the communication.
-                </p>
               </div>
 
-              {/* Claimed Website (Plain Text Input, Never Rendered as a Link) */}
-              <div className="space-y-1.5">
+              {/* Claimed Website */}
+              <div className="space-y-1">
                 <label
                   htmlFor="research-website"
                   className="block text-xs font-medium text-[var(--text)]"
@@ -245,15 +418,12 @@ export function CompanyResearchCard({
                   onChange={(e) => setWebsite(e.target.value)}
                   placeholder="e.g. https://www.example.com"
                   maxLength={200}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3.5 py-2 text-xs text-[var(--text)] placeholder-[var(--text-muted)]/60 shadow-2xs focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[40px]"
+                  className="w-full rounded-xs border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--text)] placeholder-[var(--text-muted)]/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[36px]"
                 />
-                <p className="text-2xs text-[var(--text-muted)]">
-                  Plain text only; not clicked or opened by OfferCheck.
-                </p>
               </div>
 
               {/* Sender Email Domain */}
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <label
                   htmlFor="research-sender-domain"
                   className="block text-xs font-medium text-[var(--text)]"
@@ -267,15 +437,12 @@ export function CompanyResearchCard({
                   onChange={(e) => setSenderDomain(e.target.value)}
                   placeholder="e.g. example.com or gmail.com"
                   maxLength={100}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3.5 py-2 text-xs text-[var(--text)] placeholder-[var(--text-muted)]/60 shadow-2xs focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[40px]"
+                  className="w-full rounded-xs border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--text)] placeholder-[var(--text-muted)]/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[36px]"
                 />
-                <p className="text-2xs text-[var(--text-muted)]">
-                  The domain following the @ symbol.
-                </p>
               </div>
 
               {/* Role */}
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <label
                   htmlFor="research-role"
                   className="block text-xs font-medium text-[var(--text)]"
@@ -289,15 +456,12 @@ export function CompanyResearchCard({
                   onChange={(e) => setRole(e.target.value)}
                   placeholder="e.g. Frontend Developer or Intern"
                   maxLength={100}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3.5 py-2 text-xs text-[var(--text)] placeholder-[var(--text-muted)]/60 shadow-2xs focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[40px]"
+                  className="w-full rounded-xs border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--text)] placeholder-[var(--text-muted)]/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[36px]"
                 />
-                <p className="text-2xs text-[var(--text-muted)]">
-                  The position or role mentioned in the offer.
-                </p>
               </div>
 
               {/* Location (Optional) */}
-              <div className="space-y-1.5 sm:col-span-2">
+              <div className="space-y-1 sm:col-span-2">
                 <label
                   htmlFor="research-location"
                   className="block text-xs font-medium text-[var(--text)]"
@@ -311,23 +475,20 @@ export function CompanyResearchCard({
                   onChange={(e) => setLocation(e.target.value)}
                   placeholder="e.g. Bengaluru, India or Remote"
                   maxLength={100}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3.5 py-2 text-xs text-[var(--text)] placeholder-[var(--text-muted)]/60 shadow-2xs focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[40px]"
+                  className="w-full rounded-xs border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--text)] placeholder-[var(--text-muted)]/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[36px]"
                 />
-                <p className="text-2xs text-[var(--text-muted)]">
-                  City, state, or remote classification if specified.
-                </p>
               </div>
             </div>
           </div>
 
-          {/* Observations on Supplied Details (Plain text, non-alarmist) */}
+          {/* Observations on Supplied Channels */}
           {observations.length > 0 && (
-            <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 space-y-2 text-xs text-[var(--text)]">
-              <div className="flex items-center gap-1.5 font-medium text-[var(--text)]">
-                <InfoIcon className="w-4 h-4 text-[var(--text-muted)] shrink-0" />
+            <div className="rounded border border-[var(--border)] bg-[var(--surface)] p-3 space-y-1 text-xs text-[var(--text)]">
+              <div className="flex items-center gap-1.5 font-semibold text-[var(--text)] text-2xs uppercase tracking-wider">
+                <InfoIcon className="w-3.5 h-3.5 text-[var(--text-muted)] shrink-0" />
                 <span>Observations on supplied channels</span>
               </div>
-              <ul className="space-y-1 pl-5 list-disc text-[var(--text-muted)]">
+              <ul className="space-y-0.5 pl-4 list-disc text-xs text-[var(--text-muted)]">
                 {observations.map((obs, idx) => (
                   <li key={idx} className="leading-relaxed">
                     {obs}
@@ -337,119 +498,31 @@ export function CompanyResearchCard({
             </div>
           )}
 
-          {/* Depth Selector */}
+          {/* Prompt Preview Toggle */}
           <div className="space-y-2 pt-2 border-t border-[var(--border)]">
-            <label className="block text-xs font-medium text-[var(--text)]">
-              Research Prompt Depth
-            </label>
-            <div className="flex flex-wrap items-center gap-4">
-              <label className="inline-flex items-center gap-2 text-xs text-[var(--text)] cursor-pointer min-h-[44px]">
-                <input
-                  type="radio"
-                  name="research-depth"
-                  value="short"
-                  checked={mode === "short"}
-                  onChange={() => setMode("short")}
-                  className="text-[var(--primary-ledger)] focus:ring-[var(--focus-ring)]"
-                />
-                <span>Short (about 300 words, focused overview)</span>
-              </label>
-
-              <label className="inline-flex items-center gap-2 text-xs text-[var(--text)] cursor-pointer min-h-[44px]">
-                <input
-                  type="radio"
-                  name="research-depth"
-                  value="detailed"
-                  checked={mode === "detailed"}
-                  onChange={() => setMode("detailed")}
-                  className="text-[var(--primary-ledger)] focus:ring-[var(--focus-ring)]"
-                />
-                <span>Detailed (about 600 words, comprehensive check)</span>
-              </label>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex flex-wrap items-center gap-3 pt-2">
-            <button
-              type="button"
-              onClick={handleCopy}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--primary-ledger)] text-white px-4 py-2.5 text-xs font-medium shadow-xs hover:bg-[var(--primary-ledger-hover)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px]"
-            >
-              {copied ? (
-                <>
-                  <CheckIcon className="w-4 h-4 text-white" />
-                  <span>Prompt copied!</span>
-                </>
-              ) : (
-                <>
-                  <CopyIcon className="w-4 h-4 text-white" />
-                  <span>Copy research prompt</span>
-                </>
-              )}
-            </button>
-
-            <a
-              href="https://www.perplexity.ai/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] px-4 py-2.5 text-xs font-medium shadow-xs hover:bg-[var(--surface-muted)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px]"
-            >
-              <span>Open Perplexity</span>
-              <ExternalLinkIcon className="w-3.5 h-3.5 opacity-70" />
-              <span className="text-2xs text-[var(--text-muted)] font-normal">
-                (opens in a new tab)
-              </span>
-            </a>
-
             <button
               type="button"
               onClick={() => setIsPromptPreviewOpen(!isPromptPreviewOpen)}
-              className="inline-flex items-center gap-1.5 text-xs text-[var(--text-muted)] hover:text-[var(--text)] underline underline-offset-2 py-2 px-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded"
+              className="inline-flex items-center gap-1.5 text-xs text-[var(--text-muted)] hover:text-[var(--text)] underline underline-offset-2 py-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded"
               aria-expanded={isPromptPreviewOpen}
             >
-              <span>{isPromptPreviewOpen ? "Hide prompt preview" : "View prompt preview"}</span>
+              <span>{isPromptPreviewOpen ? "Hide prompt preview" : "View generated prompt preview"}</span>
               {isPromptPreviewOpen ? (
                 <ChevronUpIcon className="w-3.5 h-3.5" />
               ) : (
                 <ChevronDownIcon className="w-3.5 h-3.5" />
               )}
             </button>
-          </div>
 
-          {/* Clipboard Fallback Textarea if navigator.clipboard fails */}
-          {showFallbackTextarea && (
-            <div className="space-y-2 p-3.5 rounded-xl border border-[var(--border)] bg-[var(--bg)]">
-              <p className="text-xs text-[var(--text-muted)]">
-                Clipboard access was blocked. Please select and copy the prompt manually:
-              </p>
-              <textarea
-                ref={fallbackTextareaRef}
-                readOnly
-                value={generatedPrompt}
-                rows={6}
-                className="w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] p-2.5 text-xs font-mono text-[var(--text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
-              />
-            </div>
-          )}
-
-          {/* Collapsible Read-only Prompt Preview */}
-          {isPromptPreviewOpen && (
-            <div className="space-y-2 pt-2 border-t border-[var(--border)]">
-              <div className="flex items-center justify-between text-2xs text-[var(--text-muted)]">
-                <span className="font-mono uppercase font-semibold">
-                  Prompt Preview ({mode} mode)
-                </span>
-                <span>Read-only text</span>
-              </div>
-              <pre className="p-4 rounded-xl border border-[var(--border)] bg-[var(--bg)] text-xs font-mono text-[var(--text)] leading-relaxed whitespace-pre-wrap max-h-72 overflow-y-auto custom-scrollbar select-text">
+            {isPromptPreviewOpen && (
+              <pre className="p-3 rounded border border-[var(--border)] bg-[var(--surface)] text-xs font-mono text-[var(--text)] leading-relaxed whitespace-pre-wrap max-h-64 overflow-y-auto custom-scrollbar select-text">
                 {generatedPrompt}
               </pre>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Privacy Notice */}
-          <div className="pt-3 border-t border-[var(--border)] text-2xs text-[var(--text-muted)] leading-relaxed">
+          <div className="pt-2 border-t border-[var(--border)] text-2xs text-[var(--text-muted)] leading-relaxed">
             <strong className="text-[var(--text)] font-semibold">Privacy notice: </strong>
             Perplexity is an external service with its own terms and may ask you to
             sign in. Only the details above are included in the prompt, never your
@@ -457,18 +530,18 @@ export function CompanyResearchCard({
           </div>
 
           {/* Static Guide: How to Read the Answer */}
-          <div className="pt-2 border-t border-[var(--border)]">
-            <details className="group rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4 transition-colors">
+          <div className="pt-1">
+            <details className="group rounded border border-[var(--border)] bg-[var(--surface)] p-3 transition-colors">
               <summary className="flex items-center justify-between gap-3 font-semibold text-xs text-[var(--text)] cursor-pointer list-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded">
-                <div className="flex items-center gap-2">
-                  <HelpCircleIcon className="w-4 h-4 text-[var(--text-muted)]" />
+                <div className="flex items-center gap-1.5">
+                  <HelpCircleIcon className="w-3.5 h-3.5 text-[var(--text-muted)]" />
                   <span>How to read the research answer</span>
                 </div>
                 <span className="text-[var(--text-muted)] group-open:rotate-180 transition-transform duration-200 font-mono text-2xs">
                   ▼
                 </span>
               </summary>
-              <div className="mt-3 pt-3 border-t border-[var(--border)] space-y-2 text-xs text-[var(--text-muted)] leading-relaxed">
+              <div className="mt-2.5 pt-2.5 border-t border-[var(--border)] space-y-1.5 text-xs text-[var(--text-muted)] leading-relaxed">
                 <p>
                   <strong className="text-[var(--text)]">Ambiguous or several candidates: </strong>
                   Confirm which organisation sent this, using contact details you find on its official site.

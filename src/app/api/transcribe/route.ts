@@ -18,10 +18,36 @@ const NO_STORE_HEADERS = {
   "Cache-Control": "no-store, no-cache, must-revalidate",
 };
 
+/**
+ * Safe logging helper for the transcribe route.
+ * Emits metadata only (code, status, optional truncated upstream text).
+ * Never logs user files, bytes, transcripts, or model output.
+ */
+function logSafeTranscribeError(
+  code: string,
+  httpStatus: number,
+  upstreamStatusText?: string
+): void {
+  let extra = "";
+  if (
+    process.env.NODE_ENV !== "production" &&
+    httpStatus >= 400 &&
+    httpStatus < 500 &&
+    upstreamStatusText
+  ) {
+    const clean = upstreamStatusText.replace(/[\r\n\t]+/g, " ").trim().slice(0, 120);
+    extra = `, upstream=${clean}`;
+  }
+  console.error(
+    `[OfferCheck] Transcription attempt failed: code=${code}, httpStatus=${httpStatus}${extra}`
+  );
+}
+
 export async function POST(req: NextRequest) {
   // 1. Content-Type check (must be multipart/form-data)
   const contentType = req.headers.get("content-type") || "";
   if (!contentType.includes("multipart/form-data")) {
+    logSafeTranscribeError("UNSUPPORTED_MEDIA_TYPE", 415, "Content-Type must be multipart/form-data");
     return NextResponse.json(
       {
         ok: false,
@@ -34,9 +60,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // 2. Reject oversized payloads early based on Content-Length header
+  // 2. Reject oversized payloads early based on Content-Length header (+64 KB allowance for multipart boundary overhead)
   const contentLength = req.headers.get("content-length");
-  if (contentLength && parseInt(contentLength, 10) > MAX_UPLOAD_TOTAL_BYTES) {
+  if (contentLength && parseInt(contentLength, 10) > MAX_UPLOAD_TOTAL_BYTES + 64 * 1024) {
+    logSafeTranscribeError("TOTAL_TOO_LARGE", 413, "Content-Length exceeds 4 MB threshold");
     return NextResponse.json(
       {
         ok: false,
@@ -54,6 +81,7 @@ export async function POST(req: NextRequest) {
   try {
     formData = await req.formData();
   } catch {
+    logSafeTranscribeError("INVALID_REQUEST", 400, "Failed to parse multipart form data");
     return NextResponse.json(
       {
         ok: false,
@@ -245,6 +273,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    logSafeTranscribeError(result.code, result.httpStatus, result.message);
     return NextResponse.json(
       {
         ok: false,

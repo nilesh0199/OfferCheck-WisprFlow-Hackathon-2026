@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Container } from "@/components/Container";
 import { LogoIcon } from "@/components/Icons";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { APP_NAME } from "@/lib/config";
 
 export default function ErrorBoundary({
@@ -22,6 +23,8 @@ export default function ErrorBoundary({
             <LogoIcon className="w-5 h-5 text-[var(--accent)] shrink-0" />
             <span>{APP_NAME}</span>
           </Link>
+
+          <ThemeToggle />
         </Container>
       </nav>
 

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { APP_NAME } from "@/lib/config";
 import { LogoIcon, GitHubIcon, ExternalLinkIcon } from "@/components/Icons";
 import { Container } from "@/components/Container";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export function LandingNav() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -71,11 +72,13 @@ export function LandingNav() {
           </a>
         </div>
 
-        {/* Action Button & Mobile Menu Toggle */}
-        <div className="flex items-center gap-3">
+        {/* Action Button & Theme Selector */}
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <ThemeToggle />
+
           <Link
             href="/check"
-            className="inline-flex items-center justify-center rounded-xl bg-[var(--primary-ledger)] text-white px-4 py-2 text-xs font-medium shadow-xs hover:bg-[var(--primary-ledger-hover)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px]"
+            className="inline-flex items-center justify-center rounded-xs bg-[var(--primary-ledger)] text-white px-3.5 py-1.5 text-xs font-medium shadow-2xs hover:bg-[var(--primary-ledger-hover)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[36px]"
           >
             Check an offer
           </Link>
@@ -83,7 +86,7 @@ export function LandingNav() {
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden inline-flex items-center justify-center p-2 rounded-lg border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px] min-w-[44px]"
+            className="md:hidden inline-flex items-center justify-center p-2 rounded-xs border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[36px] min-w-[36px]"
             aria-expanded={mobileMenuOpen}
             aria-label="Toggle navigation menu"
           >
@@ -121,35 +124,35 @@ export function LandingNav() {
             <a
               href="#how-it-works"
               onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-2 rounded-lg hover:bg-[var(--surface-muted)] hover:text-[var(--text)] transition-colors min-h-[44px] flex items-center"
+              className="px-3 py-2 rounded-xs hover:bg-[var(--surface-muted)] hover:text-[var(--text)] transition-colors min-h-[40px] flex items-center"
             >
               How it works
             </a>
             <a
               href="#what-you-get"
               onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-2 rounded-lg hover:bg-[var(--surface-muted)] hover:text-[var(--text)] transition-colors min-h-[44px] flex items-center"
+              className="px-3 py-2 rounded-xs hover:bg-[var(--surface-muted)] hover:text-[var(--text)] transition-colors min-h-[40px] flex items-center"
             >
               What you get
             </a>
             <a
               href="#privacy"
               onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-2 rounded-lg hover:bg-[var(--surface-muted)] hover:text-[var(--text)] transition-colors min-h-[44px] flex items-center"
+              className="px-3 py-2 rounded-xs hover:bg-[var(--surface-muted)] hover:text-[var(--text)] transition-colors min-h-[40px] flex items-center"
             >
               Privacy
             </a>
             <a
               href="#faq"
               onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-2 rounded-lg hover:bg-[var(--surface-muted)] hover:text-[var(--text)] transition-colors min-h-[44px] flex items-center"
+              className="px-3 py-2 rounded-xs hover:bg-[var(--surface-muted)] hover:text-[var(--text)] transition-colors min-h-[40px] flex items-center"
             >
               FAQ
             </a>
             <Link
               href="/resources"
               onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-2 rounded-lg hover:bg-[var(--surface-muted)] hover:text-[var(--text)] transition-colors min-h-[44px] flex items-center"
+              className="px-3 py-2 rounded-xs hover:bg-[var(--surface-muted)] hover:text-[var(--text)] transition-colors min-h-[40px] flex items-center"
             >
               Resources
             </Link>
@@ -157,7 +160,7 @@ export function LandingNav() {
               href="https://github.com/nilesh0199/OfferCheck-WisprFlow-Hackathon-2026"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-3 py-2 rounded-lg hover:bg-[var(--surface-muted)] hover:text-[var(--text)] transition-colors min-h-[44px] flex items-center gap-2"
+              className="px-3 py-2 rounded-xs hover:bg-[var(--surface-muted)] hover:text-[var(--text)] transition-colors min-h-[40px] flex items-center gap-2"
             >
               <GitHubIcon className="w-4 h-4" />
               <span>GitHub repository</span>

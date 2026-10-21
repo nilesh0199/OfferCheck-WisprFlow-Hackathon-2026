@@ -1,7 +1,7 @@
 # Privacy and Responsible Use Policy
 
 > **OfferCheck** — *"Understand the offer. Know what to verify."*  
-> Document Version: Phase 8 (File Upload & Multimodal Transcription) — October 2026
+> Document Version: Phase 10 (Theme System, Console Density, Balanced Workspace & Research Nudge) — October 2026
 
 OfferCheck is built with a strict privacy-first, evidence-first design to assist students and first-time job seekers in evaluating internship and job offers safely. This document transparently explains data flows, storage practices, rate limiting, system boundaries, and how to report issues.
 
@@ -11,7 +11,7 @@ OfferCheck is built with a strict privacy-first, evidence-first design to assist
 
 - **Destination of Offer Text:**  
   When a user submits text for review, the text is transmitted via HTTPS to Google's Gemini API (using the Interactions API with the model fallback chain: `gemini-3.8-flash`, `gemini-3.6-flash`, and `gemini-3.5-flash-lite`).
-- **Destination of Uploaded Files (Phase 8):**  
+- **Destination of Uploaded Files (Phase 8 & 9c):**  
   When a user uploads screenshots (PNG, JPEG, WebP) or PDF documents, the files are transmitted over HTTPS to `/api/transcribe` and sent to Gemini's multimodal Interactions API for text transcription.
 - **Free-Tier Data Terms:**  
   OfferCheck runs on Google's Gemini API free tier. According to Google's published API terms, data submitted to the free-tier Gemini API may be retained and used by Google to train, tune, and improve its models and products.
@@ -19,16 +19,18 @@ OfferCheck is built with a strict privacy-first, evidence-first design to assist
   Because of the free-tier data terms, OfferCheck displays persistent advisories:
   - Above the text input field (`AI_DATA_NOTICE`), advising users to redact personal identifiable information (names, email addresses, phone numbers, home addresses, government IDs, bank details, passwords, and OTPs) prior to pasting.
   - Above the file upload dropzone (`AI_FILE_NOTICE`), reminding users that anything visible in an image or PDF is sent to Gemini, advising them to crop or cover personal details first, or paste text directly.
-- **Mandatory Review & Redaction Workflow:**  
-  Transcribed text is placed into the standard text editor for the candidate to review, redact, and edit. The analysis pipeline never runs directly on uploaded files; it executes strictly on the candidate-confirmed text.
+- **Mandatory Review, Redaction & Undo Workflow:**  
+  Transcribed text is appended below any existing text in the editor for the candidate to review, redact, and edit (or revert with a one-click Undo). The analysis pipeline never runs directly on uploaded files; it executes strictly on the candidate-confirmed text.
 
 ---
 
 ## 2. What Data is NOT Stored
 
-OfferCheck operates entirely statelessly:
+OfferCheck operates statelessly with zero persistence for offers or user identities:
 - **No Databases or Accounts:**  
-  The application maintains no database, user accounts, authentication tokens, cookies, or persistent storage.
+  The application maintains no database, user accounts, authentication tokens, tracking cookies, or server-side persistent storage.
+- **In-Memory Offer Processing & Single Storage Exception:**  
+  All user-submitted offer text, uploaded files, and analysis results are held strictly in the active browser tab's volatile memory (`SessionProvider`) and are completely cleared when the tab is closed or refreshed. The only item saved in browser storage (`localStorage`) is the user's explicit theme preference (`"offercheck-theme"`: `"light"`, `"dark"`, or `"system"`). No text, filenames, or analysis outputs are ever placed in local storage or cookies.
 - **No Server-Side File Storage:**  
   Uploaded files are never saved to server disk, temporary directories, or cloud object stores (S3, GCS, Blob). Files exist in memory only during the active request and are discarded immediately.
 - **No Third-Party Analytics:**  
@@ -68,7 +70,7 @@ To maintain absolute ethical integrity and avoid misleading users:
 - **NOT a Scam Detector:**  
   It does not output binary labels like "legitimate" or "fraud", nor does it calculate numeric risk scores or percentages.
 - **NOT a Company Authentication Service:**  
-  It cannot verify whether a recruiter legitimately represents the named enterprise or whether an organization is legally incorporated.
+  It cannot verify whether a recruiter legitimately represents the named enterprise or whether an organisation is legally incorporated.
 - **NOT Legal Advice:**  
   All observations and suggested questions are informational prompts for student and job seeker self-advocacy, not legal counsel.
 - **NOT a Safety Guarantee:**  
@@ -99,6 +101,6 @@ To maintain absolute ethical integrity and avoid misleading users:
 
 ## 6. How to Report a Problem or Vulnerability
 
-If you identify an issue, unexpected behavior, privacy concern, or bug:
-1. Open an issue on the project's public GitHub repository describing the behavior without pasting sensitive personal data.
+If you identify an issue, unexpected behaviour, privacy concern, or bug:
+1. Open an issue on the project's public GitHub repository describing the behaviour without pasting sensitive personal data.
 2. For private vulnerability disclosures or critical concerns, contact the project maintainer directly via the repository contact links.

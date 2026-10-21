@@ -54,14 +54,14 @@ export function ResourceCard({
       <details
         open={internalOpen}
         onToggle={(e) => setInternalOpen(e.currentTarget.open)}
-        className="group rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 transition-colors"
+        className="group rounded border border-[var(--border)] bg-[var(--surface)] p-3.5 sm:p-4 shadow-2xs transition-colors"
       >
-        <summary className="cursor-pointer font-semibold text-sm text-slate-900 dark:text-slate-100 flex items-center justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:focus-visible:ring-slate-400 rounded-md min-h-[44px] list-none select-none">
+        <summary className="cursor-pointer font-bold text-xs sm:text-sm text-[var(--text)] flex items-center justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 min-h-[36px] list-none select-none">
           <div className="flex items-center gap-2">
-            <InfoIcon className="w-4 h-4 text-slate-500 dark:text-slate-400 shrink-0" size={16} />
+            <InfoIcon className="w-4 h-4 text-[var(--text-muted)] shrink-0" size={16} />
             <span>{resource.title}</span>
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+          <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
             <span>{internalOpen ? "Hide" : "Show"}</span>
             <ChevronDownIcon
               className={`w-4 h-4 transition-transform duration-150 ${
@@ -71,8 +71,14 @@ export function ResourceCard({
           </div>
         </summary>
 
-        <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+        <div className="mt-3 pt-3 border-t border-[var(--border)] space-y-2.5">
+          {matchedTerm && (
+            <p className="text-2xs text-[var(--text-muted)]">
+              Shown because your text mentions &quot;{matchedTerm}&quot;.
+            </p>
+          )}
+
+          <p className="text-xs text-[var(--text)] leading-relaxed">
             {resource.summary}
           </p>
 
@@ -82,9 +88,9 @@ export function ResourceCard({
             onCopy={handleCopy}
           />
 
-          <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-1 text-2xs text-slate-400 dark:text-slate-500">
-            <span className="break-all">Official portal: {resource.sourceUrl}</span>
-            <span>Last checked 20 Oct 2026</span>
+          <div className="pt-2 border-t border-[var(--border)] flex flex-wrap items-center justify-between gap-1 text-2xs text-[var(--text-muted)]">
+            <span className="break-all font-mono">Official portal: {resource.sourceUrl}</span>
+            <span>Verified resource</span>
           </div>
         </div>
       </details>
@@ -92,19 +98,24 @@ export function ResourceCard({
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-3 transition-colors">
-      <div className="space-y-0.5">
-        <h3 className="text-sm sm:text-base font-semibold text-slate-900 dark:text-slate-100">
-          {resource.title}
-        </h3>
-        {matchedTerm && (
-          <p className="text-2xs text-slate-500 dark:text-slate-400">
-            Shown because your text mentions &quot;{matchedTerm}&quot;.
-          </p>
-        )}
+    <div className="rounded border border-[var(--border)] bg-[var(--surface)] p-3.5 sm:p-4 shadow-2xs space-y-2.5 transition-colors">
+      <div className="flex flex-wrap items-start justify-between gap-2 border-b border-[var(--border)] pb-2.5">
+        <div>
+          <h3 className="text-xs sm:text-sm font-bold text-[var(--text)]">
+            {resource.title}
+          </h3>
+          {matchedTerm && (
+            <p className="text-2xs text-[var(--text-muted)] mt-0.5">
+              Shown because your text mentions &quot;{matchedTerm}&quot;.
+            </p>
+          )}
+        </div>
+        <span className="inline-flex items-center rounded-xs bg-[var(--surface-muted)] px-1.5 py-0.5 text-2xs font-mono font-medium text-[var(--text-muted)] border border-[var(--border)]">
+          Official
+        </span>
       </div>
 
-      <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+      <p className="text-xs text-[var(--text)] leading-relaxed">
         {resource.summary}
       </p>
 
@@ -114,9 +125,9 @@ export function ResourceCard({
         onCopy={handleCopy}
       />
 
-      <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-1 text-2xs text-slate-400 dark:text-slate-500">
-        <span className="break-all">Official portal: {resource.sourceUrl}</span>
-        <span>Last checked 20 Oct 2026</span>
+      <div className="pt-2 border-t border-[var(--border)] flex flex-wrap items-center justify-between gap-1 text-2xs text-[var(--text-muted)]">
+        <span className="break-all font-mono">Official portal: {resource.sourceUrl}</span>
+        <span>Verified resource</span>
       </div>
     </div>
   );
@@ -130,7 +141,7 @@ interface ActionRowProps {
 
 function ActionRow({ actions, copiedValue, onCopy }: ActionRowProps) {
   return (
-    <div className="flex flex-wrap items-center gap-2.5 pt-1">
+    <div className="flex flex-wrap items-center gap-2 pt-1">
       {actions.map((act, idx) => {
         if (act.type === "link") {
           return (
@@ -139,10 +150,10 @@ function ActionRow({ actions, copiedValue, onCopy }: ActionRowProps) {
               href={act.value}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-800 shadow-xs hover:bg-slate-50 active:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 min-h-[44px]"
+              className="inline-flex items-center gap-1.5 rounded-xs border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-medium text-[var(--text)] shadow-2xs hover:bg-[var(--surface-muted)] active:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[34px]"
             >
               <span>{act.label}</span>
-              <span className="text-2xs text-slate-400 dark:text-slate-500">
+              <span className="text-2xs text-[var(--text-muted)]">
                 (opens in a new tab)
               </span>
               <ExternalLinkIcon className="w-3.5 h-3.5 opacity-70" />
@@ -155,28 +166,28 @@ function ActionRow({ actions, copiedValue, onCopy }: ActionRowProps) {
         return (
           <div
             key={idx}
-            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-800 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-200 min-h-[44px]"
+            className="inline-flex items-center gap-2 rounded-xs border border-[var(--border)] bg-[var(--surface-muted)] px-2.5 py-1 text-xs text-[var(--text)] min-h-[34px]"
           >
-            <span className="text-slate-500 dark:text-slate-400 font-medium">
+            <span className="text-[var(--text-muted)] text-2xs font-medium">
               {act.label}:
             </span>
-            <span className="font-mono text-slate-900 dark:text-slate-100 select-all font-semibold">
+            <span className="font-mono text-[var(--text)] font-semibold select-all">
               {act.value}
             </span>
             <button
               type="button"
               onClick={() => onCopy(act.value, act.label)}
-              className="inline-flex items-center gap-1 rounded border border-slate-300 bg-white px-2 py-1 text-2xs font-medium text-slate-700 hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 min-h-[32px]"
+              className="inline-flex items-center gap-1 rounded-xs border border-[var(--border)] bg-[var(--surface)] px-1.5 py-0.5 text-2xs font-medium text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[26px]"
               aria-label={`Copy ${act.label} ${act.value}`}
             >
               {isCopied ? (
                 <>
-                  <CheckIcon className="w-3 h-3 text-slate-700 dark:text-slate-300" />
+                  <CheckIcon className="w-3 h-3 text-[var(--primary-ledger)]" />
                   <span>Copied</span>
                 </>
               ) : (
                 <>
-                  <CopyIcon className="w-3 h-3 text-slate-500 dark:text-slate-400" />
+                  <CopyIcon className="w-3 h-3 text-[var(--text-muted)]" />
                   <span>Copy</span>
                 </>
               )}

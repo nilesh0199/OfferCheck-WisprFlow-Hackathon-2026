@@ -95,7 +95,7 @@ export const VERIFICATION_RESOURCES: readonly VerificationResource[] = [
       "Search the exact legal name on the MCA \"Check Company/LLP Name\" page to see whether a registered entity exists and its status/identifier. A registered company does not prove that the sender or offer is genuine, and an unregistered name does not by itself prove anything is wrong.",
     actions: [
       {
-        label: "Check company name on MCA",
+        label: "Open the MCA company or LLP name search",
         type: "link",
         value:
           "https://www.mca.gov.in/content/mca/global/en/mca/fo-llp-services/company-llp-name-search.html",

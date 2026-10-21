@@ -11,7 +11,7 @@ export function WhatWeDoNotDoSection() {
     {
       title: "No safety verdicts or 'verified' stamps",
       description:
-        "We never label an offer 'safe', 'verified', or 'legit'. An offer that produces zero observations may still come from an impersonator using standard contract templates.",
+        "We do not label an offer 'safe', 'verified', or 'legit'. An offer that produces zero observations may still come from an impersonator using existing contract templates.",
     },
     {
       title: "Cannot confirm that a sender is genuine",
@@ -26,7 +26,7 @@ export function WhatWeDoNotDoSection() {
     {
       title: "Automated analysis can be wrong",
       description:
-        "AI models can misinterpret unusual phrases or miss sophisticated fraud schemes. Always exercise personal discretion and independent verification.",
+        "AI models can misinterpret unusual phrases or miss issues in communications. Exercise personal discretion and independent verification.",
     },
   ];
 

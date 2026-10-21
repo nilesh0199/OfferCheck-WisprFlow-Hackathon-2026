@@ -171,12 +171,38 @@ This phased build plan outlines the implementation roadmap for OfferCheck, an in
 
 ---
 
-## Phase 9c: Deployment, Demo & Final Submission Package
-- **Status:** Ready for final submission
-- **Goal:** Deploy the application to a public zero-sign-in URL, conduct peer evaluation, record demo walkthrough (up to 2 minutes), and finalize all competition submission deliverables.
+## Phase 9c: Combined Input, Upload Resilience & Print Export
+- **Status:** Complete
+- **Goal:** Unify text and file input into a single card on `/check`, diagnose and eliminate transcription failure modes, isolate circuit breaker states, implement model-specific 400 fall-through, update MCA action label and verified links, provide a clean print stylesheet with PDF export, and update documentation.
 - **Acceptance Criteria:**
-  - Application deployed to Vercel with clean public URL accessible to hackathon judges without authentication.
-  - Real-world feedback collected from student classmates and logged in `docs/dev-log.md`.
-  - Comprehensive demo video (up to 2 minutes) produced highlighting the problem, features, and evidence-first philosophy.
-  - Submission repository packaged with updated documentation, architectural diagrams, and license.
-  - Complete submission ready by target date of October 29, 2026.
+  - Root cause investigation and reproduction of upload error completed across client request headers, field names, fallback chain 400 handling, JSON schema, request body overhead, and circuit breaker isolation.
+  - Model-specific 400 handling implemented in `src/lib/analysis/gemini.ts` allowing unsupported modality/capability 400s to fall through while non-model-specific 400s fail immediately.
+  - Dedicated circuit breaker instance (`defaultTranscribeCircuitBreaker`) prevents transcription timeouts from cooling down models for text analysis.
+  - Safe error logging (`logSafeTranscribeError`) with truncated upstream error diagnostics (development only) and client reference error codes (`Reference: <ERROR_CODE>`).
+  - Single unified input card in `src/components/OfferInputForm.tsx` replaces separate tabs: textarea always visible, "Attach files (optional)" below it, `AI_FILE_NOTICE` placed directly above the "Add text from files" action button (no Gemini mention in button label).
+  - Pure `appendTranscript` helper appends extracted text below existing text with `\n\n` separator, preserving `[File N of M]` markers.
+  - Dismissible success banner with 1-level in-memory Undo reverting to previous text; Undo is discarded if user manually edits the textarea.
+  - Pending attached files cleared on transcription success; kept in place on transcription failure.
+  - Auto-scroll and focus textarea to start of appended text.
+  - Global Ctrl+V file/image pasting anywhere in the card attaches files, while text pastes normally into the textarea.
+  - MCA action label set to `"Open the MCA company or LLP name search"` with verified registry URL in `src/data/verification-resources.ts`; automated test verifies all URLs against `docs/resources-verification.md`; GitHub privacy links point to default branch `main`.
+  - Clean `@media print` stylesheet in `src/app/globals.css` isolating the analysis report, hiding UI chrome, and "Export review (PDF)" button triggering `window.print()`.
+  - Offline Vitest test suites pass cleanly across all modules.
+
+---
+
+## Phase 10: Theme System, Console Density, Balanced Workspace & Contextual Research Nudge
+- **Status:** Complete
+- **Goal:** Introduce explicit Light, Dark, System theme system with Light default, enterprise console density (Design System v3), balanced 2-column workspace layout on `/check`, contextual company research nudge with always-visible controls, Indian/British English spelling standardisation, and accurate storage claims.
+- **Acceptance Criteria:**
+  - Pure theme resolution utilities in `src/lib/theme.ts` (`parseStoredTheme`, `resolveTheme`) and anti-FOUC inline script injected in `src/app/layout.tsx`.
+  - `data-theme="light" | "dark"` attribute on `<html>` with `@custom-variant dark` in `src/app/globals.css` and dynamic `<meta name="theme-color">` updates.
+  - Accessible segmented control `ThemeToggle` (`role="radiogroup"`, roving tabindex, keyboard arrow navigation, visible focus rings) in `Header`, `LandingNav`, `ResourcesPage`, `NotFound`, and `ErrorBoundary`.
+  - Design System v3 tokens implemented: light canvas `#F2F3F3`, surface `#FFFFFF`, surface-alt `#F8F8F8`, border `#D5DBDB`, border-strong `#AAB7B8`, text `#16191F`, text-muted `#545B64`, header-bg `#1F2933`, header-text `#FFFFFF`, primary `#1E5C46`, focus ring `#1E5C46`, observation tint `#FFF7D6` with 3px yellow border, info tint `#EEF2F6`. Dark tokens: warm charcoal palette.
+  - Console density implemented across components: 1px borders, 4px card radius, 2px control radius, 32-36px control heights, 14px base / 12px secondary typography, sentence-case tool headings in `Instrument Sans`, and 2-column missing details table (`Topic | Note`).
+  - Balanced 5/12 left, 7/12 right desktop layout on `/check`. Left column after review features sticky `YourOfferWorkspace` (read-only verbatim highlight snapshot, highlight count, character count, "Edit text", "New review" with inline confirmation) and `OnThisPageNav` (IntersectionObserver scroll spy). Desktop horizontal jump nav removed; mobile horizontal jump nav preserved.
+  - Pure function `getResearchNudge` in `src/lib/research/nudge.ts` evaluating unnamed employer, free email without website, and internship without supervisor (word boundary enforced).
+  - `CompanyResearchCard` updated with dual placement (recommended top under summary vs optional lower after questions), always-visible 1-line key-value summary, depth switcher, copy and Perplexity actions, required inline company input when missing, and expandable details.
+  - Indian/British English spelling applied across `REVIEW_LIMITS` and user-facing copy (`organisation`, `authorised`, `recognise`, `prioritise`, `behaviour`, `colour`).
+  - Storage claims updated in hero strip, privacy section, FAQ, `README.md`, and `docs/privacy-and-responsible-use.md` to state that offer text and files are memory-only, with theme choice as the sole item in browser storage (`localStorage`).
+  - Comprehensive unit test suites in `tests/theme.test.ts` and `tests/research-nudge.test.ts`; all offline tests, typecheck, lint, and build pass cleanly.

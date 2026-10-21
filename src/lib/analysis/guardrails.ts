@@ -30,7 +30,7 @@ const FORBIDDEN_PATTERNS: readonly GuardrailPattern[] = [
   {
     name: "verified_safe",
     regex: /\bverified\s+safe\b/i,
-    description: "Claims that an offer or organization is 'verified safe'",
+    description: "Claims that an offer or organisation is 'verified safe'",
   },
   {
     name: "definitely_scam_or_fraud",

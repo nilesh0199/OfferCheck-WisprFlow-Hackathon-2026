@@ -296,6 +296,32 @@ This document tracks all implemented, live, and planned automated tests for Offe
 | `landing-phrases: verifies every phrase in hero entrance and scroll scene is exact substring of Example 1` | Verifies exact textual quotation grounding | Implemented |
 | `landing-phrases: verifies no step text contains forbidden verdict words` | Verifies compliance against verdict and alarm words | Implemented |
 | `landing-phrases: verifies closing line contains required non-verdict wording` | Verifies closing line presence and disclaimer integrity | Implemented |
+| `landing-phrases: verifies landing annotations and scene text contain no unsupported claims about hiring practice` | Verifies standard internship, typically, usually, and legitimate employer are absent from annotations and scene | Implemented |
+| `entrance: heroMotionReducer settles into finished state without auto-playing in reduced-motion mode` | Verifies reduced motion initializes settled with button label Play animation | Implemented |
+| `entrance: heroMotionReducer safely ignores automatic start in reduced-motion mode` | Verifies automatic playback cannot start when reduced motion is preferred | Implemented |
+| `entrance: heroMotionReducer user click triggers playback and completion transitions to Replay animation` | Verifies user-initiated playback runs and finishes in settled state | Implemented |
+| `session-reducer: appendTranscript pure function appends with double newline` | Verifies transcript is added below existing text with `\n\n` separator and trims cleanly | Implemented |
+| `session-reducer: TRANSCRIBE_SUCCESS stores undo, appends text, clears pending files` | Verifies successful transcription updates offer text, preserves previous text for undo, and clears pending files | Implemented |
+| `session-reducer: UNDO_APPEND_TRANSCRIPT reverts offer text to previous state` | Verifies undo restores original offer text and clears undo state | Implemented |
+| `session-reducer: SET_OFFER_TEXT clears undoOfferText on manual edit` | Verifies 1-level undo is discarded on subsequent manual typing | Implemented |
+| `session-reducer: TRANSCRIBE_ERROR preserves pending files and records error code` | Verifies failed transcription keeps attached files in UI and records reference error code | Implemented |
+| `gemini-wrapper: model-specific 400 falls through to next model in fallback chain` | Verifies modality/capability 400 errors fall through while syntax 400 aborts immediately | Implemented |
+| `resources: MCA action label is 'Open the MCA company or LLP name search'` | Verifies exact verified action button label for MCA lookup | Implemented |
+| `resources: all verified URLs from docs/resources-verification.md appear in data` | Verifies runtime resource URLs match verified registry documentation | Implemented |
+| `resources: GitHub privacy links point to default branch 'main' and exact doc path` | Verifies repository links use valid branch and file target | Implemented |
+| `logging-audit: safe logging in gemini.ts and route.ts never leaks offer text or API keys` | Verifies console spies prove zero text leakage across transcription and analysis | Implemented |
+| `theme: parseStoredTheme returns DEFAULT_THEME_PREFERENCE for null, undefined, invalid` | Verifies defensive parsing of stored theme preferences | Implemented |
+| `theme: parseStoredTheme parses valid theme preferences correctly` | Verifies light, dark, and system string parsing | Implemented |
+| `theme: resolveTheme resolves explicit light and dark regardless of OS setting` | Verifies explicit user theme overrides system mode | Implemented |
+| `theme: resolveTheme resolves system preference based on OS dark mode status` | Verifies system preference dynamically mirrors OS color scheme | Implemented |
+| `theme: exports standard storage key and default preference` | Verifies THEME_STORAGE_KEY is 'offercheck-theme' and DEFAULT is 'light' | Implemented |
+| `research-nudge: returns optional with no reasons for fully documented offer` | Verifies fully confirmed employer and contacts require no nudge | Implemented |
+| `research-nudge: recommends research when company name is missing or blank` | Verifies unnamed company triggers research recommendation | Implemented |
+| `research-nudge: recommends research when sender uses free email and no website is provided` | Verifies free email domain without website triggers recommendation | Implemented |
+| `research-nudge: does not trigger free email reason if a website is also provided` | Verifies presence of website suppresses free email nudge | Implemented |
+| `research-nudge: recommends research for an internship missing mentor or reporting contact` | Verifies internship without mentor/reporting manager triggers nudge | Implemented |
+| `research-nudge: strict word boundary on intern prevents international or internal matches` | Verifies international business or internal transfers never trigger internship condition | Implemented |
+| `research-nudge: accumulates multiple reasons when multiple conditions match` | Verifies compound reasons array generation | Implemented |
 | `UI: Hero document entrance animation plays smoothly and finishes <= 3.2s` | Manual check that lens enters, glides, pauses, reveals, and exits cleanly | Manual |
 | `UI: Skip triggers immediately complete entrance to end state` | Manual check that pointerdown, keypress, or scroll > 10px skips instantly | Manual |
 | `UI: Replay animation ghost button resets and replays entrance` | Manual check that button replays entrance when motion is allowed | Manual |

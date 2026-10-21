@@ -1,46 +1,50 @@
-# Design System v2: Annotated Paper (OfferCheck)
+# Design System v3: Console-Style Enterprise Paper & Balanced Workspace (OfferCheck)
 
 ## 1. Principles
-OfferCheck is a calm, trustworthy utility for students and first-time job seekers designed for critical reading, not a scam alarm dashboard.
-- **Annotated Paper aesthetic:** Tactile, academic, and journalistic. Feels like reviewing physical correspondence with an archival highlighter and ledger pen.
-- **Calm and analytical:** Strictly avoids aggressive alarm colors, red/green traffic lights, or dramatic warning badges.
-- **Evidence-grounded:** Every observation is linked directly to exact quotations from the offer text.
-- **Transparent and modest:** Plain statements of epistemic limitations; "No concerns identified" never reads as "safe".
-- **Anti-cliché:** Explicitly avoids purple/indigo gradients, neon glows, glassmorphism blobs, gradient-mesh backgrounds, bento-grid templates, and AI sparkle icons. Uses confident typography, generous whitespace, asymmetric layout, and CSS paper patterns.
-- **Zero runtime external assets:** All fonts (`Instrument Serif`, `Instrument Sans`, `IBM Plex Mono`) are self-hosted at build time via `next/font/google`. All icons and textures are pure SVG and CSS.
+OfferCheck is a calm, trustworthy utility for students and first-time job seekers designed for rigorous, critical reading, not a scam alarm dashboard.
+- **Enterprise Console Paper Aesthetic:** Combines the tactile, archival clarity of physical document verification with the high-density efficiency of an enterprise cloud console. Clean light canvas (`#F2F3F3`), crisp white surface cards (`#FFFFFF`), charcoal headers (`#1F2933`), and deep ledger green accents (`#1E5C46`).
+- **Calm and Analytical:** Strictly avoids aggressive alarm colours, red/green traffic lights, or dramatic warning badges.
+- **Evidence-Grounded:** Every observation is linked directly to exact verbatim quotations from the offer text.
+- **Console Density:** 1px borders, compact 4px container radius, 2px control radius, 32-36px control heights, 14px base typography with 12px secondary text, and compact 16-20px padding.
+- **Transparent and Modest:** Plain statements of epistemic limitations; "No concerns identified" never reads as "safe".
+- **Balanced Desktop Layout:** 5/12 left column, 7/12 right column on desktop. Left column transitions post-review into a sticky review workspace panel with an offer highlight snapshot and scroll-spy navigation.
+- **Contextual Research Nudge:** Intelligently reminds candidates to research the employer when the company is unnamed, free email is used without a website, or an internship lacks supervisor details.
+- **Zero Runtime External Assets:** All fonts (`Instrument Serif`, `Instrument Sans`, `IBM Plex Mono`) are self-hosted at build time via `next/font/google`. All icons and textures are pure SVG and CSS.
 
 ---
 
 ## 2. Design Tokens
 
-Design tokens are declared as CSS variables in `src/app/globals.css`. The application provides an automatic light theme (default) and a dark theme via `prefers-color-scheme: dark`.
+Design tokens are declared as CSS variables in `src/app/globals.css`. The application provides an explicit theme system supporting Light (default), Dark, and System preferences, mapped via the `data-theme` attribute on `<html>` and Tailwind v4 `@custom-variant dark`.
 
 ### 2.1 Core Palette
 
-| Token | Light Theme ("Annotated Paper") | Dark Theme ("Warm Charcoal") | Purpose |
+| Token | Light Theme ("Enterprise Paper") | Dark Theme ("Warm Charcoal") | Purpose |
 | :--- | :--- | :--- | :--- |
-| `--bg` | `#f4efe4` (warm paper) | `#14130f` (warm charcoal) | Main viewport canvas |
-| `--surface` | `#faf7f0` (clean paper surface) | `#1c1a15` (charcoal card surface) | Primary cards, panels, and modals |
-| `--surface-muted` | `#eae4d5` (warm paper tint) | `#24221c` (elevated well) | Secondary panels, textareas, callouts |
-| `--border` | `#dcd5c5` (warm graphite border) | `#333028` (charcoal border) | Structural 1px dividers and borders |
-| `--border-muted` | `#cac0ad` (light graphite) | `#423f36` (muted border) | Subtle inner borders and scrollbars |
-| `--text` | `#17150f` (warm near-black ink) | `#f4efe4` (paper-coloured text) | High-contrast body and heading text |
-| `--text-muted` | `#57534a` (muted ink) | `#a39e93` (muted paper text) | Supporting labels, hints, and limits |
-| `--accent` | `#17150f` | `#f4efe4` | Secondary button text, icons |
-| `--accent-highlighter` | `#ffd84a` (highlighter yellow) | `#ffd84a` (highlighter yellow) | Signature accent for text highlights |
+| `--bg` | `#f2f3f3` (console canvas) | `#14130f` (warm charcoal) | Main viewport canvas |
+| `--surface` | `#ffffff` (crisp white card) | `#1c1a15` (charcoal card surface) | Primary cards, panels, and tables |
+| `--surface-alt` / `--surface-muted` | `#f8f8f8` (subtle paper tint) | `#24221c` (elevated well) | Secondary panels, textareas, headers |
+| `--border` | `#d5dbdb` (console border) | `#333028` (charcoal border) | Structural 1px dividers and borders |
+| `--border-strong` | `#aab7b8` (strong border) | `#4a453a` (strong charcoal border) | Emphasised borders, inputs, focus rings |
+| `--border-muted` | `#d5dbdb` | `#423f36` | Subtle inner borders and scrollbars |
+| `--text` | `#16191f` (near-black ink) | `#f4efe4` (paper-coloured text) | High-contrast body and heading text |
+| `--text-muted` | `#545b64` (slate graphite) | `#a39e93` (muted paper text) | Supporting labels, hints, and limits |
+| `--header-bg` | `#1f2933` (dark slate header) | `#14130f` (charcoal header) | Header navigation background |
+| `--header-text` | `#ffffff` | `#f4efe4` | Header navigation brand and text |
 | `--primary-ledger` | `#1e5c46` (deep ledger green) | `#2f7c60` (adjusted ledger green) | Primary action controls, CTAs, links |
-| `--primary-ledger-hover`| `#164635` | `#3d9675` | Hover state for primary buttons |
-| `--focus-ring` | `#1e5c46` | `#ffd84a` | Accessible 2px keyboard focus outline |
+| `--primary-ledger-hover` | `#17493a` | `#3d9675` | Hover state for primary buttons |
+| `--focus-ring` | `#1e5c46` (with 2px white offset) | `#ffd84a` | Accessible 2px keyboard focus outline |
+| `--accent-highlighter` | `#ffd84a` (highlighter yellow) | `#ffd84a` (highlighter yellow) | Signature accent for text highlights |
 
 ### 2.2 Semantic Context Tints (Non-Traffic-Light)
 
 OfferCheck strictly avoids red/green binary verdict semantics. Three soft tints indicate context without implying a judgment:
 
-1. **Attention Tint (Soft Highlighter Yellow):** Used for Section A (Potential concerns) and landing page annotations.
+1. **Attention Tint (Soft Highlighter Yellow):** Used for Section A (Potential concerns), recommended research cards, and landing page annotations.
    - Light theme:
-     - `--tint-attention-bg`: `#fff9db`
-     - `--tint-attention-border`: `#ffd84a`
-     - `--tint-attention-text`: `#17150f`
+     - `--tint-attention-bg`: `#fff7d6`
+     - `--tint-attention-border`: `#b8860b` (rendered with 3px yellow border)
+     - `--tint-attention-text`: `#16191f`
      - `--tint-attention-accent`: `#b8860b`
    - Dark theme:
      - `--tint-attention-bg`: `#292414`
@@ -48,81 +52,101 @@ OfferCheck strictly avoids red/green binary verdict semantics. Three soft tints 
      - `--tint-attention-text`: `#fff0a6`
      - `--tint-attention-accent`: `#ffd84a`
 
-2. **Info Tint (Neutral Graphite):** Used for Section B (Missing or unclear details).
+2. **Info Tint (Neutral Gray):** Used for Section B (Missing or unclear details) and informational cards.
    - Light theme:
-     - `--tint-info-bg`: `#efe9dc`
-     - `--tint-info-border`: `#cac0ad`
-     - `--tint-info-text`: `#3d3933`
+     - `--tint-info-bg`: `#eef2f6`
+     - `--tint-info-border`: `#d5dbdb`
+     - `--tint-info-text`: `#16191f`
    - Dark theme:
      - `--tint-info-bg`: `#1e1c17`
-     - `--tint-info-border`: `#3d3933`
+     - `--tint-info-border`: `#333028`
      - `--tint-info-text`: `#d5cebf`
 
-3. **Action Tint (Deeper Paper Tint with Ink Border):** Used for Section C (Verification questions).
+3. **Action Tint (Deeper Well Tint with Ink Border):** Used for Section C (Verification questions).
    - Light theme:
-     - `--tint-action-bg`: `#eae3d2`
-     - `--tint-action-border`: `#8c8270`
-     - `--tint-action-text`: `#17150f`
+     - `--tint-action-bg`: `#eef2f6`
+     - `--tint-action-border`: `#aab7b8`
+     - `--tint-action-text`: `#16191f`
    - Dark theme:
      - `--tint-action-bg`: `#222019`
      - `--tint-action-border`: `#524c40`
      - `--tint-action-text`: `#f4efe4`
 
 ### 2.3 Contrast Verification (WCAG AA & AAA)
-- **Light Theme Text:** `#17150f` on `#faf7f0` provides **17.5:1** (exceeds WCAG AAA 7:1).
-- **Light Theme Muted Text:** `#57534a` on `#faf7f0` provides **5.9:1** (exceeds WCAG AA 4.5:1).
-- **Light Theme Primary Button:** `#f4efe4` text on `#1e5c46` button provides **5.8:1** (exceeds WCAG AA 4.5:1).
-- **Dark Theme Text:** `#f4efe4` on `#1c1a15` provides **14.5:1** (exceeds WCAG AAA 7:1).
-- **Dark Theme Muted Text:** `#a39e93` on `#1c1a15` provides **6.0:1** (exceeds WCAG AA 4.5:1).
-- **Dark Theme Link Text:** `#34d399` on `#1c1a15` provides **8.24:1** (exceeds WCAG AA 4.5:1).
+
+| Pair | Background | Foreground | Ratio | Standard | Status |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Light Canvas Text** | `#f2f3f3` | `#16191f` | **15.2:1** | WCAG AAA ($\ge 7:1$) | Pass |
+| **Light Card Text** | `#ffffff` | `#16191f` | **16.8:1** | WCAG AAA ($\ge 7:1$) | Pass |
+| **Light Muted Text** | `#ffffff` | `#545b64` | **5.6:1** | WCAG AA ($\ge 4.5:1$) | Pass |
+| **Light Primary Button** | `#1e5c46` | `#ffffff` | **6.3:1** | WCAG AA ($\ge 4.5:1$) | Pass |
+| **Light Header Text** | `#1f2933` | `#ffffff` | **13.4:1** | WCAG AAA ($\ge 7:1$) | Pass |
+| **Dark Canvas Text** | `#14130f` | `#f4efe4` | **16.2:1** | WCAG AAA ($\ge 7:1$) | Pass |
+| **Dark Card Text** | `#1c1a15` | `#f4efe4` | **14.5:1** | WCAG AAA ($\ge 7:1$) | Pass |
+| **Dark Muted Text** | `#1c1a15` | `#a39e93` | **6.0:1** | WCAG AA ($\ge 4.5:1$) | Pass |
+| **Dark Primary Button** | `#2f7c60` | `#ffffff` | **4.9:1** | WCAG AA ($\ge 4.5:1$) | Pass |
 
 ---
 
-## 3. Typography & Spacing Scales
+## 3. Theme System Architecture
 
-### 3.1 Type Families
-- **Display Serif (`font-serif`):** `Instrument Serif` (Google Fonts via `next/font/google`, `display: swap`). Used for large headlines, section titles, and marketing display text. Configured with tracking $\ge -0.02\text{em}$ (`tracking-[-0.015em]`) and line-height $1.04 - 1.10$ (`leading-[1.08]`) to prevent glyph collisions across all viewports.
-- **Body & UI Sans (`font-sans`):** `Instrument Sans` (Google Fonts via `next/font/google`, `display: swap`). Used for UI labels, buttons, cards, descriptions, and forms.
-- **Monospace (`font-mono`):** `IBM Plex Mono` (Google Fonts via `next/font/google`, `display: swap`). Used for offer document previews, quotations, metadata tags, and counters.
-
-### 3.2 Spacing Scale
-Based on a 4px/8px modular rhythm:
-- `4px` (0.25rem), `8px` (0.5rem), `12px` (0.75rem), `16px` (1rem), `24px` (1.5rem), `32px` (2rem), `48px` (3rem).
-- Page maximum width: `1152px` (`max-w-6xl`).
-
-### 3.3 Texture and Depth
-- **Paper Pattern:** `.paper-pattern` applies a subtle radial-dot matrix in pure CSS (`radial-gradient(var(--border) 0.65px, transparent 0.65px)` with `background-size: 20px 20px`). Zero raster images.
-- **Tilt Parallax:** Hero document applies a subtle 3D perspective tilt (clamped to max ±3 degrees) driven via `requestAnimationFrame` and CSS transforms. Automatically disabled on touch screens and when `prefers-reduced-motion: reduce` is active.
+OfferCheck supports **Light**, **Dark**, and **System** visual themes, with Light as the default:
+1. **Root Configuration:** Theme state is stored in `localStorage` under key `"offercheck-theme"` and synchronized directly to the `<html data-theme="light" | "dark">` attribute.
+2. **Tailwind v4 Integration:** Tailwind CSS v4 is configured with:
+   ```css
+   @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+   ```
+3. **Zero FOUC (Flash of Unstyled Content):** An inline `<script>` in `<head>` executes synchronously prior to first paint, resolving `localStorage` or `window.matchMedia("(prefers-color-scheme: dark)")` and immediately setting `data-theme` and `<meta name="theme-color">`.
+4. **ThemeToggle Component:** A top-right segmented pill control (`role="radiogroup"`, `aria-label="Theme preference"`) with roving tabindex, keyboard arrow navigation, and visible focus rings across all navigation bars (`LandingNav`, `Header`, `ResourcesPage`, `NotFound`, `ErrorBoundary`).
+5. **Storage Guarantee:** Offer text and uploaded files exist exclusively in volatile browser tab memory (`SessionProvider`). The theme preference is the sole item persisted in browser storage.
 
 ---
 
-## 4. Motion & Animation Architecture
+## 4. Console Density & Layout Architecture
 
-### 4.1 Strict Boundaries
-- **No full-screen intro overlays or splash screens.**
-- **No video or audio assets.**
-- **No animation libraries (no Framer Motion, GSAP, etc.); pure native CSS, SVG, and requestAnimationFrame only.**
-- **No scroll hijacking or wheel preventDefault:** All scrolling is 100% native browser scrolling.
-- **Transform and opacity only:** Animations modify only GPU-accelerated compositing properties (`transform`, `opacity`). Layout properties (`top`, `left`, `margin`, `padding`, `width`, `height`) are never animated. Dimensions are strictly reserved to prevent cumulative layout shift (CLS = 0).
+### 4.1 Console Density Rules
+- **Container Cards:** 1px border (`border-[var(--border)]`), 4px radius (`rounded`), minimal flat shadow (`shadow-2xs`).
+- **Interactive Controls:** 2px radius (`rounded-xs`), 32-36px height (`min-h-[34px] sm:min-h-[36px]`).
+- **Typography:** 14px base font (`text-sm`), 12px secondary font (`text-xs`), and compact 16-20px padding (`p-4` or `p-5`).
+- **Headings on Tool Pages:** Sentence-case headings in `Instrument Sans` (`font-sans`), reserving display serif (`Instrument Serif`) exclusively for landing hero headlines and marketing section titles.
+- **Missing Details Table:** Replaces loose card grids with a compact 2-column table (`Topic | Note`) featuring subtle row hover highlights.
 
-### 4.2 Hero Document Entrance Animation
-- **Scope:** Confined entirely inside the hero document card. Headline, subhead, and CTAs render immediately without delay.
-- **Sequence:**
-  1. Document renders with plain, unhighlighted monospace text.
-  2. Inline SVG magnifying lens (paper-white rim, ink handle, soft shadow) glides from card's right edge to each of the three annotated target phrases.
-  3. Pauses briefly at each phrase; the highlighter yellow style sweeps in, and the bottom observation card updates to match.
-  4. Lens glides toward the bottom-right and fades out cleanly.
-  5. Total duration is exactly 3000 ms ($\le 3200\text{ ms}$).
-- **Non-blocking & Skip:** Pointerdown, keypress, scroll $>10\text{px}$, or tab visibility change completes the animation instantly to the settled end state.
-- **Replay control:** A ghost button ("Replay animation") allows controlled re-runs when motion is allowed (ideal for recording demos).
-- **Reduced motion & Failsafe:** When `prefers-reduced-motion: reduce` is detected, the card displays the end state immediately with no lens. CSS `@keyframes revealFallback` (delay 3.8s) and `<noscript>` blocks guarantee highlights are never hidden if JavaScript fails or is blocked.
+### 4.2 Balanced `/check` Layout
+- **Desktop ($\ge 1024\text{px}$):**
+  - **Left Column (5/12):**
+    - *Before Review:* Interactive `OfferInputForm` (paste, upload dropzone, sample picker).
+    - *After Review:* Sticky workspace panel (`YourOfferWorkspace`) featuring:
+      - Read-only snapshot of the offer text with highlight spans rendered via `buildHighlightSegments`.
+      - Highlight count chip (`"N highlights"` or `"No lines were highlighted for this review."`).
+      - Character count counter.
+      - "Edit text" button (switches panel back to input form while preserving session data).
+      - "New review" button with inline confirmation prompt.
+      - "On this page" scroll-spy navigation (`OnThisPageNav`) observing section headers in real time.
+  - **Right Column (7/12):** Review workspace rendering loading skeletons, error alerts, review summary, recommended research card, potential concerns, missing details table, questions to verify, and limits.
+  - **Desktop Jump Nav:** The horizontal jump bar is hidden on desktop, as `OnThisPageNav` on the left serves this purpose without duplicating vertical height.
+- **Mobile ($< 1024\text{px}$):**
+  - Single column order:
+    1. Input card or offer snapshot
+    2. Review summary
+    3. Research reminder (if recommended)
+    4. Sticky horizontal jump navigation
+    5. Detailed results sections
 
-### 4.3 Scroll-Driven Line-by-Line Scene
-- **Scope:** Positioned directly after the hero section ("A second look, line by line").
-- **Desktop Sticky Stage ($\ge 1024\text{px}$ width and $\ge 640\text{px}$ viewport height):**
-  - Tall container ($\sim 260\text{vh}$) with a sticky stage constrained to the viewport ($h \le 100\text{vh} - 4\text{rem}$).
-  - Native scroll drives progress ($0..1$) via an `IntersectionObserver`-gated scroll handler.
-  - Left column: compact letter where phrases highlight as user advances.
-  - Right column: 3 step cards (Money, Pressure, Contact) that emphasize in sequence while non-active steps dim gently.
-- **Mobile & Reduced Motion Fallback:**
-  - On viewports $<1024\text{px}$, short viewports ($<640\text{px}$), or when reduced motion is preferred, the pinned sticky container is completely replaced by three stacked cards in normal document flow. Zero sticky trapping.
+---
+
+## 5. Contextual Company Research Nudge & Always-Visible Actions
+
+Independent research handoff is guided by the pure evaluation function `getResearchNudge`:
+- **Recommendation Triggers:**
+  1. Unnamed company or employer in the offer text.
+  2. Free personal email address used without an accompanying company website.
+  3. Internship offer with missing reporting contact, mentor, or supervisor details (strictly verified with word boundaries; terms like "international" or "internal" do not match).
+- **Dual Placement:**
+  - *Recommended:* Placed immediately below the Review Summary card with a banner outlining the exact reasons and the advice: *"Before you sign or pay, spend two minutes looking up who sent this offer."*
+  - *Optional:* Placed lower after the verification questions.
+- **Always-Visible Action Controls:**
+  - 1-line key-value summary (`Company`, `Website`, `Sender domain`, `Role`).
+  - Required inline company name input when missing, with explanation and disabled copy button.
+  - Depth selector (Short ~300 words vs Detailed ~600 words).
+  - "Copy research prompt" and "Open Perplexity" actions.
+  - "Edit details" collapsible toggle to reveal editable fields, channel observations, and prompt preview.

@@ -31,21 +31,21 @@ export const LANDING_ANNOTATION_DEFS: readonly LandingAnnotationDefinition[] = [
     phrase: "refundable equipment deposit of ₹4,500",
     category: "refundable_deposit",
     title: "Refundable deposit requested",
-    note: "Standard internships provide work equipment without requesting an upfront deposit or security fee.",
+    note: "A payment request before an offer is formalised is worth confirming independently.",
   },
   {
     id: "ann-urgent-deadline",
     phrase: "within 24 hours to secure your internship slot",
     category: "payment_urgency",
     title: "Urgent payment deadline",
-    note: "A 24-hour ultimatum creates artificial pressure to transfer funds before you have time to confirm details.",
+    note: "A tight deadline about paying is a reason to slow down and confirm.",
   },
   {
     id: "ann-off-platform",
     phrase: "reach out via WhatsApp at +91 98000 00000",
     category: "off_platform_communication",
-    title: "Off-platform communication",
-    note: "Directing recruitment conversations to personal messaging apps avoids an official company email record.",
+    title: "Contact moves to a messaging app",
+    note: "A messaging number next to an official-looking address is worth confirming through contact details you find yourself.",
   },
 ];
 

@@ -2,6 +2,9 @@ import { describe, it, expect } from "vitest";
 import {
   computeLensPath,
   computeEntranceState,
+  heroMotionReducer,
+  getHeroButtonLabel,
+  HeroMotionState,
   TargetRect,
   CardSize,
 } from "@/lib/landing/entrance";
@@ -112,5 +115,97 @@ describe("Hero entrance pure functions (computeLensPath & computeEntranceState)"
     expect(runA.revealedCount).toBe(runB.revealedCount);
     expect(runA.lens.x).toBe(runB.lens.x);
     expect(runA.lens.y).toBe(runB.lens.y);
+  });
+});
+
+describe("Hero motion reducer and opt-in reduced motion logic", () => {
+  const initialState: HeroMotionState = {
+    isReducedMotion: false,
+    isAnimating: false,
+    hasPlayedOnce: false,
+    revealedCount: 0,
+    activeAnnotationIndex: 0,
+  };
+
+  it("in reduced-motion mode, INIT settles into finished state without auto-playing, with button label 'Play animation'", () => {
+    const state = heroMotionReducer(initialState, {
+      type: "INIT",
+      prefersReducedMotion: true,
+      totalAnnotations: 3,
+    });
+
+    expect(state.isReducedMotion).toBe(true);
+    expect(state.isAnimating).toBe(false);
+    expect(state.hasPlayedOnce).toBe(false);
+    expect(state.revealedCount).toBe(3);
+    expect(getHeroButtonLabel(state)).toBe("Play animation");
+  });
+
+  it("automatic start never happens in reduced-motion mode (AUTO_PLAY_STARTED is safely ignored)", () => {
+    const reducedInit = heroMotionReducer(initialState, {
+      type: "INIT",
+      prefersReducedMotion: true,
+      totalAnnotations: 3,
+    });
+
+    const stateAfterAuto = heroMotionReducer(reducedInit, {
+      type: "AUTO_PLAY_STARTED",
+    });
+
+    expect(stateAfterAuto.isAnimating).toBe(false);
+    expect(stateAfterAuto.revealedCount).toBe(3);
+    expect(stateAfterAuto.hasPlayedOnce).toBe(false);
+    expect(getHeroButtonLabel(stateAfterAuto)).toBe("Play animation");
+  });
+
+  it("in reduced-motion mode, user click starts playback and unreveals highlights", () => {
+    const reducedInit = heroMotionReducer(initialState, {
+      type: "INIT",
+      prefersReducedMotion: true,
+      totalAnnotations: 3,
+    });
+
+    const statePlaying = heroMotionReducer(reducedInit, {
+      type: "USER_PLAY_CLICKED",
+    });
+
+    expect(statePlaying.isAnimating).toBe(true);
+    expect(statePlaying.revealedCount).toBe(0);
+    expect(statePlaying.activeAnnotationIndex).toBe(0);
+  });
+
+  it("when playback finishes, state transitions to finished state, marks hasPlayedOnce, and button label becomes 'Replay animation'", () => {
+    const reducedInit = heroMotionReducer(initialState, {
+      type: "INIT",
+      prefersReducedMotion: true,
+      totalAnnotations: 3,
+    });
+
+    const statePlaying = heroMotionReducer(reducedInit, {
+      type: "USER_PLAY_CLICKED",
+    });
+
+    const stateCompleted = heroMotionReducer(statePlaying, {
+      type: "ANIMATION_COMPLETE",
+      totalAnnotations: 3,
+    });
+
+    expect(stateCompleted.isAnimating).toBe(false);
+    expect(stateCompleted.hasPlayedOnce).toBe(true);
+    expect(stateCompleted.revealedCount).toBe(3);
+    expect(getHeroButtonLabel(stateCompleted)).toBe("Replay animation");
+  });
+
+  it("in motion-allowed mode, INIT starts ready to animate, and button label is 'Replay animation'", () => {
+    const state = heroMotionReducer(initialState, {
+      type: "INIT",
+      prefersReducedMotion: false,
+      totalAnnotations: 3,
+    });
+
+    expect(state.isReducedMotion).toBe(false);
+    expect(state.isAnimating).toBe(true);
+    expect(state.revealedCount).toBe(0);
+    expect(getHeroButtonLabel(state)).toBe("Replay animation");
   });
 });

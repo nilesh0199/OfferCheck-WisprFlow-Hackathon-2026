@@ -47,4 +47,28 @@ describe("Landing phrases and vocabulary compliance", () => {
     // Ensure closing line contains no verdict affirmations
     expect(SCENE_CLOSING_LINE).not.toMatch(/\b(safe|scam|fraud|verified|legit)\b/i);
   });
+
+  it("verifies landing annotations and scene text contain no unsupported claims about hiring practice ('standard internship', 'typically', 'usually', 'legitimate employer')", () => {
+    const forbiddenPatterns = [
+      /standard\s+internship/i,
+      /\btypically\b/i,
+      /\busually\b/i,
+      /legitimate\s+employer/i,
+    ];
+
+    for (const step of SCENE_STEPS) {
+      for (const pattern of forbiddenPatterns) {
+        expect(step.title).not.toMatch(pattern);
+        expect(step.note).not.toMatch(pattern);
+        expect(step.label).not.toMatch(pattern);
+      }
+    }
+
+    for (const def of LANDING_ANNOTATION_DEFS) {
+      for (const pattern of forbiddenPatterns) {
+        expect(def.title).not.toMatch(pattern);
+        expect(def.note).not.toMatch(pattern);
+      }
+    }
+  });
 });

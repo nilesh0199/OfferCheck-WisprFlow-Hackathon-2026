@@ -48,7 +48,7 @@ describe("API /api/transcribe route handler", () => {
       method: "POST",
       headers: {
         "content-type": "multipart/form-data; boundary=----WebKitFormBoundary",
-        "content-length": String(MAX_UPLOAD_TOTAL_BYTES + 1024),
+        "content-length": String(MAX_UPLOAD_TOTAL_BYTES + 100 * 1024),
       },
     });
 

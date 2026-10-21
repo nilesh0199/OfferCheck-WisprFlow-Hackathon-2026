@@ -134,27 +134,23 @@ export function FileUploadDropzone({
     }
   };
 
-  // Clipboard paste listener: allows candidate to paste screenshots directly with Ctrl+V
+  // Clipboard paste listener: allows candidate to paste screenshots/images directly with Ctrl+V anywhere in the card
   useEffect(() => {
     const handlePaste = (e: ClipboardEvent) => {
       if (disabled || remainingSlots <= 0) return;
-      // Only capture if dropzone or child has focus or no active form element is focused
-      const activeEl = document.activeElement;
-      const isInputFocused =
-        activeEl?.tagName === "TEXTAREA" || activeEl?.tagName === "INPUT";
 
-      if (isInputFocused && activeEl !== dropzoneRef.current) {
-        return;
-      }
-
+      // If clipboard contains files (e.g. image from snipping tool/screenshot), attach them
       if (e.clipboardData && e.clipboardData.files.length > 0) {
         const files = Array.from(e.clipboardData.files);
-        const imageFiles = files.filter((f) => f.type.startsWith("image/"));
-        if (imageFiles.length > 0) {
+        const imageOrPdfFiles = files.filter(
+          (f) => f.type.startsWith("image/") || f.type === "application/pdf"
+        );
+        if (imageOrPdfFiles.length > 0) {
           e.preventDefault();
-          processFiles(imageFiles);
+          processFiles(imageOrPdfFiles);
         }
       }
+      // If clipboard contains text only, do nothing so normal textarea paste functions as expected
     };
 
     window.addEventListener("paste", handlePaste);

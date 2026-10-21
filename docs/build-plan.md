@@ -140,8 +140,39 @@ This phased build plan outlines the implementation roadmap for OfferCheck, an in
 
 ---
 
-## Phase 9: Docs, Deployment, Classmate Feedback, Demo, Submission Package
-- **Status:** Not started
+## Phase 9a: Submission-Ready Cleanup
+- **Status:** Complete
+- **Goal:** Remove prototype indicators and placeholders, adjust serif display typography, introduce a dedicated static `/resources` page with official contacts and 4 post-payment steps, audit link accessibility and color contrast (>= 4.5:1), sanitize package metadata, clean unreferenced default Next.js assets, verify repository secrets, split development logs into build and dictation records, and add automated tests for resource host allowlisting and page structures.
+- **Acceptance Criteria:**
+  - Prototype badges and placeholder labels removed from all headers and user-facing views.
+  - Serif display headings adjusted to tracking >= -0.02em and line-height 1.04–1.1 to prevent glyph collision across all viewports.
+  - Static server component route `/resources` created with post-payment action steps and all 4 official statutory resources always expanded using refactored `ResourceCard`.
+  - Links to `/resources` added in navigation headers, footers, results section, and FAQ.
+  - FAQ question 6 rewritten with calm, non-alarmist guidance; link styling verified for >= 4.5:1 contrast in light and dark modes.
+  - `package.json` updated with project name `offercheck`, version `1.0.0`, description, repository URL, and keywords; unused starter SVGs in `public/` removed.
+  - Repository verified free of secrets; `.gitignore` updated with `*.log`.
+  - Development log split into Build log (what changed) and Dictation log (author-provided).
+  - Automated tests verify URL host allowlist and resources page data.
+  - All offline tests, typecheck, lint, and production build pass cleanly.
+
+---
+
+## Phase 9b: Hero Entrance Animation and Scroll Scene
+- **Status:** Complete
+- **Goal:** Implement non-blocking hero entrance animation inside the document card (<= 3.2s) with SVG magnifying lens and sweep reveals, accompanied by a native scroll-driven inspection scene ("A second look, line by line") with stacked card fallbacks on mobile and reduced motion.
+- **Acceptance Criteria:**
+  - Entrance animation runs inside hero card only; headline, subhead, and CTAs render immediately.
+  - SVG magnifying lens glides along target path, pausing to reveal highlights and update observations, fading out cleanly (duration <= 3200 ms).
+  - Skips on pointerdown, keypress, or scroll > 10px. Ghost replay button available when motion allowed.
+  - CSS failsafe reveals highlights after 3.8s if JS fails; <noscript> reveals immediately.
+  - Scroll scene ("A second look, line by line") features 260vh container with sticky stage on desktop (>=1024px width, >=640px height) and stacked cards on mobile/reduced motion.
+  - Pure functions in `src/lib/landing/entrance.ts` and `src/lib/landing/scene.ts` with comprehensive unit test suite.
+  - Zero animation libraries, zero scroll hijacking, zero layout shifts.
+
+---
+
+## Phase 9c: Deployment, Demo & Final Submission Package
+- **Status:** Ready for final submission
 - **Goal:** Deploy the application to a public zero-sign-in URL, conduct peer evaluation, record demo walkthrough (up to 2 minutes), and finalize all competition submission deliverables.
 - **Acceptance Criteria:**
   - Application deployed to Vercel with clean public URL accessible to hackathon judges without authentication.

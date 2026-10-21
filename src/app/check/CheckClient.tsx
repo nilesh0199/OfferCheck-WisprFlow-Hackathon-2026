@@ -166,6 +166,12 @@ export function CheckClient() {
             >
               Home
             </Link>
+            <Link
+              href="/resources"
+              className="hover:text-[var(--text)] underline underline-offset-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1"
+            >
+              Official resources
+            </Link>
             <a
               href="#about-this-tool"
               className="hover:text-[var(--text)] underline underline-offset-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1"

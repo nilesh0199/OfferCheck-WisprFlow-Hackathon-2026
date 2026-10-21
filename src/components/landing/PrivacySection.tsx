@@ -14,7 +14,7 @@ export function PrivacySection() {
           <span className="font-mono text-2xs uppercase tracking-wider text-[var(--primary-ledger)] font-semibold">
             Transparency
           </span>
-          <h2 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight text-[var(--text)]">
+          <h2 className="text-2xl sm:text-3xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]">
             Privacy and responsible data use
           </h2>
           <p className="text-sm sm:text-base text-[var(--text-muted)] leading-relaxed">
@@ -44,7 +44,7 @@ export function PrivacySection() {
                 In-memory tab session only
               </strong>
               <p>
-                Your text and results exist solely in your browser tab&apos;s volatile memory. Refreshing or closing the tab resets everything immediately.
+                Your text and results exist solely in your browser tab&apos;s volatile memory. Refreshing or closing the tab resets everything on refresh.
               </p>
             </div>
             <div className="space-y-1">

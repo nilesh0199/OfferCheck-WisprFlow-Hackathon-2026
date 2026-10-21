@@ -31,15 +31,14 @@ export const LANDING_ANNOTATION_DEFS: readonly LandingAnnotationDefinition[] = [
     phrase: "refundable equipment deposit of ₹4,500",
     category: "refundable_deposit",
     title: "Refundable deposit requested",
-    note: "Legitimate internships provide work equipment without requesting an upfront deposit or security fee.",
+    note: "Standard internships provide work equipment without requesting an upfront deposit or security fee.",
   },
   {
     id: "ann-urgent-deadline",
-    phrase:
-      "within 24 hours to secure your internship slot, or your offer will be immediately allocated to the next waitlisted applicant.",
+    phrase: "within 24 hours to secure your internship slot",
     category: "payment_urgency",
     title: "Urgent payment deadline",
-    note: "A 24-hour ultimatum creates artificial pressure to transfer funds before you have time to verify credentials.",
+    note: "A 24-hour ultimatum creates artificial pressure to transfer funds before you have time to confirm details.",
   },
   {
     id: "ann-off-platform",
@@ -105,27 +104,26 @@ export function buildLandingDocumentSegments(
   }
 
   const segments: LandingDocumentSegment[] = [];
-  let cursor = 0;
+  let currentIndex = 0;
 
   for (const ann of annotations) {
-    if (ann.start > cursor) {
+    if (ann.start > currentIndex) {
       segments.push({
-        text: text.slice(cursor, ann.start),
+        text: text.slice(currentIndex, ann.start),
       });
     }
 
-    if (ann.end > ann.start && ann.start >= cursor) {
-      segments.push({
-        text: text.slice(ann.start, ann.end),
-        annotation: ann,
-      });
-      cursor = ann.end;
-    }
+    segments.push({
+      text: text.slice(ann.start, ann.end),
+      annotation: ann,
+    });
+
+    currentIndex = ann.end;
   }
 
-  if (cursor < text.length) {
+  if (currentIndex < text.length) {
     segments.push({
-      text: text.slice(cursor),
+      text: text.slice(currentIndex),
     });
   }
 

@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { LandingNav } from "@/components/landing/LandingNav";
 import { HeroInteractiveDocument } from "@/components/landing/HeroInteractiveDocument";
+import { ScrollSceneSection } from "@/components/landing/ScrollSceneSection";
 import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
 import { WhatYouGetSection } from "@/components/landing/WhatYouGetSection";
 import { WhatWeDoNotDoSection } from "@/components/landing/WhatWeDoNotDoSection";
@@ -35,7 +36,7 @@ export default function LandingPage() {
                 <span>Offer Due Diligence for Students & Job Seekers</span>
               </div>
 
-              <h1 className="text-3xl sm:text-5xl lg:text-5xl font-serif font-bold tracking-tight text-[var(--text)] leading-[1.12]">
+              <h1 className="text-3xl sm:text-5xl lg:text-5xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]">
                 {TAGLINE}
               </h1>
 
@@ -61,7 +62,7 @@ export default function LandingPage() {
               </div>
 
               <div className="pt-2 flex items-center gap-4 text-2xs text-[var(--text-muted)] font-mono">
-                <span>• In-memory tab session</span>
+                <span>• Nothing saved after you leave</span>
                 <span>• No accounts</span>
                 <span>• Free</span>
               </div>
@@ -73,6 +74,9 @@ export default function LandingPage() {
             </div>
           </Container>
         </section>
+
+        {/* Scroll-Driven Scene: A second look, line by line */}
+        <ScrollSceneSection />
 
         {/* How It Works Section */}
         <HowItWorksSection />

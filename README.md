@@ -57,9 +57,9 @@ When you are starting out, an offer can feel like a rare chance, and you may not
 | **"Check these yourself" steps** | Implemented | Contextually prioritized verification steps based on identified concerns (payment, sensitive data, off-platform messaging). |
 | **Official resources** | Implemented | Direct links and helpline numbers for AICTE, NCS (1514), MCA Company Search, and the National Cyber Crime Reporting Portal (1930). Zero runtime network calls. |
 | **Company research handoff** | Implemented | Prepares an external search prompt for Perplexity (short 300 words or detailed 600 words) from user-confirmed details; no in-app search calls and raw offer text is strictly excluded. |
-| **Landing page and routes** | Implemented | Asymmetric landing page at `/` with an interactive annotated paper card; tool workspace at `/check`; in-memory session persistence across routes via `SessionProvider`. |
+| **Landing page and routes** | Implemented | Asymmetric landing page at `/` with an interactive annotated paper card, non-blocking hero entrance animation, and a scroll-driven line-by-line inspection scene; tool workspace at `/check`; in-memory session persistence across routes via `SessionProvider`. |
 | **Safeguards** | Implemented | Sliding-window rate limiting (8/15m, 30/24h) with salted SHA-256 IP hashing, model circuit breaker, in-memory concurrency guard (max 4), input hygiene (blocking NUL/control characters), and security headers. |
-| **Job-offer specifics** | In progress | The app analyses any pasted text, but prompt instructions, synthetic samples, and in-app copy are currently written around internships. Extending salary, probation, joining date, training or bond clauses, and job samples is in progress. |
+| **Job-offer specifics** | Partially implemented | The review prompt treats salary, probation period, joining date and contract terms as missing details when unstated, and display labels say "Stipend or salary" and "Duration or contract term". There are no job-offer sample texts and no job-offer evaluation yet; clauses such as service bonds or training-fee agreements are not specifically handled. |
 | **Screenshot and PDF input** | Implemented | Multimodal transcription via Gemini Interactions API for up to 5 screenshots (PNG, JPEG, WebP) or PDFs (max 4 MB total); browser-side canvas downscaling; candidate reviews and edits extracted text before analysis. |
 
 ---
@@ -206,7 +206,7 @@ The test suite runs completely offline with zero network calls and mock client i
 ```bash
 npm run test
 ```
-**Current Test Count:** Exactly **215 unit tests** passing across **26 test files**.
+The test suite validates all critical pipeline modules with zero external network calls:
 
 What the tests cover:
 - Deterministic quote validator (Unicode grapheme handling, exact substring search, nested quote containment, and duplicate deduplication).
@@ -258,9 +258,9 @@ OfferCheck was developed for the hackathon using Wispr Flow to dictate engineeri
 
 Planned future enhancements (not yet implemented in the codebase):
 
-- **Screenshot & PDF input (Phase 5):** Multimodal document transcription into raw text for mandatory user review and redaction before running the text analysis pipeline.
-- **Completion of job-offer specifics:** Extending salary, probation period, joining date, training or employment bond clauses, synthetic job samples, and in-app copy to cover entry-level employment contracts comprehensively.
 - **Continuous evaluation benchmarks:** Expanding test fixtures with real-world anonymized recruitment patterns and tracking model accuracy across updates.
+- **Multilingual guidance:** Translating official resource guidance and verification questions into regional Indian languages.
+- **Direct PDF highlight overlay:** Viewing findings overlaid directly on multi-page PDF documents alongside the extracted text editor.
 
 ---
 

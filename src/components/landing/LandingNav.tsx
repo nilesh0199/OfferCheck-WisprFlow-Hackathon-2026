@@ -24,9 +24,6 @@ export function LandingNav() {
             <LogoIcon className="w-5 h-5 text-[var(--accent)] shrink-0" />
             <span>{APP_NAME}</span>
           </Link>
-          <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-medium bg-[var(--surface-muted)] text-[var(--text-muted)] border border-[var(--border)]">
-            Hackathon prototype
-          </span>
         </div>
 
         {/* Desktop Anchor Links */}
@@ -55,6 +52,12 @@ export function LandingNav() {
           >
             FAQ
           </a>
+          <Link
+            href="/resources"
+            className="hover:text-[var(--text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 px-1.5"
+          >
+            Resources
+          </Link>
           <a
             href="https://github.com/nilesh0199/OfferCheck-WisprFlow-Hackathon-2026"
             target="_blank"
@@ -143,6 +146,13 @@ export function LandingNav() {
             >
               FAQ
             </a>
+            <Link
+              href="/resources"
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-3 py-2 rounded-lg hover:bg-[var(--surface-muted)] hover:text-[var(--text)] transition-colors min-h-[44px] flex items-center"
+            >
+              Resources
+            </Link>
             <a
               href="https://github.com/nilesh0199/OfferCheck-WisprFlow-Hackathon-2026"
               target="_blank"

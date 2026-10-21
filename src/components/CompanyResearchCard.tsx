@@ -173,7 +173,7 @@ export function CompanyResearchCard({
               External Handoff
             </span>
           </div>
-          <h3 className="text-base sm:text-lg font-serif font-bold text-[var(--text)]">
+          <h3 className="text-base sm:text-lg font-serif text-[var(--text)]">
             Research the company (optional)
           </h3>
           <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">

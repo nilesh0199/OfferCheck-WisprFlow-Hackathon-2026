@@ -32,7 +32,7 @@ export default function ErrorBoundary({
           </div>
 
           <div className="space-y-2">
-            <h1 className="text-2xl font-serif font-bold tracking-tight text-[var(--text)]">
+            <h1 className="text-2xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]">
               Something went wrong
             </h1>
             <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">

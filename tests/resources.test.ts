@@ -102,3 +102,103 @@ describe("selectResources", () => {
     expect(selected[3].matchedTerm).toBeUndefined();
   });
 });
+
+describe("VERIFICATION_RESOURCES and allowed hostnames", () => {
+  const ALLOWED_HOSTS = new Set([
+    "internship.aicte-india.org",
+    "aicte-india.org",
+    "ncs.gov.in",
+    "www.ncs.gov.in",
+    "mca.gov.in",
+    "www.mca.gov.in",
+    "cybercrime.gov.in",
+  ]);
+
+  it("contains exactly the four official verification resources", async () => {
+    const { VERIFICATION_RESOURCES } = await import("@/data/verification-resources");
+    expect(VERIFICATION_RESOURCES.map((r) => r.id)).toEqual([
+      "cybercrime",
+      "aicte",
+      "ncs",
+      "mca",
+    ]);
+  });
+
+  it("ensures every resource has HTTPS sourceUrl within allowed government hostnames", async () => {
+    const { VERIFICATION_RESOURCES } = await import("@/data/verification-resources");
+    for (const res of VERIFICATION_RESOURCES) {
+      expect(res.sourceUrl.startsWith("https://")).toBe(true);
+      const url = new URL(res.sourceUrl);
+      expect(ALLOWED_HOSTS.has(url.hostname)).toBe(true);
+      expect(res.lastChecked).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    }
+  });
+
+  it("ensures all link action URLs use HTTPS and are strictly within allowed host list", async () => {
+    const { VERIFICATION_RESOURCES } = await import("@/data/verification-resources");
+    for (const res of VERIFICATION_RESOURCES) {
+      for (const action of res.actions) {
+        if (action.type === "link") {
+          expect(action.value.startsWith("https://")).toBe(true);
+          const parsed = new URL(action.value);
+          expect(ALLOWED_HOSTS.has(parsed.hostname)).toBe(true);
+        } else if (action.type === "email") {
+          expect(action.value).toMatch(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/);
+        } else if (action.type === "phone") {
+          expect(action.value).toMatch(/^\d{3,10}$/);
+        }
+      }
+    }
+  });
+});
+
+describe("Resources page structure and post-payment steps", () => {
+  it("exports POST_PAYMENT_STEPS with exactly 4 calm, numbered steps with exact required text", async () => {
+    const { POST_PAYMENT_STEPS } = await import("@/data/post-payment-steps");
+    expect(POST_PAYMENT_STEPS).toHaveLength(4);
+    expect(POST_PAYMENT_STEPS).toEqual([
+      {
+        step: 1,
+        text: "Contact your bank or payment provider as soon as you can.",
+      },
+      {
+        step: 2,
+        text: "Report the incident on the National Cyber Crime Reporting Portal (cybercrime.gov.in) or call the 1930 helpline.",
+      },
+      {
+        step: 3,
+        text: "Keep screenshots, messages and payment proofs.",
+      },
+      {
+        step: 4,
+        text: "Avoid sending more money or documents until you have confirmed the offer independently.",
+      },
+    ]);
+  });
+
+  it("ensures user-facing text of /resources, post-payment steps, and FAQ contains none of the forbidden words", async () => {
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+
+    const forbiddenWords = [
+      "freeze",
+      "dispute",
+      "statutory",
+      "immediately",
+      "police report",
+    ];
+
+    const filesToCheck = [
+      path.resolve(process.cwd(), "src/data/post-payment-steps.ts"),
+      path.resolve(process.cwd(), "src/app/resources/page.tsx"),
+      path.resolve(process.cwd(), "src/components/landing/FaqSection.tsx"),
+    ];
+
+    for (const file of filesToCheck) {
+      const content = fs.readFileSync(file, "utf8").toLowerCase();
+      for (const word of forbiddenWords) {
+        expect(content).not.toContain(word.toLowerCase());
+      }
+    }
+  });
+});

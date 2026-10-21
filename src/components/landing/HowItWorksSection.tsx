@@ -73,7 +73,7 @@ export function HowItWorksSection() {
           <span className="font-mono text-2xs uppercase tracking-wider text-[var(--primary-ledger)] font-semibold">
             Process
           </span>
-          <h2 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight text-[var(--text)]">
+          <h2 className="text-2xl sm:text-3xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]">
             How OfferCheck works
           </h2>
           <p className="text-sm sm:text-base text-[var(--text-muted)] leading-relaxed">

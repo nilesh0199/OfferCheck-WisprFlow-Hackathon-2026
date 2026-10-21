@@ -21,9 +21,6 @@ export function Header() {
               <LogoIcon className="w-5 h-5 text-[var(--accent)] shrink-0" />
               <span>{APP_NAME}</span>
             </Link>
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-medium bg-[var(--surface-muted)] text-[var(--text-muted)] border border-[var(--border)]">
-              Hackathon prototype
-            </span>
           </div>
 
           <div className="flex items-center gap-4 text-xs font-medium text-[var(--text-muted)]">
@@ -45,6 +42,12 @@ export function Header() {
             >
               Limits
             </a>
+            <Link
+              href="/resources"
+              className="hover:text-[var(--text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 px-1.5"
+            >
+              Resources
+            </Link>
             <a
               href="https://github.com/nilesh0199/OfferCheck-WisprFlow-Hackathon-2026"
               target="_blank"
@@ -63,7 +66,7 @@ export function Header() {
       {/* Hero and steps section wrapped in shared Container */}
       <header className="w-full">
         <Container className="pt-6 sm:pt-8 pb-4 text-left">
-          <h1 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight text-[var(--text)]">
+          <h1 className="text-2xl sm:text-3xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]">
             {TAGLINE}
           </h1>
           <p className="mt-2 text-sm sm:text-base text-[var(--text-muted)] max-w-[40rem] leading-relaxed">

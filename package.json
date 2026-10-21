@@ -1,6 +1,16 @@
 {
-  "name": "project",
-  "version": "0.1.0",
+  "name": "offercheck",
+  "version": "1.0.0",
+  "description": "Evidence-linked review assistant for internship and entry-level job offers",
+  "repository": "https://github.com/nilesh0199/OfferCheck-WisprFlow-Hackathon-2026",
+  "keywords": [
+    "offer-check",
+    "internship",
+    "job-offer",
+    "verification",
+    "due-diligence",
+    "gemini"
+  ],
   "private": true,
   "scripts": {
     "dev": "next dev",

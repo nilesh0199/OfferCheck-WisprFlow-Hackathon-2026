@@ -25,6 +25,12 @@ export function LandingFooter() {
           >
             Check an offer
           </Link>
+          <Link
+            href="/resources"
+            className="hover:text-[var(--text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1"
+          >
+            Resources
+          </Link>
           <a
             href="https://github.com/nilesh0199/OfferCheck-WisprFlow-Hackathon-2026/blob/main/docs/privacy-and-responsible-use.md"
             target="_blank"

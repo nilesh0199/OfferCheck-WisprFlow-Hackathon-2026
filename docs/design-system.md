@@ -74,13 +74,14 @@ OfferCheck strictly avoids red/green binary verdict semantics. Three soft tints 
 - **Light Theme Primary Button:** `#f4efe4` text on `#1e5c46` button provides **5.8:1** (exceeds WCAG AA 4.5:1).
 - **Dark Theme Text:** `#f4efe4` on `#1c1a15` provides **14.5:1** (exceeds WCAG AAA 7:1).
 - **Dark Theme Muted Text:** `#a39e93` on `#1c1a15` provides **6.0:1** (exceeds WCAG AA 4.5:1).
+- **Dark Theme Link Text:** `#34d399` on `#1c1a15` provides **8.24:1** (exceeds WCAG AA 4.5:1).
 
 ---
 
 ## 3. Typography & Spacing Scales
 
 ### 3.1 Type Families
-- **Display Serif (`font-serif`):** `Instrument Serif` (Google Fonts via `next/font/google`, `display: swap`). Used for large headlines, section titles, and marketing display text.
+- **Display Serif (`font-serif`):** `Instrument Serif` (Google Fonts via `next/font/google`, `display: swap`). Used for large headlines, section titles, and marketing display text. Configured with tracking $\ge -0.02\text{em}$ (`tracking-[-0.015em]`) and line-height $1.04 - 1.10$ (`leading-[1.08]`) to prevent glyph collisions across all viewports.
 - **Body & UI Sans (`font-sans`):** `Instrument Sans` (Google Fonts via `next/font/google`, `display: swap`). Used for UI labels, buttons, cards, descriptions, and forms.
 - **Monospace (`font-mono`):** `IBM Plex Mono` (Google Fonts via `next/font/google`, `display: swap`). Used for offer document previews, quotations, metadata tags, and counters.
 
@@ -92,3 +93,36 @@ Based on a 4px/8px modular rhythm:
 ### 3.3 Texture and Depth
 - **Paper Pattern:** `.paper-pattern` applies a subtle radial-dot matrix in pure CSS (`radial-gradient(var(--border) 0.65px, transparent 0.65px)` with `background-size: 20px 20px`). Zero raster images.
 - **Tilt Parallax:** Hero document applies a subtle 3D perspective tilt (clamped to max ±3 degrees) driven via `requestAnimationFrame` and CSS transforms. Automatically disabled on touch screens and when `prefers-reduced-motion: reduce` is active.
+
+---
+
+## 4. Motion & Animation Architecture
+
+### 4.1 Strict Boundaries
+- **No full-screen intro overlays or splash screens.**
+- **No video or audio assets.**
+- **No animation libraries (no Framer Motion, GSAP, etc.); pure native CSS, SVG, and requestAnimationFrame only.**
+- **No scroll hijacking or wheel preventDefault:** All scrolling is 100% native browser scrolling.
+- **Transform and opacity only:** Animations modify only GPU-accelerated compositing properties (`transform`, `opacity`). Layout properties (`top`, `left`, `margin`, `padding`, `width`, `height`) are never animated. Dimensions are strictly reserved to prevent cumulative layout shift (CLS = 0).
+
+### 4.2 Hero Document Entrance Animation
+- **Scope:** Confined entirely inside the hero document card. Headline, subhead, and CTAs render immediately without delay.
+- **Sequence:**
+  1. Document renders with plain, unhighlighted monospace text.
+  2. Inline SVG magnifying lens (paper-white rim, ink handle, soft shadow) glides from card's right edge to each of the three annotated target phrases.
+  3. Pauses briefly at each phrase; the highlighter yellow style sweeps in, and the bottom observation card updates to match.
+  4. Lens glides toward the bottom-right and fades out cleanly.
+  5. Total duration is exactly 3000 ms ($\le 3200\text{ ms}$).
+- **Non-blocking & Skip:** Pointerdown, keypress, scroll $>10\text{px}$, or tab visibility change completes the animation instantly to the settled end state.
+- **Replay control:** A ghost button ("Replay animation") allows controlled re-runs when motion is allowed (ideal for recording demos).
+- **Reduced motion & Failsafe:** When `prefers-reduced-motion: reduce` is detected, the card displays the end state immediately with no lens. CSS `@keyframes revealFallback` (delay 3.8s) and `<noscript>` blocks guarantee highlights are never hidden if JavaScript fails or is blocked.
+
+### 4.3 Scroll-Driven Line-by-Line Scene
+- **Scope:** Positioned directly after the hero section ("A second look, line by line").
+- **Desktop Sticky Stage ($\ge 1024\text{px}$ width and $\ge 640\text{px}$ viewport height):**
+  - Tall container ($\sim 260\text{vh}$) with a sticky stage constrained to the viewport ($h \le 100\text{vh} - 4\text{rem}$).
+  - Native scroll drives progress ($0..1$) via an `IntersectionObserver`-gated scroll handler.
+  - Left column: compact letter where phrases highlight as user advances.
+  - Right column: 3 step cards (Money, Pressure, Contact) that emphasize in sequence while non-active steps dim gently.
+- **Mobile & Reduced Motion Fallback:**
+  - On viewports $<1024\text{px}$, short viewports ($<640\text{px}$), or when reduced motion is preferred, the pinned sticky container is completely replaced by three stacked cards in normal document flow. Zero sticky trapping.

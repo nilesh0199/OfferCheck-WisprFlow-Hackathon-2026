@@ -6,7 +6,7 @@ export function FinalCta() {
   return (
     <section className="py-16 sm:py-24 border-t border-[var(--border)] bg-[var(--surface)] transition-colors">
       <Container className="text-center max-w-3xl space-y-6">
-        <h2 className="text-2xl sm:text-4xl font-serif font-bold tracking-tight text-[var(--text)]">
+        <h2 className="text-2xl sm:text-4xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]">
           Ready to review an offer?
         </h2>
         <p className="text-sm sm:text-base text-[var(--text-muted)] max-w-xl mx-auto leading-relaxed">

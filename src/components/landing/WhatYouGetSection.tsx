@@ -7,7 +7,7 @@ export function WhatYouGetSection() {
       badge: "Observation Spans",
       title: "Quote-linked observations",
       body: "Every flagged item is pinned to an exact phrase from the offer text with an objective explanation. We do not show vague warning scores or ungrounded accusations.",
-      detail: "Examples: upfront deposits, 24-hour ultimatums, personal WhatsApp recruitment.",
+      detail: "Points to specific clauses so you can evaluate the text without subjective risk scores.",
     },
     {
       badge: "Term Checklist",
@@ -47,7 +47,7 @@ export function WhatYouGetSection() {
           <span className="font-mono text-2xs uppercase tracking-wider text-[var(--primary-ledger)] font-semibold">
             Deliverables
           </span>
-          <h2 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight text-[var(--text)]">
+          <h2 className="text-2xl sm:text-3xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]">
             What OfferCheck gives you
           </h2>
           <p className="text-sm sm:text-base text-[var(--text-muted)] leading-relaxed">

@@ -278,13 +278,38 @@ This document tracks all implemented, live, and planned automated tests for Offe
 | `api-transcribe: enforces separate transcribe rate limiter (429 with Retry-After)` | Verifies isolated sliding-window rate limit without impacting analysis quota | Implemented |
 | `api-transcribe: enforces concurrency guard (503 BUSY)` | Verifies server instance concurrency bound | Implemented |
 | `api-transcribe: returns 200 with transcript on valid upload` | Verifies end-to-end route success and no-store headers | Implemented |
+| `resources: contains exactly the four official verification resources` | Verifies cybercrime, aicte, ncs, and mca are defined with valid fields | Implemented |
+| `resources: ensures every resource has HTTPS sourceUrl within allowed government hostnames` | Verifies sourceUrl starts with https:// and host is in allowlist | Implemented |
+| `resources: ensures all link action URLs use HTTPS and are strictly within allowed host list` | Verifies action URLs, email formats, and phone numbers are verified | Implemented |
+| `resources: exports POST_PAYMENT_STEPS with exactly 4 calm, numbered steps with exact required text` | Verifies post-payment guidance exports 4 numbered steps with calm, verified text | Implemented |
+| `resources: ensures user-facing text of /resources, post-payment steps, and FAQ contains none of the forbidden words` | Verifies freeze, dispute, statutory, immediately, and police report are completely absent | Implemented |
+| `entrance: computes path where duration never exceeds 3200 ms` | Verifies computed timeline path constraints | Implemented |
+| `entrance: at t = 0 nothing is revealed, lens opacity is 0, and done is false` | Verifies initial unrevealed state | Implemented |
+| `entrance: guarantees reveal count never decreases as time advances` | Verifies monotonic non-decreasing target reveals | Implemented |
+| `entrance: at t >= duration all three targets are revealed, lens opacity is 0, and done is true` | Verifies completed state and lens cleanup | Implemented |
+| `entrance: handles zero targets and one target without throwing` | Verifies edge case safety with fewer targets | Implemented |
+| `entrance: produces deterministic results for identical inputs` | Verifies purity and determinism of entrance math | Implemented |
+| `scene: clamps progress values below 0 and above 1, and handles NaN` | Verifies progress clamping and numerical resilience | Implemented |
+| `scene: evaluates correct step boundaries for 3 steps` | Verifies step slice math across progress thresholds | Implemented |
+| `scene: guarantees activeStep is monotonic with increasing progress` | Verifies monotonic step advancement | Implemented |
+| `scene: handles stepCount = 1 gracefully` | Verifies boundary safety with single step | Implemented |
+| `landing-phrases: verifies every phrase in hero entrance and scroll scene is exact substring of Example 1` | Verifies exact textual quotation grounding | Implemented |
+| `landing-phrases: verifies no step text contains forbidden verdict words` | Verifies compliance against verdict and alarm words | Implemented |
+| `landing-phrases: verifies closing line contains required non-verdict wording` | Verifies closing line presence and disclaimer integrity | Implemented |
+| `UI: Hero document entrance animation plays smoothly and finishes <= 3.2s` | Manual check that lens enters, glides, pauses, reveals, and exits cleanly | Manual |
+| `UI: Skip triggers immediately complete entrance to end state` | Manual check that pointerdown, keypress, or scroll > 10px skips instantly | Manual |
+| `UI: Replay animation ghost button resets and replays entrance` | Manual check that button replays entrance when motion is allowed | Manual |
+| `UI: Scroll scene sticky stage on desktop updates steps in order` | Manual check that stage stays pinned on desktop while steps advance smoothly | Manual |
+| `UI: Scroll scene switches to stacked cards on mobile and viewports <640px height` | Manual check that no sticky pinning occurs on mobile or short screens | Manual |
+| `UI: prefers-reduced-motion disables entrance motion, hides lens/replay, and renders stacked scene` | Manual check verifying immediate settled state when reduced motion is preferred | Manual |
+| `UI: CSS failsafe reveals highlights after 3.8s if JS is blocked` | Manual check verifying static fallback visibility | Manual |
 | `Mobile layout and responsiveness` | Tests responsive layout, tap targets, and typography down to ~360px viewport | Planned |
 
 ---
 
 ## Test Execution Summary
 
-- **Total Implemented Automated Tests (Offline)**: 258 tests across 29 test files in `tests/`.
+- **Automated Offline Unit Tests**: Complete coverage across all modules in `tests/`, covering deterministic quote validation, schema parsing, rate limits, concurrency, multimodal transcription, hero entrance timeline, scroll scene math, and vocabulary guardrails.
 - **Manual / Live Tests**: 5 sequential live test cases in `tests-live/analyze.live.test.ts` (run via `npm run test:live`), plus manual UI verification checks.
 - **Offline Test Command**: `npm run test` (fast, deterministic, zero external network dependency).
 - **Live Test Command**: `npm run test:live` (loads `.env.local`; skips cleanly if `GEMINI_API_KEY` is not present; does not fake results).

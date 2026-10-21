@@ -26,8 +26,9 @@ export function FaqSection() {
     },
     {
       q: "What should I do if I have already paid or shared documents?",
-      a: "Act immediately: contact your bank or UPI service provider to block accounts or dispute charges, report the incident at the National Cyber Crime Reporting Portal (cybercrime.gov.in) or call helpline 1930, and consult the official resources section on our tool page for immediate guidance.",
-      hasLink: true,
+      a: "Contact your bank or payment provider as soon as you can, and report the incident on the National Cyber Crime Reporting Portal (cybercrime.gov.in) or by calling 1930. Keep screenshots, messages and payment proofs, and avoid sending more money or documents until you have confirmed the offer independently. This is general guidance, not legal advice.",
+      linkHref: "/resources",
+      linkLabel: "Official resources and reporting links",
     },
   ];
 
@@ -41,7 +42,7 @@ export function FaqSection() {
           <span className="font-mono text-2xs uppercase tracking-wider text-[var(--primary-ledger)] font-semibold">
             Common Inquiries
           </span>
-          <h2 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight text-[var(--text)]">
+          <h2 className="text-2xl sm:text-3xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]">
             Frequently asked questions
           </h2>
           <p className="text-sm sm:text-base text-[var(--text-muted)] leading-relaxed">
@@ -55,21 +56,21 @@ export function FaqSection() {
               key={idx}
               className="group rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 sm:p-6 transition-colors shadow-xs"
             >
-              <summary className="flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-[var(--text)] cursor-pointer list-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded-lg py-1">
+              <summary className="flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-[var(--text)] cursor-pointer list-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded-lg py-1 min-h-[44px]">
                 <span>{faq.q}</span>
                 <span className="text-[var(--text-muted)] group-open:rotate-180 transition-transform duration-200 shrink-0 font-mono text-xs">
                   ▼
                 </span>
               </summary>
-              <div className="mt-3 pt-3 border-t border-[var(--border)] text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed space-y-2">
+              <div className="mt-3 pt-3 border-t border-[var(--border)] text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed space-y-3">
                 <p>{faq.a}</p>
-                {faq.hasLink && (
+                {faq.linkHref && (
                   <p>
                     <Link
-                      href="/check#official-resources"
-                      className="inline-flex items-center text-xs font-semibold text-[var(--primary-ledger)] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-0.5"
+                      href={faq.linkHref}
+                      className="inline-flex items-center text-xs font-semibold text-[var(--primary-ledger)] dark:text-emerald-400 underline underline-offset-2 hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 min-h-[44px]"
                     >
-                      View official resources and reporting guides →
+                      {faq.linkLabel}
                     </Link>
                   </p>
                 )}

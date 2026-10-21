@@ -37,7 +37,7 @@ export function WhatWeDoNotDoSection() {
           <span className="font-mono text-2xs uppercase tracking-wider text-[var(--text-muted)] font-semibold">
             Epistemic Limits
           </span>
-          <h2 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight text-[var(--text)]">
+          <h2 className="text-2xl sm:text-3xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]">
             What OfferCheck will not do
           </h2>
           <p className="text-sm sm:text-base text-[var(--text-muted)] leading-relaxed">

@@ -28,34 +28,34 @@ export function LandingNav() {
         </div>
 
         {/* Desktop Anchor Links */}
-        <div className="hidden md:flex items-center gap-5 text-xs font-medium text-[var(--header-nav-text)]">
+        <div className="hidden md:flex items-center gap-5 text-base font-medium text-[var(--header-nav-text)]">
           <a
             href="#how-it-works"
-            className="hover:text-[var(--header-text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] rounded py-1 px-1.5"
+            className="hover:text-[var(--header-text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] rounded py-1.5 px-2 inline-flex items-center min-h-[44px]"
           >
             How it works
           </a>
           <a
             href="#what-you-get"
-            className="hover:text-[var(--header-text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] rounded py-1 px-1.5"
+            className="hover:text-[var(--header-text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] rounded py-1.5 px-2 inline-flex items-center min-h-[44px]"
           >
             What you get
           </a>
           <a
             href="#privacy"
-            className="hover:text-[var(--header-text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] rounded py-1 px-1.5"
+            className="hover:text-[var(--header-text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] rounded py-1.5 px-2 inline-flex items-center min-h-[44px]"
           >
             Privacy
           </a>
           <a
             href="#faq"
-            className="hover:text-[var(--header-text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] rounded py-1 px-1.5"
+            className="hover:text-[var(--header-text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] rounded py-1.5 px-2 inline-flex items-center min-h-[44px]"
           >
             FAQ
           </a>
           <Link
             href="/resources"
-            className="hover:text-[var(--header-text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] rounded py-1 px-1.5"
+            className="hover:text-[var(--header-text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] rounded py-1.5 px-2 inline-flex items-center min-h-[44px]"
           >
             Resources
           </Link>
@@ -63,10 +63,10 @@ export function LandingNav() {
             href="https://github.com/nilesh0199/OfferCheck-WisprFlow-Hackathon-2026"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 hover:text-[var(--header-text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] rounded py-1 px-1.5"
+            className="inline-flex items-center gap-1.5 hover:text-[var(--header-text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] rounded py-1.5 px-2 min-h-[44px]"
             aria-label="GitHub repository (opens in a new tab)"
           >
-            <GitHubIcon className="w-3.5 h-3.5" />
+            <GitHubIcon className="w-4 h-4" />
             <span>GitHub</span>
             <ExternalLinkIcon className="w-3 h-3 opacity-60" />
           </a>
@@ -78,7 +78,7 @@ export function LandingNav() {
 
           <Link
             href="/check"
-            className="inline-flex items-center justify-center rounded-xs bg-[var(--color-primary)] text-[var(--color-primary-contrast)] px-3.5 py-1.5 text-xs font-medium shadow-2xs hover:bg-[var(--color-primary-hover)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] min-h-[36px]"
+            className="inline-flex items-center justify-center rounded-xs bg-[var(--color-primary)] text-[var(--color-primary-contrast)] px-4 py-2 text-base font-medium shadow-2xs hover:bg-[var(--color-primary-hover)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] min-h-[44px]"
           >
             Check an offer
           </Link>
@@ -86,7 +86,7 @@ export function LandingNav() {
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden inline-flex items-center justify-center p-2 rounded-xs border border-[var(--color-border-strong)]/40 text-[var(--header-nav-text)] hover:text-[var(--header-text)] hover:bg-[var(--surface-muted)]/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] min-h-[36px] min-w-[36px]"
+            className="md:hidden inline-flex items-center justify-center p-2 rounded-xs border border-[var(--color-border-strong)]/40 text-[var(--header-nav-text)] hover:text-[var(--header-text)] hover:bg-[var(--surface-muted)]/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] min-h-[44px] min-w-[44px]"
             aria-expanded={mobileMenuOpen}
             aria-label="Toggle navigation menu"
           >
@@ -120,39 +120,39 @@ export function LandingNav() {
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-[var(--border)] bg-[var(--surface)] px-4 py-4 space-y-3">
-          <div className="flex flex-col space-y-2 text-sm font-medium text-[var(--text-muted)]">
+          <div className="flex flex-col space-y-2 text-base font-medium text-[var(--text-muted)]">
             <a
               href="#how-it-works"
               onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-2 rounded-xs hover:bg-[var(--surface-muted)] hover:text-[var(--text)] transition-colors min-h-[40px] flex items-center"
+              className="px-3 py-2 rounded-xs hover:bg-[var(--surface-muted)] hover:text-[var(--text)] transition-colors min-h-[44px] flex items-center"
             >
               How it works
             </a>
             <a
               href="#what-you-get"
               onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-2 rounded-xs hover:bg-[var(--surface-muted)] hover:text-[var(--text)] transition-colors min-h-[40px] flex items-center"
+              className="px-3 py-2 rounded-xs hover:bg-[var(--surface-muted)] hover:text-[var(--text)] transition-colors min-h-[44px] flex items-center"
             >
               What you get
             </a>
             <a
               href="#privacy"
               onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-2 rounded-xs hover:bg-[var(--surface-muted)] hover:text-[var(--text)] transition-colors min-h-[40px] flex items-center"
+              className="px-3 py-2 rounded-xs hover:bg-[var(--surface-muted)] hover:text-[var(--text)] transition-colors min-h-[44px] flex items-center"
             >
               Privacy
             </a>
             <a
               href="#faq"
               onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-2 rounded-xs hover:bg-[var(--surface-muted)] hover:text-[var(--text)] transition-colors min-h-[40px] flex items-center"
+              className="px-3 py-2 rounded-xs hover:bg-[var(--surface-muted)] hover:text-[var(--text)] transition-colors min-h-[44px] flex items-center"
             >
               FAQ
             </a>
             <Link
               href="/resources"
               onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-2 rounded-xs hover:bg-[var(--surface-muted)] hover:text-[var(--text)] transition-colors min-h-[40px] flex items-center"
+              className="px-3 py-2 rounded-xs hover:bg-[var(--surface-muted)] hover:text-[var(--text)] transition-colors min-h-[44px] flex items-center"
             >
               Resources
             </Link>
@@ -160,7 +160,7 @@ export function LandingNav() {
               href="https://github.com/nilesh0199/OfferCheck-WisprFlow-Hackathon-2026"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-3 py-2 rounded-xs hover:bg-[var(--surface-muted)] hover:text-[var(--text)] transition-colors min-h-[40px] flex items-center gap-2"
+              className="px-3 py-2 rounded-xs hover:bg-[var(--surface-muted)] hover:text-[var(--text)] transition-colors min-h-[44px] flex items-center gap-2"
             >
               <GitHubIcon className="w-4 h-4" />
               <span>GitHub repository</span>

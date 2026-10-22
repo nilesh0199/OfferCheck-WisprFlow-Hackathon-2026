@@ -175,10 +175,11 @@ describe("transcribeFiles execution, fallbacks, and output processing", () => {
       expect(res.modelUsed).toBe("gemini-3.8-flash");
       expect(res.perFileReadable).toEqual([true, true]);
       expect(res.exceedsInputLimit).toBe(false);
-      expect(res.transcript).toContain("[File 1 of 2]");
-      expect(res.transcript).toContain("[File 2 of 2]");
-      expect(res.transcript).toContain("Internship Offer: Software Engineer at Acme Corp.");
-      expect(res.transcript).toContain("Terms and conditions:");
+      expect(res.files).toHaveLength(2);
+      expect(res.files[0].kind).toBe("image");
+      expect(res.files[0].transcript).toBe("Internship Offer: Software Engineer at Acme Corp.\nStipend: $2,000/mo");
+      expect(res.files[1].kind).toBe("pdf");
+      expect(res.files[1].transcript).toBe("Terms and conditions:\nStart date: June 1st.\nEnd date: August 31st.");
     }
 
     // Verify multimodal input parts structure
@@ -277,7 +278,8 @@ describe("transcribeFiles execution, fallbacks, and output processing", () => {
     expect(res.ok).toBe(true);
     if (res.ok) {
       expect(res.exceedsInputLimit).toBe(true);
-      expect(res.transcript.length).toBeGreaterThan(MAX_INPUT_CHARS);
+      expect(res.charCount).toBeGreaterThan(MAX_INPUT_CHARS);
+      expect(res.files[0].transcript.length).toBeGreaterThan(MAX_INPUT_CHARS);
       expect(res.warnings.some((w) => w.includes("exceeds the 8,000-character review limit"))).toBe(true);
     }
   });

@@ -71,12 +71,23 @@ Fonts are loaded at build time via `next/font/google` in `src/app/layout.tsx`:
 - **Editorial Headlines:** `Newsreader` (400, 600) — warm, authoritative editorial display serif reserved for landing page hero titles.
 
 ### 3.1 Typographic Metrics & Scale
-Tailwind v4's font-size scale is explicitly overridden in `src/app/globals.css`:
-- **`text-xs`**: 13px, line-height 1.5 (secondary labels, table text, metadata, count chips)
-- **`text-sm`**: 14px, line-height 1.55 (tool secondary copy, card body text, subheadings)
-- **`text-base`**: 16px, line-height 1.6 (root html/body font size, tool primary body prose)
-- **Landing Page Scale**: Lead paragraphs 19–20px (`sm:text-[19px]`), landing body 17px (`text-[17px]`), buttons 15px (`text-[15px]`).
-- **Absolute Floor**: **13px minimum anywhere in the interface.** Zero instances of sub-13px classes (`text-2xs`, `text-3xs`, `text-[10px]`, `text-[11px]`, `text-[12px]`) or inline font sizes smaller than 13px. An automated test in `tests/token-audit.test.ts` scans all source files under `src/` on every build to guarantee this floor.
+The typography system uses a responsive root clamp in `src/app/globals.css` and a strictly rem-based scale across all components:
+- **Root Font Size Clamp:**
+  ```css
+  html {
+    font-size: clamp(16px, calc(12px + 0.3125vw), 18px);
+  }
+  body {
+    font-size: 1rem;
+  }
+  ```
+- **Scale Tokens:**
+  - **`text-xs`**: `0.875rem` (14px at 16px root), line-height 1.5 (secondary labels, metadata, count chips, captions $\ge 0.875$rem)
+  - **`text-sm`**: `0.9375rem` (15px at 16px root), line-height 1.55 (table text, secondary card body)
+  - **`text-base`**: `1rem` (16px at 16px root), line-height 1.6 (buttons, top bar / nav links, primary body text)
+  - **Landing Body**: `1.0625rem` (`text-[1.0625rem]`, 17px at 16px root), line-height 1.6
+  - **Landing Lead**: `1.1875rem` – `1.25rem` (`sm:text-[1.1875rem]`), line-height 1.5
+- **Absolute Floor**: **0.875rem (14px at 16px root) minimum anywhere in the interface.** Zero instances of sub-0.875rem classes (`text-2xs`, `text-3xs`) or raw px font sizes anywhere under `src/` (with explicit exception for the root html clamp in `globals.css` and print `11pt`). An automated test in `tests/token-audit.test.ts` scans all source files under `src/` on every build to guarantee this floor.
 - **Prose Constraints**: Prose paragraphs and observation interpretations are strictly constrained to `max-w-[70ch]` for comfortable reading eye-travel.
 
 ---
@@ -113,15 +124,30 @@ $$\text{width} = \min(100\% - 2 \times \text{gutter}, 2000\text{px}) \quad \text
 
 Used consistently across all routes: landing page, `/check`, `/resources`, 404, error, and top-level headers/footers.
 
-### 4.2 Tool Page (`/check`) Layout States
+### 4.2 Tool Page (`/check`) Layout Architecture
 
-1. **Pre-Review State (Initial Visit / Before Analysis):**
-   - **7/12 Left Column:** Input card with paste textarea, optional file upload dropzone, clear button, and keyboard shortcut hint (`Press Ctrl+Enter or ⌘+Enter to analyze`).
-   - **5/12 Right Column:**
-     - *Try a sample offer:* Clickable sample cards from `src/data/examples.ts` that immediately populate the input.
-     - *What you will get:* Clean summary of the four review outputs (concerns, missing details, questions, research).
-     - *Privacy reminder:* Clear statement that pasted text remains in tab memory and is sent only to Gemini API for review.
-   - *Clean Slate:* Dashed empty placeholder boxes and pre-analysis research cards are removed.
+1. **Pre-Review Input State:**
+   - **Unified Action Bar:** A single top action bar directly atop the input card containing:
+     - Primary "Analyze offer" button (`sm:inline-flex`, min-h 44px).
+     - Secondary "Attach files" button (triggers native file chooser).
+     - Ghost "Clear" button (resets offer text and attached files).
+     - Live character counter with tabular numbers.
+     - Hover-device only keyboard shortcut hint (`Press Ctrl+Enter or ⌘+Enter to analyze`).
+     - One-line disabled reason ("Add at least 40 characters, or add text from your files, to review.") linked via `aria-describedby`.
+   - **Privacy Notice:** Compact policy notice directly under the action bar with "Details" linking to `/privacy`.
+   - **Sample Cards:** The legacy dropdown select has been completely eliminated. Samples load via `SampleCards` with "Synthetic example" badges and an inline replacement confirmation prompt when custom text exists.
+   - **Desktop ($\ge 1280$px / `xl`): Two Columns**
+     - Left column (~7/12): Input form card and optional file upload dropzone.
+     - Right column (~5/12):
+       - *Before input:* `SampleCards` + "What you will get" overview.
+       - *After input:* "Before you review" panel displaying a source summary (character and attached file counts), personal details reminder, and a collapsed "Try a sample instead" disclosure (zero redundant primary buttons).
+   - **Tablet ($640$px – $1279$px): Single Column**
+     - Full-width input form with collapsible "Try a sample instead" disclosure placed cleanly above the card (auto-expanded when empty, collapsed when input exists).
+   - **Mobile ($< 640$px): Mobile Action Pattern**
+     - Top bar displays "Attach files" and "Clear" buttons.
+     - Primary "Analyze offer" button moves to a sticky bottom action bar with `min-h-[44px]`.
+     - Container provides `pb-24 sm:pb-8` bottom padding to prevent content obstruction.
+     - Textarea has `scroll-mb-24` ensuring the text caret is never obscured while typing.
 
 2. **Post-Review State (After Analysis Completes):**
    - **Desktop ($\ge 1280$px / `xl`): Three-Zone Desk**
@@ -134,8 +160,20 @@ Used consistently across all routes: landing page, `/check`, `/resources`, 404, 
    - **Mobile Screens ($< 1024$px): Single Column**
      - Sticky horizontal nav pills for jumping between sections.
      - Expandable 'Your offer' document panel.
-     - 44px touch targets on all interactive elements.
-     - Fixed sticky bottom action bar on mobile screens $< 640$px when the textarea is populated, respecting `env(safe-area-inset-bottom)`.
+     - All interactive touch targets $\ge 44$px.
+
+### 4.3 FAQ Two-Independent-Column Grid
+- Desktop ($\ge 1024$px): Two independent flex columns using pure function `splitIntoColumns(items)` (first $\lceil n/2 \rceil$ items left, remaining items right).
+- Styled with `items-start` so expanding any accordion item does not vertically stretch or shift items in the sibling column.
+- Mobile / tablet ($< 1024$px): Single flex column preserving exact item ordering.
+- Zero CSS `columns` or multi-row grid templates that cause cross-column item height distortion.
+
+### 4.4 Dedicated Privacy Route (`/privacy`)
+- Dedicated static server component at `/privacy` styled with standard layout containers, headers, and footers matching `/resources`.
+- Seven sentence-case sections: "What is sent to other services", "What OfferCheck does not store", "What stays in your browser", "Requests and limits", "Uploads", "What OfferCheck cannot do", and "Report a problem".
+- Embeds verbatim `AI_DATA_NOTICE` and `AI_FILE_NOTICE`.
+- Includes "Last updated 22 Oct 2026" timestamp and direct issue reporting links.
+- Strictly adheres to calm, verdict-free language.
 
 ---
 

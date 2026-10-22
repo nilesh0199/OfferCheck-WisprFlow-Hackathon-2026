@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { ValidatedConcern } from "@/lib/analysis/schema";
-import { buildHighlightSegments } from "@/lib/analysis/highlights";
+import { buildHighlightSegments, HighlightSegment } from "@/lib/analysis/highlights";
+import { isSourceMarkerLine } from "@/lib/upload";
 import { ChevronDownIcon, FileTextIcon } from "./Icons";
 
 interface HighlightedTextViewerProps {
@@ -9,6 +10,40 @@ interface HighlightedTextViewerProps {
   activeConcernId?: string | null;
   isOpen?: boolean;
   onToggle?: (open: boolean) => void;
+}
+
+interface LineSegment {
+  text: string;
+  isHighlighted: boolean;
+  concernId?: string;
+  concernIds?: string[];
+}
+
+interface DocumentLine {
+  segments: LineSegment[];
+}
+
+function splitSegmentsIntoLines(segments: HighlightSegment[]): DocumentLine[] {
+  const lines: DocumentLine[] = [{ segments: [] }];
+
+  for (const seg of segments) {
+    const parts = seg.text.split("\n");
+    for (let i = 0; i < parts.length; i++) {
+      if (i > 0) {
+        lines.push({ segments: [] });
+      }
+      if (parts[i].length > 0) {
+        lines[lines.length - 1].segments.push({
+          text: parts[i],
+          isHighlighted: seg.isHighlighted,
+          concernId: seg.concernId,
+          concernIds: seg.concernIds,
+        });
+      }
+    }
+  }
+
+  return lines;
 }
 
 export function HighlightedTextViewer({
@@ -31,6 +66,10 @@ export function HighlightedTextViewer({
   const segments = useMemo(() => {
     return buildHighlightSegments(text, spans);
   }, [text, spans]);
+
+  const documentLines = useMemo(() => {
+    return splitSegmentsIntoLines(segments);
+  }, [segments]);
 
   // If there are no concerns with highlights, hide the viewer completely
   if (concerns.length === 0) {
@@ -72,35 +111,59 @@ export function HighlightedTextViewer({
           aria-label="Analyzed text with highlighted quotations"
           className="max-h-96 w-full overflow-y-auto rounded border border-[var(--border)] bg-[var(--surface-muted)] p-3.5 font-mono text-xs leading-relaxed text-[var(--text)] whitespace-pre-wrap break-words custom-scrollbar focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
         >
-          {segments.map((seg, idx) => {
-            if (!seg.isHighlighted) {
-              return <React.Fragment key={idx}>{seg.text}</React.Fragment>;
+          {documentLines.map((line, lIdx) => {
+            const lineText = line.segments.map((s) => s.text).join("");
+            const isMarker = isSourceMarkerLine(lineText.trim());
+
+            if (isMarker) {
+              return (
+                <div
+                  key={lIdx}
+                  className="py-1.5 my-1.5 border-t border-[var(--border)] text-[var(--text-muted)] font-mono text-xs font-semibold tracking-wider"
+                >
+                  {lineText.trim()}
+                </div>
+              );
             }
 
-            const isTargeted =
-              activeConcernId &&
-              (seg.concernId === activeConcernId ||
-                seg.concernIds?.includes(activeConcernId));
-
             return (
-              <mark
-                key={idx}
-                id={seg.concernId ? `highlight-concern-${seg.concernId}` : undefined}
-                className={`rounded-xs px-1 py-0.5 font-medium transition-all ${
-                  isTargeted
-                    ? "bg-[var(--accent-highlighter)] text-[var(--color-highlight-ink)] ring-2 ring-[var(--focus-ring)]"
-                    : "bg-[var(--tint-attention-bg)] text-[var(--text)] border border-[var(--tint-attention-border)]"
-                }`}
-                title={
-                  seg.concernIds && seg.concernIds.length > 1
-                    ? `Concerns: ${seg.concernIds.join(", ")}`
-                    : seg.concernId
-                    ? `Concern: ${seg.concernId}`
-                    : "Identified quote"
-                }
-              >
-                {seg.text}
-              </mark>
+              <div key={lIdx} className="min-h-[1.25rem]">
+                {line.segments.length === 0 ? (
+                  <span>&nbsp;</span>
+                ) : (
+                  line.segments.map((seg, sIdx) => {
+                    if (!seg.isHighlighted) {
+                      return <React.Fragment key={sIdx}>{seg.text}</React.Fragment>;
+                    }
+
+                    const isTargeted =
+                      activeConcernId &&
+                      (seg.concernId === activeConcernId ||
+                        seg.concernIds?.includes(activeConcernId));
+
+                    return (
+                      <mark
+                        key={sIdx}
+                        id={seg.concernId ? `highlight-concern-${seg.concernId}` : undefined}
+                        className={`rounded-xs px-1 py-0.5 font-medium transition-all ${
+                          isTargeted
+                            ? "bg-[var(--accent-highlighter)] text-[var(--color-highlight-ink)] ring-2 ring-[var(--focus-ring)]"
+                            : "bg-[var(--tint-attention-bg)] text-[var(--text)] border border-[var(--tint-attention-border)]"
+                        }`}
+                        title={
+                          seg.concernIds && seg.concernIds.length > 1
+                            ? `Concerns: ${seg.concernIds.join(", ")}`
+                            : seg.concernId
+                            ? `Concern: ${seg.concernId}`
+                            : "Identified quote"
+                        }
+                      >
+                        {seg.text}
+                      </mark>
+                    );
+                  })
+                )}
+              </div>
             );
           })}
         </div>

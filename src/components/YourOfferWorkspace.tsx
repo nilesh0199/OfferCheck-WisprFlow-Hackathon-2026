@@ -3,6 +3,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { ValidatedConcern } from "@/lib/analysis/schema";
 import { buildHighlightSegments, HighlightSegment } from "@/lib/analysis/highlights";
+import { isSourceMarkerLine } from "@/lib/upload";
 import { CheckIcon } from "./Icons";
 
 export interface YourOfferWorkspaceProps {
@@ -95,7 +96,7 @@ export function YourOfferWorkspace({
       {/* Header with Title and Status on Tinted Bar */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] -mx-4 sm:-mx-5 -mt-4 sm:-mt-5 p-3.5 sm:px-5 rounded-t bg-[var(--tint-info-bg)]">
         <div>
-          <h3 className="text-sm font-bold text-[var(--text)]">Your offer</h3>
+          <h3 className="text-sm font-bold text-[var(--text)]">Your text</h3>
           <p className="text-xs text-[var(--text-muted)] font-mono tabular-nums">
             {text.length.toLocaleString()} characters · {documentLines.length} lines
           </p>
@@ -120,80 +121,105 @@ export function YourOfferWorkspace({
       <div
         tabIndex={0}
         role="region"
-        aria-label="Analyzed offer text with line numbers and quote highlights"
+        aria-label="Analyzed text with line numbers and quote highlights"
         className="max-h-[380px] w-full overflow-y-auto rounded border border-[var(--border)] bg-[var(--surface-muted)] p-2.5 font-mono text-xs leading-relaxed text-[var(--text)] custom-scrollbar focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
       >
-        {documentLines.map((line) => (
-          <div
-            key={line.lineNumber}
-            id={`rail-doc-line-${line.lineNumber}`}
-            className="flex items-start group hover:bg-[var(--surface)]/60 rounded-xs transition-colors py-0.5"
-          >
-            <span
-              className="w-8 shrink-0 pr-2 text-right font-mono text-xs tabular-nums text-[var(--text-muted)] select-none opacity-50 group-hover:opacity-100"
-              aria-hidden="true"
-            >
-              {line.lineNumber}
-            </span>
-            <div className="flex-1 min-w-0 font-mono text-xs leading-relaxed whitespace-pre-wrap break-words">
-              {line.segments.length === 0 ? (
-                <span>&nbsp;</span>
-              ) : (
-                line.segments.map((seg, sIdx) => {
-                  if (!seg.isHighlighted) {
-                    return <React.Fragment key={sIdx}>{seg.text}</React.Fragment>;
-                  }
-                  const isTargeted =
-                    activeConcernId &&
-                    (seg.concernId === activeConcernId ||
-                      seg.concernIds?.includes(activeConcernId));
+        {documentLines.map((line) => {
+          const fullLineText = line.segments.map((s) => s.text).join("");
+          const isMarker = isSourceMarkerLine(fullLineText.trim());
 
-                  return (
-                    <mark
-                      key={sIdx}
-                      id={seg.concernId ? `rail-highlight-${seg.concernId}` : undefined}
-                      tabIndex={seg.concernId ? 0 : undefined}
-                      role={seg.concernId ? "button" : undefined}
-                      aria-label={
-                        seg.concernId
-                          ? `Jump to concern ${seg.concernId} in review findings`
-                          : undefined
-                      }
-                      onClick={() => {
-                        if (seg.concernId) {
-                          onSelectConcern?.(seg.concernId);
-                          const card = document.getElementById(`concern-card-${seg.concernId}`);
-                          if (card) {
-                            card.scrollIntoView({ behavior: "smooth", block: "nearest" });
-                            card.focus();
-                          }
+          if (isMarker) {
+            return (
+              <div
+                key={line.lineNumber}
+                id={`rail-doc-line-${line.lineNumber}`}
+                className="flex items-center group py-1.5 my-1 border-t border-[var(--border)] text-[var(--text-muted)]"
+              >
+                <span
+                  className="w-8 shrink-0 pr-2 text-right font-mono text-xs tabular-nums text-[var(--text-muted)] select-none opacity-50"
+                  aria-hidden="true"
+                >
+                  {line.lineNumber}
+                </span>
+                <div className="flex-1 min-w-0 font-mono text-xs font-semibold tracking-wider text-[var(--text-muted)]">
+                  {fullLineText.trim()}
+                </div>
+              </div>
+            );
+          }
+
+          return (
+            <div
+              key={line.lineNumber}
+              id={`rail-doc-line-${line.lineNumber}`}
+              className="flex items-start group hover:bg-[var(--surface)]/60 rounded-xs transition-colors py-0.5"
+            >
+              <span
+                className="w-8 shrink-0 pr-2 text-right font-mono text-xs tabular-nums text-[var(--text-muted)] select-none opacity-50 group-hover:opacity-100"
+                aria-hidden="true"
+              >
+                {line.lineNumber}
+              </span>
+              <div className="flex-1 min-w-0 font-mono text-xs leading-relaxed whitespace-pre-wrap break-words">
+                {line.segments.length === 0 ? (
+                  <span>&nbsp;</span>
+                ) : (
+                  line.segments.map((seg, sIdx) => {
+                    if (!seg.isHighlighted) {
+                      return <React.Fragment key={sIdx}>{seg.text}</React.Fragment>;
+                    }
+                    const isTargeted =
+                      activeConcernId &&
+                      (seg.concernId === activeConcernId ||
+                        seg.concernIds?.includes(activeConcernId));
+
+                    return (
+                      <mark
+                        key={sIdx}
+                        id={seg.concernId ? `rail-highlight-${seg.concernId}` : undefined}
+                        tabIndex={seg.concernId ? 0 : undefined}
+                        role={seg.concernId ? "button" : undefined}
+                        aria-label={
+                          seg.concernId
+                            ? `Jump to concern ${seg.concernId} in review findings`
+                            : undefined
                         }
-                      }}
-                      onKeyDown={(e) => {
-                        if ((e.key === "Enter" || e.key === " ") && seg.concernId) {
-                          e.preventDefault();
-                          onSelectConcern?.(seg.concernId);
-                          const card = document.getElementById(`concern-card-${seg.concernId}`);
-                          if (card) {
-                            card.scrollIntoView({ behavior: "smooth", block: "nearest" });
-                            card.focus();
+                        onClick={() => {
+                          if (seg.concernId) {
+                            onSelectConcern?.(seg.concernId);
+                            const card = document.getElementById(`concern-card-${seg.concernId}`);
+                            if (card) {
+                              card.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                              card.focus();
+                            }
                           }
-                        }
-                      }}
-                      className={`rounded-xs px-0.5 font-medium transition-all select-text cursor-pointer ${
-                        isTargeted
-                          ? "bg-[var(--accent-highlighter)] text-[var(--color-highlight-ink)] ring-2 ring-[var(--focus-ring)] shadow-xs font-semibold"
-                          : "bg-[var(--accent-highlighter)]/35 text-[var(--text)] hover:bg-[var(--accent-highlighter)]/65 border-b border-[var(--accent-highlighter)]"
-                      }`}
-                    >
-                      {seg.text}
-                    </mark>
-                  );
-                })
-              )}
+                        }}
+                        onKeyDown={(e) => {
+                          if ((e.key === "Enter" || e.key === " ") && seg.concernId) {
+                            e.preventDefault();
+                            onSelectConcern?.(seg.concernId);
+                            const card = document.getElementById(`concern-card-${seg.concernId}`);
+                            if (card) {
+                              card.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                              card.focus();
+                            }
+                          }
+                        }}
+                        className={`rounded-xs px-0.5 font-medium transition-all select-text cursor-pointer ${
+                          isTargeted
+                            ? "bg-[var(--accent-highlighter)] text-[var(--color-highlight-ink)] ring-2 ring-[var(--focus-ring)] shadow-xs font-semibold"
+                            : "bg-[var(--accent-highlighter)]/35 text-[var(--text)] hover:bg-[var(--accent-highlighter)]/65 border-b border-[var(--accent-highlighter)]"
+                        }`}
+                      >
+                        {seg.text}
+                      </mark>
+                    );
+                  })
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Controls */}
@@ -217,7 +243,7 @@ export function YourOfferWorkspace({
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
             </svg>
-            <span>Edit offer</span>
+            <span>Edit text</span>
           </button>
 
           <button

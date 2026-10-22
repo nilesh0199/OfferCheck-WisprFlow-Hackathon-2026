@@ -69,4 +69,10 @@ Please forward your scanned files to onboarding@example.org or message our desk 
 Regards,
 Operations Desk, LanternSpoke Venture Associates`,
   },
+  {
+    id: "example-5-phone-call-account",
+    title: "A phone call described in my own words",
+    label: "Synthetic example",
+    text: `I got a phone call today around noon from someone saying they were from KiteSpindle Business Services. The caller said my profile was shortlisted for a remote data entry job after looking at my resume on a job portal, and there is no interview needed. They said the monthly pay is Rs 22,000. But before sending any paperwork, they asked me to pay a refundable registration fee of Rs 2,000 through UPI today to confirm my joining slot. They told me that if I do not pay the fee by 6 pm today, the slot will be given to another candidate. They also asked me to send photos of my Aadhaar card and the front page of my bank passbook on WhatsApp so they could set up my employee profile. They promised that the official offer letter will be emailed to me right after the payment is verified.`,
+  },
 ];

@@ -4,45 +4,40 @@
 
 A free, no-sign-in review assistant that helps students and first-time job seekers read an internship or job offer carefully before they pay money or share documents.
 
-- **Live Demo:** [offer-check-wispr-flow-hackathon-20.vercel.app](https://offer-check-wispr-flow-hackathon-20.vercel.app) 
-- **Routes:** `/` (landing page and overview) · `/check` (review workspace) · `/resources` (official verification portals and reporting channels)
+- **Live Demo:** [offer-check-wispr-flow-hackathon-20.vercel.app](https://offer-check-wispr-flow-hackathon-20.vercel.app)
+- **Repository:** [github.com/nilesh0199/OfferCheck-WisprFlow-Hackathon-2026](https://github.com/nilesh0199/OfferCheck-WisprFlow-Hackathon-2026)
+- **Routes:** `/` (landing page and overview) · `/check` (review workspace) · `/resources` (official verification portals and reporting channels) · `/privacy` (privacy notice and data handling practices)
 
 ---
 
-## Why It Exists
+## The Problem
 
-When you are starting out, an offer can feel like a rare chance, and you may not yet know what normal hiring looks like. Scam messages are built around that moment: a registration or training fee, a refundable deposit, a request for identity or bank documents, and a tight deadline. Official advisories in India state that genuine internship and job services do not charge applicants (see the AICTE National Internship Portal and National Career Service entries in [docs/resources-verification.md](docs/resources-verification.md)). OfferCheck gives a calm second look: it points to the exact lines worth questioning, lists what the message does not say, and drafts questions to ask before you pay or share anything.
+When you are starting out, an offer can feel like a rare chance, and normal hiring practices may be unfamiliar. Scam messages are built around that moment: an upfront registration or training fee, a "refundable" security deposit, an urgent request for identity or bank documents, and a tight deadline to create pressure.
 
-### Guiding Principles
-
-- **Evidence over verdicts:** The tool never issues binary verdicts ("safe", "verified", "legitimate", "scam", or "fraud"). It points out specific lines and missing terms so the applicant can make an informed judgment.
-- **Strict quote validation:** Every concern is linked to an exact verbatim quote from the submitted text. Deterministic application code checks the quote against the source text before anything is displayed; unverified or altered quotes are dropped.
-- **Separation of observations and gaps:** Concerns explicitly present in the text are kept distinct from missing employment terms.
-- **No scores or ratings:** No numeric risk scores, percentages, or alarm badges.
-- **Epistemic modesty:** "No concerns identified" never means an offer is safe. The tool plainly states what it cannot know.
+Official advisories in India state that genuine internship and job services do not charge applicants (see the AICTE National Internship Portal and National Career Service advisories documented in [docs/resources-verification.md](docs/resources-verification.md)). OfferCheck gives candidates a calm second look: it points out the exact lines worth questioning, lists what the communication does not say, and drafts questions to ask before paying money or sharing personal credentials.
 
 ---
 
-## What It Does and Does Not Do
+## Who It Is For and How a Review Works
 
-### What It Does
+OfferCheck is built for students and first-time job seekers receiving internship or entry-level job solicitations via email, messaging apps, job boards, or phone calls.
 
-- Evaluates offer text (up to 8,000 characters) pasted directly, extracted from uploaded files, or combined from both.
-- Transcribes up to 5 uploaded screenshots or PDF documents (up to 4 MB total) via Gemini's multimodal Interactions API, appending the extracted text below existing notes for candidate review, editing, and one-click undo before analysis.
-- Highlights potential concerns linked strictly to verbatim quotations found in the text.
-- Checks for foundational employment terms that standard offers usually include (stipend/salary, roles, schedule, location, official contact).
-- Formulates actionable, professionally worded verification questions for the student or job seeker to ask the sender.
-- Suggests prioritized self-check steps (e.g., checking official company domains before sending documents).
-- Provides static, verified links and helplines for official Indian reporting and verification resources.
-- Prepares a structured search prompt that students and job seekers can copy to Perplexity to research company presence independently.
+A review works in four steps:
 
-### What It Does NOT Do
+1. **Input text or files:** Paste offer text, attach up to 5 screenshots or PDFs (max 4 MB total), or describe a call or conversation in your own words. File text is transcribed and added below existing text with generic source labels, fully editable before analysis with one-click undo.
+2. **Read quote-linked observations:** Every potential concern is tied to an exact verbatim quote validated by deterministic application code against the text.
+3. **Review missing details:** Check a separate list of foundational employment terms that standard offers usually include (stipend or salary, responsibilities, working hours, workplace location, and official contact).
+4. **Take independent next steps:** Copy professionally phrased verification questions to ask the prospective employer, review contextual self-checks, consult verified official reporting channels, or prepare an independent company research prompt.
 
-- **Not a scam detector:** It does not label an offer as "real", "fake", "safe", or "scam".
-- **Cannot verify identity or authority:** It cannot verify whether an email sender legitimately represents the claimed employer or whether an organisation is incorporated.
-- **Not legal advice:** All findings, missing-item checklists, and questions are informational prompts for student and job seeker self-advocacy.
-- **Not immune to error:** Language models can miss nuanced issues or misinterpret ambiguous context.
-- **English only:** Analysis and prompts are currently built and tested only for English-language text.
+---
+
+## What Makes It Different
+
+- **Deterministic quote validation:** Every potential concern cites an exact verbatim quote that code verifies against the candidate's text before rendering. If the model hallucinates, alters, or truncates a quote, the concern is discarded by code and counted in `droppedCount`. The model is never trusted for evidence.
+- **Separation of observations and gaps:** What the message explicitly says is kept strictly separate from foundational employment terms that are absent.
+- **No scores or verdicts:** The tool never issues numeric risk scores, percentages, or binary verdict badges ("safe", "verified", "legit", "scam", or "fraud").
+- **Stated limits:** Every review includes immutable limits explaining what the tool cannot know (it cannot verify sender identity, corporate incorporation, or off-document oral promises).
+- **External research handoff:** Rather than claiming to verify company legitimacy in-app, the tool prepares a structured search prompt that candidates can copy to Perplexity to research company presence independently.
 
 ---
 
@@ -50,153 +45,185 @@ When you are starting out, an offer can feel like a rare chance, and you may not
 
 | Feature | Status | Notes |
 | :--- | :--- | :--- |
-| **Combined text and file input** | Implemented | Users can paste text, attach up to 5 screenshots/PDFs (max 4 MB total), or both. File transcripts are appended below existing text with one-level undo and candidate review before analysis. |
-| **Quote-linked observations** | Implemented | Every potential concern cites an exact verbatim quote checked by code against the user's text; invalid quotes are dropped and counted in `droppedCount`. |
-| **Missing details checklist** | Implemented | Foundational contractual terms (compensation, roles, working hours, workplace location) are displayed in a compact 2-column table (`Topic | Note`), kept separate from concerns. |
+| **Text review** | Implemented | Evaluates pasted text up to 8,000 characters. |
+| **File input** | Implemented | Up to 5 screenshots (PNG, JPEG, WebP) or PDFs (max 4 MB total); transcribed via Gemini multimodal API, added below existing text with generic source labels (`---- Text from Screenshot N ----`, `---- Text from PDF N ----`), editable before analysis with 1-level undo. |
+| **Call or conversation descriptions** | Implemented | Candidates can type or dictate an account of a call or conversation in their own words; reviewed with a dedicated review limit acknowledging candidate descriptions. |
+| **Observations with line numbers and highlights** | Implemented | Sticky left rail document viewer with line numbers and quote highlights; bi-directional linking between observation cards and text lines. |
+| **Missing details table** | Implemented | Foundational contractual terms (compensation, roles, working hours, workplace location) displayed in a compact 2-column table (`Topic \| Note`), kept separate from concerns. |
 | **Verification questions** | Implemented | Suggested questions drafted to clarify ambiguous terms, with one-click clipboard copying. |
 | **"Check these yourself" steps** | Implemented | Contextually prioritised verification steps based on identified concerns (payment, sensitive data, off-platform messaging). |
-| **Official resources** | Implemented | Direct links and helpline numbers for AICTE, NCS (1514), MCA Company Search, and the National Cyber Crime Reporting Portal (1930). Zero runtime network calls. |
-| **Company research nudge & handoff** | Implemented | Evaluates offer cues (unnamed employer, free email without a website, or internship without a supervisor) to recommend independent research. Prepares an external Perplexity prompt with an always-visible key-value summary, depth switcher, and required company field. Raw offer text is strictly excluded. |
-| **Theme & semantic token system** | Implemented | Ink Blue dual-theme palette with navy header bar (`#10263f` light, `#0a111a` dark), swappable via a single token block in `globals.css` (alternative Petrol and Cobalt palettes documented in `docs/design-brief.md`). Contrast ratios verified to meet or exceed WCAG 2.1 AA/AAA standards (text $\ge 4.5:1$, borders/focus $\ge 3:1$). Anti-FOUC inline script and accessible `ThemeToggle`. |
-| **Three-zone workspace layout** | Implemented | Fluid full-width container `min(100% - 2*gutter, 2000px)`. Pre-review 7/12 input + 5/12 sample offers & guidance. Post-review 3-zone desk on desktop ($\ge 1280$px): sticky left rail document viewer with line numbers and quote highlights, centre fluid results with prose $\le 70$ch, sticky right rail section nav and quick actions ('Copy summary', 'Print / PDF'). |
-| **Bi-directional evidence linking** | Implemented | Hovering or focusing an observation card in the findings column highlights the quote in the left rail document and scrolls to its line. Clicking a highlighted phrase in the document rail scrolls to and focuses the corresponding observation card. |
-| **Typography architecture** | Implemented | Build-time Google Fonts: `IBM Plex Sans` for readable UI and body prose, `IBM Plex Mono` strictly for document text, quotes, line numbers, and codes, and `Newsreader` for landing headlines. 16px root text, 14px secondary, 13px minimum anywhere in the interface (enforced by automated test suite), tabular numbers. |
-| **Landing page and routes** | Implemented | Asymmetric landing page at `/` with an interactive annotated paper card, non-blocking hero entrance animation with opt-in playback for reduced-motion visitors, and a scroll-driven line-by-line inspection scene; tool workspace at `/check`; in-memory session persistence across routes via `SessionProvider`. |
-| **Safeguards** | Implemented | Sliding-window rate limiting (8/15m, 30/24h) with salted SHA-256 IP hashing, model circuit breaker, in-memory concurrency guard (max 4), input hygiene (blocking NUL/control characters), and security headers. |
-| **Job-offer specifics** | Partially implemented | The review prompt treats salary, probation period, joining date and contract terms as missing details when unstated, and display labels say "Stipend or salary" and "Duration or contract term". There are no job-offer sample texts and no job-offer evaluation yet; clauses such as service bonds or training-fee agreements are not specifically handled. |
-| **Screenshot and PDF input** | Implemented | Multimodal transcription via Gemini Interactions API for up to 5 screenshots (PNG, JPEG, WebP) or PDFs (max 4 MB total); browser-side canvas downscaling; extracted text is appended below notes for candidate review and editing before analysis. |
-| **Print stylesheet & PDF export** | Implemented | Clean print stylesheet isolating the analysis report, hiding UI chrome and input forms, with an 'Export review (PDF)' button. |
-
----
-
-## How It Works
-
-OfferCheck processes text through a deterministic, validation-first pipeline:
-
-1. **User input:** The candidate pastes communication text, attaches up to 5 screenshots or PDFs, or combines both on `/check` (capped at 8,000 characters). Text from files is appended below any existing text with one-click undo.
-2. **Server boundary (`/api/analyze`):** The request passes input hygiene checks (blocking NUL characters and unprintable control characters), in-memory concurrency checks, and salted sliding-window rate limits.
-3. **Structured generation:** The prompt is sent to Google's Gemini API Interactions endpoint using a model fallback chain (`gemini-3.8-flash` &rarr; `gemini-3.6-flash` &rarr; `gemini-3.5-flash-lite`) at minimal thinking levels with a shared deadline.
-4. **Schema validation:** The raw JSON output is validated against strict Zod schemas (`ModelAnalysisSchema`).
-5. **Deterministic quote validation & guardrails:** Application code independently searches the original input text for every quoted concern. If the model hallucinated, truncated, or altered a quote, the concern is dropped and recorded in `droppedCount`. Overclaiming guardrails block forbidden verdict words. The model is never trusted for evidence.
-6. **Results presentation:** The client renders verbatim highlights mapped onto the text, missing term checklists, copyable questions, contextual self-checks, and official resource references.
-
-```text
-+-----------------------+
-|  User pastes offer    |  (Max 8,000 characters)
-+-----------+-----------+
-            |
-            v
-+-----------------------+
-|  POST /api/analyze    |  Input hygiene (rejects NUL/control characters)
-+-----------+-----------+  In-memory rate limit & concurrency guard
-            |
-            v
-+-----------------------+
-|  Gemini Fallback      |  Interactions API (gemini-3.8-flash -> 3.6 -> 3.5)
-|  Model Chain          |  Lowest thinking level, JSON mode, strict schema
-+-----------+-----------+
-            |
-            v
-+-----------------------+
-|  Schema Validation    |  Zod validation parses raw JSON output
-+-----------+-----------+
-            |
-            v
-+-----------------------+
-|  Deterministic Quote  |  Code searches original text for exact verbatim quotes;
-|  Validator            |  drops fabricated/mutated quotes (increments droppedCount)
-+-----------+-----------+
-            |
-            v
-+-----------------------+
-|  Overclaiming & Tone  |  Blocks verdict words ("safe", "scam"), ensures
-|  Guardrails           |  epistemic modesty ("No concerns" != safe)
-+-----------+-----------+
-            |
-            v
-+-----------------------+
-|  Client UI Rendering  |  Quotation highlights, missing info checklist,
-|  (/check)             |  questions, self-checks, official resources, research handoff
-+-----------------------+
-```
-
----
-
-## Privacy and Responsible Use
-
-- **Where the text goes:** When a review is requested, the text is transmitted over HTTPS to Google's Gemini API. OfferCheck uses the free tier of the Gemini API. Under Google's published terms for its free tier, submitted content may be reviewed by human reviewers and used by Google to train and improve its products. A pre-paste advisory in the application reminds users to redact personal names, addresses, phone numbers, bank details, and identification numbers.
-- **What is NOT stored:** OfferCheck has no user accounts, no database, no session cookies, and no third-party tracking scripts or analytics. Offer text and results are held entirely in volatile browser tab memory (`SessionProvider`) and are permanently cleared when the tab is closed or refreshed. The only item saved in browser storage is your theme preference (`"offercheck-theme"`: `"light"`, `"dark"`, or `"system"`).
-- **Zero text in server logs:** Server logs record only operational metadata (status code, attempt count, model ID, elapsed milliseconds). Raw offer text, prompt content, and model responses are never written to logs.
-- **Hashed client keys for rate limiting:** Rate limits use an anonymized key derived from the client IP hashed with SHA-256 and a random 16-byte server salt generated at startup. Raw IP addresses are never retained in memory, logged, or returned.
-
-For complete details, see [docs/privacy-and-responsible-use.md](docs/privacy-and-responsible-use.md).
+| **Official resources and resources page** | Implemented | Static `/resources` page with verified links and helpline numbers for AICTE, NCS (1514), MCA Company Search, and the National Cyber Crime Reporting Portal (1930). Zero runtime network calls. |
+| **Company research prompt for Perplexity** | Implemented | Prepares a structured search prompt with confirmed company details, depth switcher, and direct link to Perplexity. No in-app search API or web scraping. |
+| **Light, dark, and system theme** | Implemented | Ink Blue dual-theme palette with navy header bar, WCAG 2.1 AA/AAA contrast, anti-FOUC script, and accessible segmented `ThemeToggle`. |
+| **Landing page** | Implemented | Asymmetric landing page at `/` with interactive annotated paper card, non-blocking hero entrance animation with opt-in reduced-motion playback, and scroll-driven inspection scene. |
+| **Privacy page** | Implemented | Dedicated static `/privacy` route detailing data flows, storage practices, and free-tier AI disclosures. |
+| **Safeguards** | Implemented | In-memory sliding-window rate limiting (8/15m, 30/24h for analysis; 6/15m, 20/24h for uploads) with salted SHA-256 IP hashing, model circuit breaker, in-memory concurrency guard (max 4), input hygiene (blocking NUL/control characters), and security headers. |
+| **Job-offer coverage** | Partially implemented | The review prompt treats salary, probation period, joining date and contract terms as missing details when unstated, and display labels say "Stipend or salary" and "Duration or contract term". There are no job-offer sample texts and no job-offer evaluation yet; clauses such as service bonds or training-fee agreements are not specifically handled. |
 
 ---
 
 <details>
-<summary><strong>Tech Stack &amp; Project Structure</strong></summary>
+<summary><strong>How It Works (Technical Architecture)</strong></summary>
 
-### Tech Stack
+### Technical Flow
 
-- **Framework:** [Next.js 16.4.2](https://nextjs.org/) (App Router, Turbopack)
-- **Runtime & Language:** [Node.js](https://nodejs.org/) v20+ with [TypeScript 5](https://www.typescriptlang.org/)
-- **UI & Styling:** [React 19](https://react.dev/), [Tailwind CSS v4](https://tailwindcss.com/), self-hosted Google Fonts (`Instrument Serif`, `Instrument Sans`, `IBM Plex Mono` via `next/font/google`)
-- **Validation:** [Zod 4.6.7](https://zod.dev/)
-- **AI SDK:** [`@google/genai` 2.30.0](https://github.com/google-gemini/deprecations) (Interactions API with model fallback chain)
-- **Testing:** [Vitest 5.0.5](https://vitest.dev/)
-- **Deployment:** [Vercel](https://vercel.com/)
+```mermaid
+flowchart TD
+    User["User pastes text, attaches screenshots/PDFs, or dictates account"] --> Input{"Input type"}
+    Input -->|"Screenshots / PDFs"| Transcribe["POST /api/transcribe (multimodal Gemini)"]
+    Transcribe --> Editor["Editor: editable text with generic source labels"]
+    Input -->|"Pasted text / Dictated account"| Editor
+    Editor -->|"Candidate confirms and reviews"| Analyze["POST /api/analyze (input hygiene, rate limit, concurrency)"]
+    Analyze --> Fallback["Gemini Model Fallback Chain (3.8-flash -> 3.6-flash -> 3.5-flash-lite)"]
+    Fallback --> Schema["Zod Schema Validation (ModelAnalysisSchema)"]
+    Schema --> Validate["Quotation Validation & Epistemic Guardrails (pure code)"]
+    Validate -->|"Drops invalid/hallucinated quotes"| DroppedCount["droppedCount tracked"]
+    Validate --> Results["Structured Results: Quotes highlighted in left rail, observations, missing terms, verification questions"]
+    Results -.->|"Optional company research"| Perplexity["External Perplexity prompt builder (copy and open)"]
+```
 
-### Top-Level Folders
+### Core Architectural Decisions
 
-- `docs/`: Design system, specs, build plan, test plan, evaluation set, dev log, and privacy policies.
-- `public/`: Static web assets and icons.
-- `src/`: Next.js application source code (App Router routes, UI components, static data, analysis & research libraries).
-- `tests/`: Automated offline Vitest test suites covering schemas, validators, safeguards, extractors, upload helpers, reducer undo/append, reduced-motion entrance state, print styles, and UI components.
-- `tests-live/`: Live evaluation suite against the Gemini API using synthetic fixtures and injection tests.
+1. **The model is never trusted for evidence:** LLMs generate plausible observations, but every quoted substring is deterministically verified against the input text by pure application code. Hallucinated, truncated, or modified quotes are purged before rendering.
+2. **Session state lives in volatile browser RAM:** Active text, uploaded files, and review results are managed via React Context (`SessionProvider`) and a pure reducer in memory. State survives navigation between `/`, `/check`, `/resources`, and `/privacy` without writing to `localStorage`, `sessionStorage`, or cookies. Refreshing or closing the tab immediately clears the data.
+3. **Zero database persistence:** There are no user accounts, no saved offer histories, no cookies, and no tracking databases. Uploaded files exist in server memory only during the active transcription request and are never written to disk or object storage.
 
 </details>
 
 ---
 
 <details>
-<summary><strong>Getting Started &amp; Local Development</strong></summary>
+<summary><strong>Privacy and Responsible Use</strong></summary>
+
+### What Is Sent to External Services
+
+When candidates submit text or upload files for review, they are transmitted over HTTPS to Google's Gemini API on the free tier. Above the input area and in the privacy policy, OfferCheck presents the verbatim notice:
+
+> "The text you submit is sent to Google's Gemini API for analysis. OfferCheck uses Google's free tier, where Google states that submitted content may be used to improve its products. Do not submit anything you would not want processed this way."
+
+For file uploads, anything visible in an uploaded screenshot or PDF is processed by Gemini's multimodal API solely to transcribe text. Original file names are never sent to Google, never logged, and never included in transcripts; appended text blocks use generic labels (`---- Text from Screenshot N ----`, `---- Text from PDF N ----`).
+
+### What Is Not Stored
+
+- **No databases or user accounts:** No sign-in, authentication tokens, or profile storage.
+- **No disk storage:** Offer text, file uploads, and transcripts are never saved to server disk or cloud object storage.
+- **No third-party analytics:** No tracking pixels, marketing scripts, or external telemetry libraries are loaded.
+- **Clean server logs:** Server logs record only operational metadata (status codes, durations, byte counts). Server logs never contain offer text, file names, transcripts, or personal credentials.
+
+### What Stays in Your Browser
+
+- Offer text, attached files, and review findings exist only in the active browser tab's volatile memory.
+- The user's theme selection (light, dark, or system preference) is the sole item stored in browser storage (`localStorage` key `"offercheck-theme"`).
+
+### Rate Limiting Privacy
+
+Rate limiting operates via an in-memory sliding window using salted SHA-256 IP hashes. The IP address is combined with a random 16-byte salt generated when the server boots. Raw IP addresses are never logged or persisted.
+
+For complete policy details, see [docs/privacy-and-responsible-use.md](docs/privacy-and-responsible-use.md) and the live `/privacy` route.
+
+</details>
+
+---
+
+## Limitations
+
+- **Free-tier API quotas:** OfferCheck operates on Google's Gemini API free tier. Saturated upstream rate limits return clean HTTP 429 responses with retry advisories.
+- **Serverless in-memory scope:** Rate limits, concurrency controls, and circuit breakers operate in-memory on the active serverless instance; state is not shared across multi-instance serverless deployments.
+- **Model errors and OCR mistakes:** Language models can misinterpret atypical arrangements or generate invalid quotes (which code drops). Transcription of low-resolution screenshots may contain OCR errors.
+- **Candidate-described verbal accounts:** When evaluating user-typed or dictated descriptions of calls or verbal conversations, the review reflects the candidate's description, not an original document or recording.
+- **English only:** System instructions, schemas, and synthetic examples are designed exclusively for English-language communications.
+- **Cannot verify identity or authority:** The tool analyzes text content only. It cannot verify whether an email address is spoofed or whether a sender actually works for the organisation they claim to represent.
+- **Not legal advice:** All findings, missing-item checklists, and questions are informational prompts for self-advocacy and due diligence, not legal counsel.
+
+---
+
+<details>
+<summary><strong>Tech Stack and Project Structure</strong></summary>
+
+### Technologies Used
+
+- **Framework:** Next.js 16 (App Router, Turbopack)
+- **Language:** TypeScript 5
+- **UI & Styling:** React 19, Tailwind CSS v4, custom semantic CSS tokens
+- **AI SDK:** `@google/genai` (Interactions API with model fallback chain)
+- **Validation:** Zod 4
+- **Typography:** `next/font/google` (`IBM Plex Sans`, `IBM Plex Mono`, `Newsreader`)
+- **Testing:** Vitest
+- **Hosting:** Vercel
+
+### Project Structure
+
+```text
+OfferCheck/
+├── docs/             # Specifications, design briefs, test plans, verified resources, and development logs
+├── public/           # Static public assets (SVGs, web manifest)
+├── src/
+│   ├── app/          # Next.js App Router pages (/, /check, /resources, /privacy) and API route handlers
+│   ├── components/   # React components (input form, workspaces, viewers, landing page, uploaders)
+│   ├── data/         # Static verified resources, contextual self-checks, and synthetic examples
+│   └── lib/          # Analysis pipeline, Gemini wrapper, quote validator, rate limiting, and upload helpers
+├── tests/            # Automated offline unit and integration tests (Vitest)
+└── tests-live/       # Live Gemini API evaluation tests (requires GEMINI_API_KEY)
+```
+
+</details>
+
+---
+
+<details>
+<summary><strong>Getting Started</strong></summary>
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) v20 or later (verified on Node v24.12.0)
-- [npm](https://www.npmjs.com/) v10 or later (verified on npm v11.6.2)
-- (Optional for live analysis) A Google Gemini API key from [Google AI Studio](https://aistudio.google.com/)
+- Node.js 20 or higher
+- npm
 
 ### Installation
 
-1. **Clone the repository and install dependencies:**
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/nilesh0199/OfferCheck-WisprFlow-Hackathon-2026.git
+   cd OfferCheck-WisprFlow-Hackathon-2026
+   ```
+
+2. Install dependencies:
    ```bash
    npm install
    ```
 
-2. **Configure environment variables:**
+3. Configure environment variables:
+   Copy `.env.example` to `.env.local` and add your Google Gemini API key:
    ```bash
    cp .env.example .env.local
    ```
-   Configure `.env.local` as needed:
-   - `GEMINI_API_KEY`: API key for Google Gemini (required for live analyses via `/api/analyze`; offline tests run without a key).
-   - `GEMINI_MODELS`: Comma-separated model fallback order (default: `gemini-3.8-flash,gemini-3.6-flash,gemini-3.5-flash-lite`).
-   - `GEMINI_THINKING_LEVEL`: Optional thinking level override (default: lowest documented level per model: `"low"` for 3.8, `"minimal"` for 3.6/3.5).
-   - `RATE_LIMIT_PER_WINDOW`: Maximum analyses per 15-minute sliding window per client (default: `8`).
-   - `RATE_LIMIT_PER_DAY`: Maximum analyses per 24-hour day per client (default: `30`).
-   - `NEXT_PUBLIC_SITE_URL`: Optional public site URL for OpenGraph metadata resolution.
 
-3. **Run the local development server:**
-   ```bash
-   npm run dev
-   ```
-   Open [http://localhost:3000](http://localhost:3000) in your browser.
+### Environment Variables
 
-4. **Build and start production:**
-   ```bash
-   npm run build
-   npm run start
-   ```
+| Variable | Description |
+| :--- | :--- |
+| `GEMINI_API_KEY` | Required server-side Google Gemini API key from Google AI Studio. |
+| `GEMINI_MODELS` | Optional comma-separated model fallback chain (default: `gemini-3.8-flash,gemini-3.6-flash,gemini-3.5-flash-lite`, max 3). |
+| `GEMINI_MODEL` | Optional legacy single-model override (used only if `GEMINI_MODELS` is unset). |
+| `GEMINI_THINKING_LEVEL` | Optional thinking level override (`low`, `minimal`, `medium`, `high`). |
+| `RATE_LIMIT_PER_WINDOW` | Optional maximum analyses per 15-minute window (default: 8). |
+| `RATE_LIMIT_PER_DAY` | Optional maximum analyses per 24-hour day (default: 30). |
+| `TRANSCRIBE_LIMIT_PER_WINDOW` | Optional maximum transcriptions per 15-minute window (default: 6). |
+| `TRANSCRIBE_LIMIT_PER_DAY` | Optional maximum transcriptions per 24-hour day (default: 20). |
+| `NEXT_PUBLIC_SITE_URL` | Optional public site URL for OpenGraph metadata resolution. |
+
+### Development Scripts
+
+- `npm run dev`: Start local development server at `http://localhost:3000`.
+- `npm run build`: Build production application with Turbopack.
+- `npm start`: Start local production server after build.
+- `npm test`: Run complete offline Vitest test suite.
+- `npm run test:live`: Run live Gemini API evaluation suite (requires `GEMINI_API_KEY`).
+- `npm run lint`: Run ESLint checks.
+- `npm run typecheck`: Run TypeScript compiler type checking (`tsc --noEmit`).
+
+### Deployment
+
+OfferCheck is configured for zero-configuration deployment on Vercel. Set `GEMINI_API_KEY` in the Vercel project environment variables. No external database or persistent storage setup is required.
 
 </details>
 
@@ -205,31 +232,35 @@ For complete details, see [docs/privacy-and-responsible-use.md](docs/privacy-and
 <details>
 <summary><strong>Testing and Evaluation</strong></summary>
 
-### Running Offline Unit Tests
+### Offline Test Suite
 
 The test suite runs completely offline with zero network calls and mock client injection:
 ```bash
-npm run test
+npm test
 ```
-The test suite validates all critical pipeline modules with zero external network calls:
 
-What the tests cover:
-- Deterministic quote validator (Unicode grapheme handling, exact substring search, nested quote containment, and duplicate deduplication).
-- Overclaiming guardrails and tone compliance.
+As of 22 Oct 2026, the offline test suite passes **379 tests across 40 test files**.
+
+The offline test suite validates:
+- Deterministic quote validation (Unicode grapheme handling, exact substring search, nested quote containment, and duplicate deduplication).
+- Epistemic overclaiming guardrails and tone compliance.
 - Zod schema validation and model output parsing.
-- Model fallback chain, shared 55s deadline, and 20s per-attempt timeout.
+- Model fallback chain, shared 55s deadline, and 20s per-attempt timeout cap.
 - Sliding-window rate limiter, memory caps, and eviction logic.
-- Model circuit breaker with tiered cooldowns and fail-open behavior.
+- Model circuit breaker with tiered cooldowns and fail-open resilience.
 - In-memory concurrency guard with guaranteed decrement.
 - Input hygiene (blocking NUL characters and unprintable control characters).
-- Contact extractor and public free webmail detection.
-- Research prompt builder, word limits, and raw offer text exclusion.
+- Binary file upload inspection, magic bytes, and canvas downscaling constraints.
+- Generic source marker formatting and line numbering.
+- Company research prompt builder and raw offer text exclusion.
 - Contextual prioritization for self-checks and official resources.
-- Safe logging audit verifying zero offer text or API key leakage.
+- Dual-theme token architecture and WCAG 2.1 AA/AAA contrast ratios.
+- Typographic rem scale enforcement and 0.875rem floor.
+- Safe logging audit verifying zero offer text or API key leakage in server logs.
 
-### Running Live Tests
+### Live API Tests
 
-To test the live pipeline against Google Gemini's API using the four synthetic examples and one prompt-injection fixture:
+To test the pipeline against Google Gemini's API using the synthetic examples, combined inputs, and prompt-injection fixtures:
 ```bash
 npm run test:live
 ```
@@ -237,41 +268,23 @@ npm run test:live
 
 ### Benchmark Evaluation Set
 
-The evaluation dataset consists of four synthetic examples and one adversarial prompt-injection fixture. The benchmark cases, target behaviors, and matrix are documented in [docs/evaluation-set.md](docs/evaluation-set.md). The live-result columns in that matrix are filled in by the author during live model evaluation runs.
+The evaluation dataset consists of five synthetic examples and one adversarial prompt-injection fixture. The benchmark cases, target behaviors, and verification matrices are documented in [docs/evaluation-set.md](docs/evaluation-set.md). The live-result column in that matrix is populated by the evaluator during live model test runs.
 
 </details>
 
 ---
 
-## Limitations
-
-- **Free-tier API quotas:** The Gemini free tier has strict rate limits (requests per minute and requests per day). Saturated quotas return clean 429 status codes with retry advisories.
-- **Serverless in-memory scope:** Rate limits, concurrency guards, and circuit breakers operate in-memory on the active server instance; in a multi-instance serverless environment, state is not shared across instances.
-- **Model errors:** AI models can misinterpret atypical arrangements or generate invalid quotes. OfferCheck mitigates quote hallucinations by discarding unverified quotes before rendering.
-- **English only:** Analysis prompts, rules, and synthetic examples are designed exclusively for English-language communications.
-- **No identity or company verification:** The tool analyses text content only. It cannot verify whether an email address is spoofed or whether a sender actually works for the organisation they claim to represent.
-
----
-
 ## Built with Wispr Flow
 
-OfferCheck was developed for the hackathon using Wispr Flow to dictate engineering prompts, feature change requests, and architectural decisions. These dictated entries, observations, resulting code changes, and verification test counts are documented chronologically in [docs/dev-log.md](docs/dev-log.md).
+OfferCheck was developed for the hackathon using Antigravity as the coding agent and Wispr Flow for dictated engineering prompts, feature change requests, and architectural decisions. These dictated entries, observations, resulting code changes, and verification records are documented chronologically in [docs/dev-log.md](docs/dev-log.md).
+
+The OfferCheck web application contains **no direct Wispr Flow integration** or in-app voice recognition features. Candidates and evaluators can type or dictate into the text area using any dictation tool or voice input software of their choice.
 
 ---
 
-## Roadmap
+## Official Resources and Acknowledgements
 
-Planned future enhancements (not yet implemented in the codebase):
-
-- **Continuous evaluation benchmarks:** Expanding test fixtures with real-world anonymized recruitment patterns and tracking model accuracy across updates.
-- **Multilingual guidance:** Translating official resource guidance and verification questions into regional Indian languages.
-- **Direct PDF highlight overlay:** Viewing findings overlaid directly on multi-page PDF documents alongside the extracted text editor.
-
----
-
-## Acknowledgements and Official Resources
-
-OfferCheck references official Indian government resources and statutory guidance to help applicants verify communications independently:
+OfferCheck references official Indian statutory portals and reporting helplines:
 
 - [National Cyber Crime Reporting Portal](https://cybercrime.gov.in) (`cybercrime.gov.in`) — 24/7 National Cyber Financial Fraud Helpline: **1930**
 - [AICTE National Internship Portal](https://internship.aicte-india.org) (`internship.aicte-india.org`) — Free student internship services and reporting (`internship@aicte-india.org`)
@@ -282,4 +295,15 @@ OfferCheck references official Indian government resources and statutory guidanc
 
 ---
 
-*Built for **No Hands: The Wispr Challenge** (WeMakeDevs x Wispr Flow), solo entry, Builders track.*
+## Roadmap
+
+Planned future enhancements (not yet implemented in the codebase):
+
+- **Job-offer evaluation benchmarks:** Adding dedicated job-offer sample communications and expanding evaluation criteria for full-time employment terms.
+- **Contractual clause handling:** Specific detection and guidance for employment-specific clauses such as training-fee agreements and service bonds.
+- **In-browser image redaction:** Client-side blur and crop tools directly inside the browser upload zone before transmission.
+- **Multilingual guidance:** Translating official resource guidance and verification questions into regional Indian languages.
+
+---
+
+*Built solo for **No Hands: The Wispr Challenge** (WeMakeDevs x Wispr Flow), Builders track.*

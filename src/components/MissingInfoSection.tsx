@@ -36,9 +36,9 @@ export function MissingInfoSection({ missingInfo }: MissingInfoSectionProps) {
         </div>
       ) : (
         <div className="overflow-x-auto rounded border border-[var(--border)] bg-[var(--surface)] shadow-2xs">
-          <table className="w-full text-left text-xs border-collapse">
+          <table className="w-full text-left text-sm border-collapse">
             <thead>
-              <tr className="border-b border-[var(--border)] bg-[var(--tint-info-bg)] text-[var(--text)] font-sans text-xs">
+              <tr className="border-b border-[var(--border)] bg-[var(--tint-info-bg)] text-[var(--text)] font-sans text-sm">
                 <th className="py-2.5 px-3 sm:px-4 w-1/3 sm:w-1/4 font-semibold">
                   Topic
                 </th>

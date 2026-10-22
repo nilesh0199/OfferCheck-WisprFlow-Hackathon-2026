@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useEffect } from "react";
+import Link from "next/link";
 import {
   MAX_INPUT_CHARS,
   MIN_INPUT_CHARS,
@@ -8,8 +9,8 @@ import {
   AI_FILE_NOTICE,
 } from "@/lib/config";
 import { FEATURES } from "@/lib/features";
-import { SamplePicker } from "./SamplePicker";
-import { LockIcon, SpinnerIcon } from "./Icons";
+import { SYNTHETIC_EXAMPLES } from "@/data/examples";
+import { SpinnerIcon } from "./Icons";
 import { FileUploadDropzone } from "./upload/FileUploadDropzone";
 import { SelectedFileList } from "./upload/SelectedFileList";
 import { useOfferSession } from "./SessionProvider";
@@ -89,7 +90,8 @@ export function OfferInputForm({
 
   const getDisabledReason = (): string | null => {
     if (isLoading) return null;
-    if (isEmpty) return "Paste offer text to analyze.";
+    if (isTranscribing) return "Adding text from files...";
+    if (isEmpty) return "Add at least 40 characters, or add text from your files, to review.";
     if (isTooShort)
       return `Offer text is too short (minimum ${MIN_INPUT_CHARS} characters; currently ${trimmed.length}).`;
     if (isTooLong)
@@ -99,37 +101,150 @@ export function OfferInputForm({
 
   const disabledReason = getDisabledReason();
 
-  const handleAnalyzeSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!isAnalyzeDisabled) {
-      onAnalyze();
+  const handleAttachFilesClick = () => {
+    const fileInput = document.getElementById("offer-file-input") as HTMLInputElement | null;
+    if (fileInput) {
+      fileInput.click();
     }
   };
 
+  const matchingExample = SYNTHETIC_EXAMPLES.find(
+    (ex) => ex.text.trim() === offerText.trim()
+  );
+
   return (
     <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 shadow-xs space-y-4">
-      {/* Header and Sample Picker */}
-      <div className="space-y-3 pb-3 border-b border-[var(--border)]">
-        <div>
+      {/* 1. Title Row: Heading, optional synthetic badge, and live character counter */}
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[var(--border)]">
+        <div className="flex flex-wrap items-center gap-2.5">
           <h2
             id="offer-text-heading"
             className="text-base font-semibold text-[var(--text)]"
           >
-            Offer input
+            Your text
           </h2>
-          <p className="text-xs text-[var(--text-muted)] mt-0.5">
-            Paste text, attach files, or both.
-          </p>
+          {matchingExample && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--surface-muted)] px-2.5 py-0.5 text-xs font-medium text-[var(--text-muted)] border border-[var(--border)]">
+              <span
+                className="h-1.5 w-1.5 rounded-full bg-[var(--text-muted)] opacity-60"
+                aria-hidden="true"
+              />
+              Synthetic example, not a real offer
+            </span>
+          )}
         </div>
 
-        <SamplePicker
-          currentText={offerText}
-          onSelectSample={(sampleText) => setOfferText(sampleText)}
-          disabled={isLoading || isTranscribing}
-        />
+        <span
+          id="char-counter"
+          aria-live="polite"
+          className={`font-mono text-xs tabular-nums text-[var(--text-muted)] ${
+            isTooLong ? "font-bold text-[var(--color-tint-attention-accent)]" : ""
+          }`}
+        >
+          {charCount.toLocaleString()} / {MAX_INPUT_CHARS.toLocaleString()} characters
+        </span>
       </div>
 
-      <form onSubmit={handleAnalyzeSubmit} className="space-y-4">
+      {/* 2. Top Action Bar: Primary Analyze, Secondary Attach Files, Ghost Clear */}
+      <div className="space-y-2">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Primary Analyze button (hidden on < 640px where sticky bottom bar takes over) */}
+          {!isLoading ? (
+            <button
+              type="button"
+              onClick={onAnalyze}
+              disabled={isAnalyzeDisabled}
+              aria-describedby={disabledReason ? "analyze-disabled-reason" : undefined}
+              className="hidden sm:inline-flex items-center justify-center rounded-lg bg-[var(--color-primary)] text-[var(--color-primary-contrast)] px-5 py-2.5 text-base font-semibold shadow-xs hover:bg-[var(--color-primary-hover)] active:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed transition-colors min-h-[44px]"
+            >
+              Analyze offer
+            </button>
+          ) : (
+            <div className="hidden sm:inline-flex items-center gap-2.5">
+              <button
+                type="button"
+                disabled
+                className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-primary)] text-[var(--color-primary-contrast)] px-5 py-2.5 text-base font-semibold cursor-wait min-h-[44px]"
+              >
+                <SpinnerIcon className="w-4 h-4 animate-spin text-[var(--color-primary-contrast)]" />
+                <span>Analyzing...</span>
+              </button>
+              <button
+                type="button"
+                onClick={onCancel}
+                className="inline-flex items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-base font-medium text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px]"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+
+          {/* Secondary Attach files button */}
+          {FEATURES.documentUpload && (
+            <button
+              type="button"
+              onClick={handleAttachFilesClick}
+              disabled={isTranscribing || isLoading}
+              className="inline-flex items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-base font-medium text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:opacity-40 min-h-[44px] transition-colors"
+            >
+              Attach files
+            </button>
+          )}
+
+          {/* Ghost Clear button */}
+          <button
+            type="button"
+            onClick={onClear}
+            disabled={isEmpty && selectedFiles.length === 0}
+            className="inline-flex items-center justify-center rounded-lg border border-transparent px-3 py-2.5 text-base font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:opacity-30 min-h-[44px] transition-colors"
+          >
+            Clear
+          </button>
+
+          {/* One-line disabled reason beside Analyze button */}
+          {disabledReason && (
+            <span
+              id="analyze-disabled-reason"
+              className="hidden sm:inline text-xs text-[var(--text-muted)] leading-tight max-w-xs"
+            >
+              {disabledReason}
+            </span>
+          )}
+
+          {/* Ctrl/Cmd+Enter hint: only on devices with hover pointer */}
+          {!isLoading && (
+            <span className="hidden [@media(hover:hover)_and_(pointer:fine)]:inline text-xs text-[var(--text-muted)] font-mono ml-auto">
+              Press <kbd className="px-1.5 py-0.5 rounded bg-[var(--surface-muted)] border border-[var(--border)] font-semibold text-[var(--text)]">Ctrl+Enter</kbd> (or <kbd className="px-1.5 py-0.5 rounded bg-[var(--surface-muted)] border border-[var(--border)] font-semibold text-[var(--text)]">⌘+Enter</kbd>) to analyze
+            </span>
+          )}
+
+          {isLoading && (
+            <div
+              aria-live="polite"
+              className="text-xs text-[var(--text-muted)] font-mono ml-auto"
+            >
+              Elapsed: {elapsedSeconds}s
+            </div>
+          )}
+        </div>
+
+        {/* 3. Compact Data Notice directly under action bar, staying adjacent */}
+        <div className="pt-1.5 pb-2 text-xs text-[var(--text-muted)] leading-normal flex flex-wrap items-baseline gap-1">
+          <span>
+            {selectedFiles.length > 0
+              ? `${AI_DATA_NOTICE} ${AI_FILE_NOTICE}`
+              : AI_DATA_NOTICE}
+          </span>
+          <Link
+            href="/privacy"
+            className="font-semibold text-[var(--color-primary)] underline underline-offset-2 hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded"
+          >
+            Details
+          </Link>
+        </div>
+      </div>
+
+      <div className="space-y-4">
         {/* Post-transcription Success Banner with Undo */}
         {transcribeStatus === "success" && !transcriptBannerDismissed && (
           <div
@@ -186,7 +301,7 @@ export function OfferInputForm({
         {/* Textarea Area */}
         <div className="space-y-2 text-left">
           <label htmlFor="offer-text" className="sr-only">
-            Paste the internship or job offer
+            Paste or describe the offer or conversation
           </label>
           <textarea
             ref={textareaRef}
@@ -202,10 +317,10 @@ export function OfferInputForm({
               }
             }}
             readOnly={isLoading}
-            aria-describedby="char-count-meta privacy-callout"
+            aria-describedby="char-count-meta"
             aria-invalid={isTooLong || isTooShort}
-            placeholder="Paste the email, message or offer letter here (remove names, phone numbers, bank details and ID numbers first)"
-            className={`w-full h-64 sm:h-72 min-h-[14rem] max-h-[22rem] resize-y rounded-lg border p-3.5 text-xs sm:text-sm font-mono leading-relaxed transition-colors custom-scrollbar overflow-y-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] bg-[var(--surface-muted)] text-[var(--text)] ${
+            placeholder="Paste an offer, message or contract, or describe a conversation in your own words"
+            className={`w-full h-64 sm:h-72 min-h-[14rem] max-h-[22rem] resize-y rounded-lg border p-3.5 text-xs sm:text-sm font-mono leading-relaxed transition-colors custom-scrollbar overflow-y-auto scroll-mb-24 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] bg-[var(--surface-muted)] text-[var(--text)] ${
               isLoading
                 ? "opacity-60 cursor-not-allowed border-[var(--border)]"
                 : isTooLong
@@ -213,31 +328,12 @@ export function OfferInputForm({
                 : "border-[var(--border)] focus:border-[var(--text)]"
             }`}
           />
-
-          {/* Counter and Guidance Row */}
-          <div
-            id="char-count-meta"
-            className="flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--text-muted)]"
-          >
-            <span>
-              {disabledReason ? (
-                <span>{disabledReason}</span>
-              ) : (
-                <span>Ready for review.</span>
-              )}
-            </span>
-            <span
-              aria-live="polite"
-              className={`font-mono tabular-nums ${
-                isTooLong ? "font-bold text-[var(--color-tint-attention-accent)]" : ""
-              }`}
-            >
-              {charCount.toLocaleString()} / {MAX_INPUT_CHARS.toLocaleString()} characters
-            </span>
-          </div>
+          <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+            No document? Describe what happened in your own words. You can type or dictate it. Include who contacted you, how (call, WhatsApp, email), what they asked for, and any deadlines. Leave out names, phone numbers and ID numbers.
+          </p>
         </div>
 
-        {/* Attach Files (Optional) Area */}
+        {/* Dropzone & File List (Stay below the textarea) */}
         {FEATURES.documentUpload && (
           <div className="pt-4 border-t border-[var(--border)] space-y-3 text-left">
             <div className="space-y-0.5">
@@ -275,11 +371,6 @@ export function OfferInputForm({
               </div>
             )}
 
-            {/* AI File Privacy Notice directly above button */}
-            <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] p-3 text-xs text-[var(--text-muted)] leading-relaxed">
-              <p>{AI_FILE_NOTICE}</p>
-            </div>
-
             {/* Action Row for Transcribe */}
             <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
               <div className="flex items-center gap-2.5">
@@ -289,7 +380,7 @@ export function OfferInputForm({
                       type="button"
                       onClick={handleTranscribe}
                       disabled={selectedFiles.length === 0 || isLoading}
-                      className="inline-flex items-center justify-center rounded-lg bg-[var(--accent)] text-[var(--accent-contrast)] px-4 py-2 text-xs sm:text-sm font-medium shadow-xs hover:opacity-90 active:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:opacity-40 disabled:cursor-not-allowed transition-opacity min-h-[44px]"
+                      className="inline-flex items-center justify-center rounded-lg bg-[var(--color-primary)] text-[var(--color-primary-contrast)] px-4 py-2 text-xs sm:text-sm font-medium shadow-xs hover:bg-[var(--color-primary-hover)] active:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors min-h-[44px]"
                     >
                       Add text from files
                     </button>
@@ -308,9 +399,9 @@ export function OfferInputForm({
                     <button
                       type="button"
                       disabled
-                      className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] text-[var(--accent-contrast)] px-4 py-2 text-xs sm:text-sm font-medium cursor-wait min-h-[44px]"
+                      className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-primary)] text-[var(--color-primary-contrast)] px-4 py-2 text-xs sm:text-sm font-medium cursor-wait min-h-[44px]"
                     >
-                      <SpinnerIcon className="w-4 h-4 animate-spin text-[var(--accent-contrast)]" />
+                      <SpinnerIcon className="w-4 h-4 animate-spin text-[var(--color-primary-contrast)]" />
                       <span>Adding text from files...</span>
                     </button>
                     <button
@@ -350,68 +441,8 @@ export function OfferInputForm({
           </div>
         )}
 
-        {/* Main Analyze Action Row */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[var(--border)]">
-          <div className="flex items-center gap-2.5">
-            {!isLoading ? (
-              <>
-                <button
-                  type="submit"
-                  disabled={isAnalyzeDisabled}
-                  className="inline-flex items-center justify-center rounded-lg bg-[var(--accent)] text-[var(--accent-contrast)] px-5 py-2.5 text-xs sm:text-sm font-semibold shadow-xs hover:opacity-90 active:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity min-h-[44px]"
-                >
-                  Analyze offer
-                </button>
-                <button
-                  type="button"
-                  onClick={onClear}
-                  disabled={isEmpty && !offerText}
-                  className="inline-flex items-center justify-center rounded-lg border border-transparent px-3.5 py-2.5 text-xs sm:text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:opacity-30 min-h-[44px]"
-                >
-                  Clear
-                </button>
-              </>
-            ) : (
-              <div className="flex items-center gap-2.5">
-                <button
-                  type="button"
-                  disabled
-                  className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] text-[var(--accent-contrast)] px-5 py-2.5 text-xs sm:text-sm font-semibold cursor-wait min-h-[44px]"
-                >
-                  <SpinnerIcon className="w-4 h-4 animate-spin text-[var(--accent-contrast)]" />
-                  <span>Analyzing...</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={onCancel}
-                  className="inline-flex items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-xs sm:text-sm font-medium text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px]"
-                >
-                  Cancel
-                </button>
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2">
-            {!isLoading && (
-              <span className="hidden sm:inline text-xs text-[var(--text-muted)] font-mono">
-                Press <kbd className="px-1.5 py-0.5 rounded bg-[var(--surface-muted)] border border-[var(--border)] font-semibold text-[var(--text)]">Ctrl+Enter</kbd> (or <kbd className="px-1.5 py-0.5 rounded bg-[var(--surface-muted)] border border-[var(--border)] font-semibold text-[var(--text)]">⌘+Enter</kbd>) to analyze
-              </span>
-            )}
-
-            {isLoading && (
-              <div
-                aria-live="polite"
-                className="text-xs text-[var(--text-muted)] font-mono"
-              >
-                Elapsed: {elapsedSeconds}s
-              </div>
-            )}
-          </div>
-        </div>
-
         {/* Mobile Sticky Action Bar (< 640px) */}
-        {!isEmpty && !isLoading && (
+        {!isLoading && (
           <div
             className="sm:hidden fixed bottom-0 left-0 right-0 z-30 border-t border-[var(--border)] bg-[var(--surface)]/95 backdrop-blur-md p-3 shadow-lg flex items-center justify-between gap-3"
             style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
@@ -420,39 +451,17 @@ export function OfferInputForm({
               {charCount.toLocaleString()} chars
             </span>
             <button
-              type="submit"
+              type="button"
+              onClick={onAnalyze}
               disabled={isAnalyzeDisabled}
-              className="inline-flex items-center justify-center rounded-lg bg-[var(--accent)] text-[var(--accent-contrast)] px-5 py-2.5 text-xs font-semibold shadow-xs hover:opacity-90 active:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:opacity-40 min-h-[44px] flex-1 max-w-[200px]"
+              className="inline-flex items-center justify-center rounded-lg bg-[var(--color-primary)] text-[var(--color-primary-contrast)] px-5 py-2.5 text-base font-semibold shadow-xs hover:bg-[var(--color-primary-hover)] active:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:opacity-40 min-h-[44px] flex-1 max-w-[200px]"
             >
               Analyze offer
             </button>
           </div>
         )}
-
-        {/* Privacy Callout */}
-        <div
-          id="privacy-callout"
-          className="rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] p-3.5 text-xs text-[var(--text-muted)] space-y-2 text-left"
-        >
-          <div className="flex items-start gap-2.5 text-[var(--text)]">
-            <LockIcon className="w-4 h-4 shrink-0 mt-0.5 opacity-80" />
-            <div className="space-y-1.5 leading-relaxed">
-              <p className="font-semibold text-xs">
-                Privacy and data handling
-              </p>
-              <p>
-                Remove names, phone numbers, addresses, bank details, ID numbers, passwords, and one-time passwords (OTPs) before pasting or attaching files.
-              </p>
-              <p className="text-xs opacity-90 border-t border-[var(--border)] pt-1.5">
-                {AI_DATA_NOTICE}
-              </p>
-              <p className="text-xs opacity-80">
-                OfferCheck reviews pasted text only. It cannot confirm that a sender is genuine.
-              </p>
-            </div>
-          </div>
-        </div>
-      </form>
+      </div>
     </div>
   );
 }
+

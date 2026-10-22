@@ -68,7 +68,7 @@ export default async function Image() {
             </div>
             <span
               style={{
-                fontSize: "32px",
+                fontSize: 32,
                 fontWeight: 700,
                 letterSpacing: "-0.02em",
                 color: "#14202E",
@@ -84,7 +84,7 @@ export default async function Image() {
               borderRadius: "9999px",
               backgroundColor: "#EAF0F7",
               border: "1px solid #CFD8E3",
-              fontSize: "16px",
+              fontSize: 16,
               fontWeight: 600,
               color: "#4B5B6D",
             }}
@@ -104,7 +104,7 @@ export default async function Image() {
         >
           <div
             style={{
-              fontSize: "64px",
+              fontSize: 64,
               fontWeight: 800,
               lineHeight: 1.1,
               letterSpacing: "-0.03em",
@@ -115,7 +115,7 @@ export default async function Image() {
           </div>
           <div
             style={{
-              fontSize: "26px",
+              fontSize: 26,
               lineHeight: 1.4,
               color: "#4B5B6D",
             }}
@@ -141,7 +141,7 @@ export default async function Image() {
                 display: "flex",
                 alignItems: "center",
                 gap: "8px",
-                fontSize: "18px",
+                fontSize: 18,
                 fontWeight: 600,
                 color: "#1D5FA8",
               }}
@@ -154,7 +154,7 @@ export default async function Image() {
                 display: "flex",
                 alignItems: "center",
                 gap: "8px",
-                fontSize: "18px",
+                fontSize: 18,
                 fontWeight: 600,
                 color: "#1D5FA8",
               }}
@@ -167,7 +167,7 @@ export default async function Image() {
                 display: "flex",
                 alignItems: "center",
                 gap: "8px",
-                fontSize: "18px",
+                fontSize: 18,
                 fontWeight: 600,
                 color: "#1D5FA8",
               }}
@@ -179,7 +179,7 @@ export default async function Image() {
 
           <div
             style={{
-              fontSize: "16px",
+              fontSize: 16,
               color: "#4B5B6D",
               fontWeight: 500,
             }}

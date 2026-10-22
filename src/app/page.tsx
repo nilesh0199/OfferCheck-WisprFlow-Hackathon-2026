@@ -40,7 +40,7 @@ export default function LandingPage() {
                 {TAGLINE}
               </h1>
 
-              <p className="text-[17px] sm:text-[19px] text-[var(--text-muted)] max-w-xl leading-relaxed">
+              <p className="text-[1.0625rem] sm:text-[1.1875rem] text-[var(--text-muted)] max-w-xl leading-relaxed">
                 Paste an internship or job offer and get quote-linked observations and
                 questions to verify before you pay or share documents.
               </p>
@@ -49,13 +49,13 @@ export default function LandingPage() {
               <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
                 <Link
                   href="/check"
-                  className="inline-flex items-center justify-center rounded-xl bg-[var(--color-primary)] text-[var(--color-primary-contrast)] px-6 py-3 text-[15px] font-medium shadow-xs hover:bg-[var(--color-primary-hover)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px]"
+                  className="inline-flex items-center justify-center rounded-xl bg-[var(--color-primary)] text-[var(--color-primary-contrast)] px-6 py-3 text-base font-medium shadow-xs hover:bg-[var(--color-primary-hover)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px]"
                 >
                   Check an offer
                 </Link>
                 <a
                   href="#how-it-works"
-                  className="inline-flex items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] px-5 py-3 text-[15px] font-medium shadow-xs hover:bg-[var(--surface-muted)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px]"
+                  className="inline-flex items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] px-5 py-3 text-base font-medium shadow-xs hover:bg-[var(--surface-muted)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px]"
                 >
                   See how it works
                 </a>

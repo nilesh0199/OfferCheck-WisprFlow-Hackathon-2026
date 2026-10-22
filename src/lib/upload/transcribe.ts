@@ -16,7 +16,7 @@ import {
 } from "@/lib/analysis/gemini";
 import { ModelCircuitBreaker, defaultTranscribeCircuitBreaker } from "@/lib/analysis/model-health";
 import { validateUploadSet } from "./validate-set";
-import { joinTranscripts, sanitizeTranscript, FileTranscriptItem } from "./format-transcript";
+import { sanitizeTranscript } from "./format-transcript";
 
 /**
  * Pure helper function to append a new transcript to existing textarea text.
@@ -95,9 +95,15 @@ export type TranscribeErrorCode =
   | "UNSUPPORTED_TYPE"
   | "EMPTY_FILE";
 
+export interface TranscribedFileItem {
+  kind: "image" | "pdf";
+  transcript: string;
+  readable: boolean;
+}
+
 export interface TranscribeFilesSuccess {
   ok: true;
-  transcript: string;
+  files: TranscribedFileItem[];
   warnings: string[];
   perFileReadable: boolean[];
   exceedsInputLimit: boolean;
@@ -253,22 +259,24 @@ export async function transcribeFiles(
     return chainResult;
   }
 
-  // 4. Map per-file responses and reconstruct order
+  // 4. Map per-file responses and reconstruct request order
   const modelFiles = chainResult.data.files ?? [];
-  const items: FileTranscriptItem[] = files.map((_, idx) => {
+  let totalChars = 0;
+
+  const items: TranscribedFileItem[] = files.map((file, idx) => {
     const fileOutput = modelFiles.find((f) => f.file_index === idx);
-    const transcript = (fileOutput?.transcript ?? "").trim();
+    const rawTranscript = (fileOutput?.transcript ?? "").trim();
+    const transcript = sanitizeTranscript(rawTranscript);
     const readable =
       fileOutput !== undefined ? fileOutput.readable && transcript.length > 0 : false;
+    const kind = file.type === "application/pdf" ? ("pdf" as const) : ("image" as const);
+    totalChars += transcript.length;
     return {
-      index: idx,
-      transcript,
+      kind,
+      transcript: readable ? transcript : "",
       readable,
     };
   });
-
-  const joined = joinTranscripts(items);
-  const sanitized = sanitizeTranscript(joined);
 
   // 5. Build warnings
   const warnings: string[] = [];
@@ -288,20 +296,20 @@ export async function transcribeFiles(
     );
   }
 
-  const exceedsInputLimit = sanitized.length > MAX_INPUT_CHARS;
+  const exceedsInputLimit = totalChars > MAX_INPUT_CHARS;
   if (exceedsInputLimit) {
     warnings.push(
-      `The transcribed text (${sanitized.length.toLocaleString()} characters) exceeds the ${MAX_INPUT_CHARS.toLocaleString()}-character review limit. You can edit or trim it before analyzing.`
+      `The transcribed text (${totalChars.toLocaleString()} characters) exceeds the ${MAX_INPUT_CHARS.toLocaleString()}-character review limit. You can edit or trim it before analyzing.`
     );
   }
 
   return {
     ok: true,
-    transcript: sanitized,
+    files: items,
     warnings,
     perFileReadable: items.map((it) => it.readable),
     exceedsInputLimit,
-    charCount: sanitized.length,
+    charCount: totalChars,
     modelUsed: chainResult.modelUsed,
     attempts: chainResult.attempts,
   };

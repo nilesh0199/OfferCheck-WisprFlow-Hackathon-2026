@@ -430,7 +430,7 @@ export function HeroInteractiveDocument() {
         </div>
 
         {/* Document Content with Interactive Annotated Segments */}
-        <div className="font-mono text-xs sm:text-[13px] leading-relaxed text-[var(--text)] whitespace-pre-wrap select-text">
+        <div className="font-mono text-xs leading-relaxed text-[var(--text)] whitespace-pre-wrap select-text">
           {segments.map((seg, idx) => {
             if (!seg.annotation) {
               return <span key={idx}>{seg.text}</span>;

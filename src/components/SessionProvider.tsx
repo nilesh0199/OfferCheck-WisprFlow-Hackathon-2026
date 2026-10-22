@@ -23,13 +23,13 @@ import {
 } from "@/lib/analysis/api-response";
 import { ValidatedAnalysis } from "@/lib/analysis/schema";
 import { MIN_INPUT_CHARS } from "@/lib/config";
-import { compressFileForUpload } from "@/lib/upload";
+import { compressFileForUpload, TranscribedItem } from "@/lib/upload";
 
 const CLIENT_TIMEOUT_MS = 65000; // 65-second client-side timeout cap
 
 interface TranscribeApiResponse {
   ok?: boolean;
-  transcript?: string;
+  files?: { kind: "image" | "pdf"; transcript: string; readable: boolean }[];
   warnings?: string[];
   error?: { code?: string; message?: string };
 }
@@ -241,10 +241,15 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (response.ok && data?.ok) {
+        const items: TranscribedItem[] = (data.files || []).map((f) => ({
+          kind: f.kind === "pdf" ? ("PDF" as const) : ("Screenshot" as const),
+          transcript: f.transcript || "",
+          readable: Boolean(f.readable),
+        }));
         dispatch({
           type: "TRANSCRIBE_SUCCESS",
           payload: {
-            transcript: data.transcript ?? "",
+            items,
             warnings: data.warnings ?? [],
             fileCount: compressedFiles.length,
           },

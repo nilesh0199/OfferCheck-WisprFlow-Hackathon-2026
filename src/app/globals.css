@@ -3,11 +3,11 @@
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
 @theme {
-  --text-xs: 13px;
+  --text-xs: 0.875rem;
   --text-xs--line-height: 1.5;
-  --text-sm: 14px;
+  --text-sm: 0.9375rem;
   --text-sm--line-height: 1.55;
-  --text-base: 16px;
+  --text-base: 1rem;
   --text-base--line-height: 1.6;
 }
 
@@ -194,7 +194,7 @@ html {
   background-color: var(--color-canvas);
   color: var(--color-text);
   scroll-behavior: smooth;
-  font-size: 16px;
+  font-size: clamp(16px, calc(12px + 0.3125vw), 18px);
   overflow-x: clip;
 }
 
@@ -202,7 +202,7 @@ body {
   background-color: var(--color-canvas);
   color: var(--color-text);
   font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
-  font-size: 16px;
+  font-size: 1rem;
   line-height: 1.6;
   letter-spacing: 0;
   margin: 0;

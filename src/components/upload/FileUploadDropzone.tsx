@@ -179,6 +179,7 @@ export function FileUploadDropzone({
       >
         <input
           ref={fileInputRef}
+          id="offer-file-input"
           type="file"
           multiple
           accept="image/png,image/jpeg,image/webp,application/pdf"

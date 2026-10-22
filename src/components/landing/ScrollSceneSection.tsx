@@ -179,15 +179,15 @@ export function ScrollSceneSection() {
               <h2 className="text-2xl sm:text-3xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]">
                 A second look, line by line
               </h2>
-              <p className="text-[17px] text-[var(--text-muted)] leading-relaxed max-w-3xl">
+              <p className="text-[1.0625rem] text-[var(--text-muted)] leading-relaxed max-w-3xl">
                 OfferCheck reviews the specific phrasing in an offer to isolate patterns that warrant independent confirmation.
               </p>
             </div>
 
             {/* Two-Column Interactive Stage */}
-            <div className="grid grid-cols-12 gap-8 items-center">
-              {/* Left Column: Synthetic Letter with Moving Magnifying Lens */}
-              <div className="col-span-12 lg:col-span-6 relative">
+            <div className="grid grid-cols-12 gap-8 items-center w-full">
+              {/* Left Column: Synthetic Letter with Moving Magnifying Lens (~5/12) */}
+              <div className="col-span-12 lg:col-span-5 relative">
                 <div
                   ref={letterRef}
                   className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-xs relative overflow-hidden max-h-[460px] overflow-y-auto"
@@ -217,8 +217,8 @@ export function ScrollSceneSection() {
                 </div>
               </div>
 
-              {/* Right Column: Step Cards & Progress Indicators */}
-              <div className="col-span-12 lg:col-span-6 space-y-4">
+              {/* Right Column: Step Cards & Progress Indicators (~7/12) */}
+              <div className="col-span-12 lg:col-span-7 space-y-4">
                 <ol className="space-y-3.5 list-none p-0 m-0">
                   {SCENE_STEPS.map((step, idx) => {
                     const isActive = activeStep === idx;
@@ -291,46 +291,48 @@ export function ScrollSceneSection() {
            ======================================================== */
         <div className="py-16 sm:py-24">
           <Container className="space-y-10">
-            <div className="space-y-3">
+            <div className="space-y-3 text-left">
               <h2 className="text-2xl sm:text-3xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]">
                 A second look, line by line
               </h2>
-              <p className="text-[17px] text-[var(--text-muted)] leading-relaxed max-w-3xl">
+              <p className="text-[1.0625rem] text-[var(--text-muted)] leading-relaxed max-w-3xl">
                 OfferCheck reviews specific phrasing in an offer to isolate patterns that warrant independent confirmation.
               </p>
             </div>
 
-            {/* Stacked Cards in Normal Document Flow */}
-            <ol className="space-y-6 list-none p-0 m-0 w-full max-w-4xl">
+            {/* Responsive grid: 1 column below 768px, 3 equal columns from 768px/1024px upwards spanning full container */}
+            <ol className="grid grid-cols-1 md:grid-cols-3 gap-6 list-none p-0 m-0 w-full items-stretch">
               {SCENE_STEPS.map((step) => (
                 <li
                   key={step.id}
-                  className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 sm:p-6 shadow-xs space-y-3"
+                  className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 sm:p-6 shadow-xs flex flex-col justify-between space-y-4 h-full text-left"
                 >
-                  <div className="flex items-center justify-between gap-2 pb-2 border-b border-[var(--border)]">
-                    <div className="flex items-center gap-2.5">
-                      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[var(--accent-highlighter)] text-[var(--color-highlight-ink)] font-mono text-xs font-bold">
-                        {step.stepNumber}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between gap-2 pb-2 border-b border-[var(--border)]">
+                      <div className="flex items-center gap-2.5">
+                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[var(--accent-highlighter)] text-[var(--color-highlight-ink)] font-mono text-xs font-bold shrink-0">
+                          {step.stepNumber}
+                        </span>
+                        <h3 className="font-sans font-bold text-sm sm:text-base text-[var(--text)]">
+                          {step.title}
+                        </h3>
+                      </div>
+                      <span className="font-sans text-xs text-[var(--text-muted)] font-medium shrink-0">
+                        {step.label}
                       </span>
-                      <h3 className="font-sans font-bold text-sm sm:text-base text-[var(--text)]">
-                        {step.title}
-                      </h3>
                     </div>
-                    <span className="font-sans text-xs text-[var(--text-muted)] font-medium">
-                      {step.label}
-                    </span>
+
+                    <div className="p-3 rounded-lg bg-[var(--surface-muted)]/60 border border-[var(--border)]/60 font-mono text-xs leading-relaxed text-[var(--text)] break-words">
+                      <span className="text-[var(--text-muted)] text-xs block mb-1">
+                        Target phrase from synthetic Example 1:
+                      </span>
+                      <span className="bg-[var(--accent-highlighter)] text-[var(--color-highlight-ink)] px-1 py-0.5 rounded font-semibold inline">
+                        &quot;{step.phrase}&quot;
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="p-3 rounded-lg bg-[var(--surface-muted)]/60 border border-[var(--border)]/60 font-mono text-xs leading-relaxed text-[var(--text)]">
-                    <span className="text-[var(--text-muted)] text-xs block mb-1">
-                      Target phrase from synthetic Example 1:
-                    </span>
-                    <span className="bg-[var(--accent-highlighter)] text-[var(--color-highlight-ink)] px-1 py-0.5 rounded font-semibold inline">
-                      &quot;{step.phrase}&quot;
-                    </span>
-                  </div>
-
-                  <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed font-sans">
+                  <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed font-sans mt-auto">
                     {step.note}
                   </p>
                 </li>
@@ -338,7 +340,7 @@ export function ScrollSceneSection() {
             </ol>
 
             {/* Closing Line */}
-            <p className="text-xs sm:text-sm text-[var(--text-muted)] pt-4 border-t border-[var(--border)] max-w-3xl leading-relaxed">
+            <p className="text-xs sm:text-sm text-[var(--text-muted)] pt-4 border-t border-[var(--border)] w-full leading-relaxed text-left">
               {SCENE_CLOSING_LINE}
             </p>
           </Container>

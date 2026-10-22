@@ -4,7 +4,6 @@ import {
   detectedTypeToMime,
   validateUploadSet,
   planImageCompression,
-  joinTranscripts,
   sanitizeTranscript,
 } from "@/lib/upload";
 import { MAX_UPLOAD_TOTAL_BYTES } from "@/lib/config";
@@ -179,31 +178,7 @@ describe("Upload Helpers - planImageCompression", () => {
   });
 });
 
-describe("Upload Helpers - joinTranscripts and sanitizeTranscript", () => {
-  it("returns empty string for empty item list", () => {
-    expect(joinTranscripts([])).toBe("");
-  });
-
-  it("returns raw trimmed transcript for a single file without file index header", () => {
-    const items = [
-      { index: 0, transcript: "Dear Candidate, congratulations on your offer.", readable: true },
-    ];
-    expect(joinTranscripts(items)).toBe(
-      "Dear Candidate, congratulations on your offer."
-    );
-  });
-
-  it("inserts [File N of M] headers for multiple files in index order", () => {
-    const items = [
-      { index: 1, transcript: "Second page details.", readable: true },
-      { index: 0, transcript: "First page header.", readable: true },
-    ];
-    const joined = joinTranscripts(items);
-    expect(joined).toBe(
-      "[File 1 of 2]\nFirst page header.\n\n[File 2 of 2]\nSecond page details."
-    );
-  });
-
+describe("Upload Helpers - sanitizeTranscript", () => {
   it("sanitizeTranscript strips NUL and control characters while preserving formatting", () => {
     const dirty = "Hello\0 World!\x01\x02\nLine 2\tTabbed\r\nLine 3\x7f";
     const clean = sanitizeTranscript(dirty);

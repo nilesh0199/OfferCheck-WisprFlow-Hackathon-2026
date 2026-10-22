@@ -41,6 +41,8 @@ OfferCheck strictly limits its core MVP scope to keep complexity low, eliminate 
 ### Document Input Feature (Phase 8 & 9c - Implemented)
 - Users may paste text, attach up to 5 files (screenshots: PNG, JPEG, WebP; and/or PDF documents up to 4 MB total), or both.
 - **Combined Input:** A single unified card replaces separate tabs. Text extracted from uploaded files is appended below any existing text in the editor, allowing candidates to combine pasted email headers or notes with attached offer PDFs/screenshots.
+- **Generic Source Labels:** Appended file blocks are demarcated with generic source markers (`---- Text from Screenshot N ----` and `---- Text from PDF N ----`) without sending original filenames to upstream models. User-entered text is preserved byte-for-byte.
+- **Candidate-Described Conversations:** Candidates without written documents can describe a phone call or verbal interaction in their own words (typed or dictated). The pipeline evaluates candidate accounts with clear epistemic humility, noting that it reflects candidate recall rather than an original document.
 - **Transcription Only:** Gemini multimodal Interactions API is used solely to transcribe the uploaded document/images into raw text.
 - **Client Canvas Downscaling:** Large screenshots are downscaled in the browser (max 1600 px width, 6000 px height, 12 MP cap) to respect payload limits.
 - **User Review, Redaction & Undo:** The user reviews and can freely edit the combined text in the textarea, or click Undo to revert an appended transcript.
@@ -151,19 +153,20 @@ OfferCheck does NOT perform automated in-app company research itself. The design
    - No fabricated user testimonials or invented usage statistics.
    - Clearly label any synthetic, mock, or simulated data.
 
-### 7.1 Synthetic Test Examples (for Phase 2+)
-Four carefully constructed synthetic test cases will be maintained:
-1. **Urgent Payment Request:** Demands an upfront training or kit fee with a strict 24-hour deadline.
-2. **Incomplete but Non-Suspicious:** Standard introductory correspondence missing salary and role scope, but lacking predatory terms.
-3. **Detailed Professional Offer:** Comprehensive specifications with no payment requests or coercive clauses.
-4. **Ambiguous Offer:** Fragmented or brief message with insufficient data to draw meaningful conclusions.
+### 7.1 Synthetic Test Examples (Implemented)
+Five carefully constructed synthetic test cases are maintained:
+1. **Urgent Payment Request:** Demands an upfront training or kit fee with a strict 24-hour deadline (`example-1-urgent-payment`).
+2. **Incomplete but Non-Suspicious:** Standard introductory correspondence missing salary and role scope, but lacking predatory terms (`example-2-incomplete-offer`).
+3. **Detailed Professional Offer:** Comprehensive specifications with no payment requests or coercive clauses (`example-3-detailed-offer`).
+4. **Ambiguous Offer:** Fragmented or brief message with insufficient data to draw meaningful conclusions (`example-4-ambiguous-offer`).
+5. **Described Phone Call Account:** Verbal conversation described in the candidate's own words with an upfront registration fee and document requests (`example-5-phone-call-account`).
 
 ---
 
 ## 8. External Integrations & Verification Requirements
 
-When integrating external services in subsequent phases, assumptions are prohibited; details must be verified against live documentation:
-- **Google Gemini API:** Validate current SDK package (`@google/genai` vs `@google/generative-ai`), supported model identifiers (e.g., `gemini-3.8-flash`), token limits, rate quotas, and free-tier pricing at the time of implementation.
+When integrating external services, assumptions are prohibited; details must be verified against live documentation:
+- **Google Gemini API:** Validate current SDK package (`@google/genai` Interactions API), supported model identifiers (e.g., `gemini-3.8-flash`, `gemini-3.6-flash`, `gemini-3.5-flash-lite`), token limits, rate quotas, and free-tier pricing at the time of implementation.
 
 ---
 
@@ -178,4 +181,4 @@ When integrating external services in subsequent phases, assumptions are prohibi
 7. **Model Circuit Breaker:** In-memory breaker skips failing models during their cooldown window (5 minutes on timeout, 15 minutes on 429/quota exhaustion, 1 minute on 503/5xx server errors). Skipped models do not consume time budgets or attempt counts. If all models are on cooldown, cooldowns are ignored and all models are attempted normally (the service never fails closed). A successful call clears that model's cooldown.
 8. **Public Repository Security:** The source repository is public; no API keys, secrets, or sensitive credentials may ever be committed.
 9. **Name Architecture:** The application name remains "OfferCheck", centralized in a single configuration constant (`APP_NAME` in `src/lib/config.ts`) so it can be updated in one place if needed.
-10. **Job-Offer Coverage:** Job-offer coverage is being extended; internship-focused wording remains in the app until that pass is done.
+10. **Job-Offer Coverage:** The review prompt treats salary, probation period, joining date and contract terms as missing details when unstated, and display labels say "Stipend or salary" and "Duration or contract term". Dedicated job-offer sample texts, evaluation benchmarks, and handling for service bonds or training-fee agreements are part of the future roadmap.

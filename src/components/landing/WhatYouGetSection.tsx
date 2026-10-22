@@ -47,7 +47,7 @@ export function WhatYouGetSection() {
           <h2 className="text-2xl sm:text-3xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]">
             What OfferCheck gives you
           </h2>
-          <p className="text-[17px] text-[var(--text-muted)] leading-relaxed max-w-2xl">
+          <p className="text-[1.0625rem] text-[var(--text-muted)] leading-relaxed max-w-2xl">
             Practical tools and evidence to help you evaluate offers objectively,
             without arbitrary ratings or alarmist language.
           </p>

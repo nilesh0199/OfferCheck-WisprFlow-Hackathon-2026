@@ -305,6 +305,16 @@ This document tracks all implemented, live, and planned automated tests for Offe
 | `session-reducer: UNDO_APPEND_TRANSCRIPT reverts offer text to previous state` | Verifies undo restores original offer text and clears undo state | Implemented |
 | `session-reducer: SET_OFFER_TEXT clears undoOfferText on manual edit` | Verifies 1-level undo is discarded on subsequent manual typing | Implemented |
 | `session-reducer: TRANSCRIBE_ERROR preserves pending files and records error code` | Verifies failed transcription keeps attached files in UI and records reference error code | Implemented |
+| `markers: formatSourceMarker produces expected marker strings for image and pdf` | Verifies deterministic source marker labels for screenshots and PDFs | Implemented |
+| `markers: isSourceMarkerLine identifies marker lines correctly` | Verifies strict recognition of source marker lines and rejection of partials | Implemented |
+| `markers: containsSourceMarkerLine identifies lines within multi-line text` | Verifies multiline text scanning for source marker lines | Implemented |
+| `markers: nextSourceNumber returns 1 for empty or starts after highest existing number` | Verifies sequential numbering continuing from existing document text | Implemented |
+| `markers: buildAppendBlock appends file items preserving user text byte-for-byte` | Verifies user text is unchanged byte-for-byte with exactly one blank line before appended blocks | Implemented |
+| `examples: contains exactly five examples` | Verifies five synthetic examples exist in dataset | Implemented |
+| `examples: Example 5 represents a described phone call with synthetic employer name` | Verifies Example 5 has synthetic employer name and fee account | Implemented |
+| `validate-analysis: drops concerns or related quotes containing source marker lines` | Verifies prompt injection or markers inside quotes are dropped or stripped | Implemented |
+| `validate-analysis: includes 7th review limit for candidate-described accounts` | Verifies 7th immutable limit explaining candidate verbal descriptions | Implemented |
+| `validate-analysis: validates mock analysis for Example 5 (phone call account) with zero droppedCount` | Verifies mock output for phone call account passes with droppedCount = 0 | Implemented |
 | `gemini-wrapper: model-specific 400 falls through to next model in fallback chain` | Verifies modality/capability 400 errors fall through while syntax 400 aborts immediately | Implemented |
 | `resources: MCA action label is 'Open the MCA company or LLP name search'` | Verifies exact verified action button label for MCA lookup | Implemented |
 | `resources: all verified URLs from docs/resources-verification.md appear in data` | Verifies runtime resource URLs match verified registry documentation | Implemented |
@@ -333,15 +343,22 @@ This document tracks all implemented, live, and planned automated tests for Offe
 | `wcag-contrast: UI borders, focus rings, and divider tokens meet >= 3:1 contrast` | Verifies border, border-strong, and focus-ring tokens against canvas/surface satisfy non-text contrast | Implemented |
 | `wcag-contrast: yellow highlight tokens maintain dark ink contrast >= 4.5:1` | Verifies accent-highlight and highlight-ink pairing meets WCAG text readability standards | Implemented |
 | `token-audit: zero raw hex colors and zero un-tokenised tailwind color classes in production components` | Verifies scanner finds no hardcoded palette classes or raw hex values across src/ | Implemented |
-| `token-audit: ensures no source file defines or uses a font size below 13px` | Verifies scanner traverses all source files under src/ and enforces 13px absolute minimum font size floor | Implemented |
+| `token-audit: ensures no px font size appears under src/ (except html clamp and print 11pt) and no token is below 0.875rem` | Verifies scanner traverses all source files under src/, enforcing no raw px font sizes and 0.875rem minimum floor | Implemented |
 | `wcag-contrast: navy header background against white text and header-nav-text meets AAA standard` | Verifies header bar contrast reaches >= 10:1 in both light and dark themes | Implemented |
 | `wcag-contrast: primary action against primary contrast and tints meets AA standard` | Verifies Ink Blue primary buttons and tints reach >= 5.2:1 in both light and dark themes | Implemented |
 | `wcag-contrast: observation background against observation text meets AAA standard` | Verifies yellow observation cards reach >= 9:1 text contrast in both themes | Implemented |
 | `wcag-contrast: border-strong and focus-ring tokens meet >= 3:1 non-text contrast in both themes` | Verifies strong container borders and focus rings satisfy WCAG non-text contrast | Implemented |
 | `line-offset: calculates 1-based line numbers from zero-based character offsets` | Verifies line number mapping for start/middle/end offsets, empty text, CRLF newlines, out-of-bounds, and Unicode | Implemented |
+| `faq: splitIntoColumns splits array into two balanced columns (ceil(n/2) left, rest right)` | Verifies pure split function correctly partitions empty, single-item, odd, and even lists without mutability side-effects | Implemented |
+| `privacy: renders static privacy page with all 7 required sentence-case sections` | Verifies /privacy route renders all 7 sentence-case headers matching spec | Implemented |
+| `privacy: embeds verbatim AI_DATA_NOTICE and AI_FILE_NOTICE` | Verifies official data and file policies are present verbatim on the page | Implemented |
+| `privacy: displays Last updated 22 Oct 2026 timestamp` | Verifies explicit update timestamp is present | Implemented |
+| `privacy: zero prohibited verdict words in privacy page content` | Verifies absence of 'safe', 'verified', 'legit', 'scam', 'fraud' as verdicts | Implemented |
+| `privacy: UI navigation and footer elements link directly to /privacy` | Verifies all UI links point to /privacy instead of markdown files | Implemented |
 | `UI: Bi-directional evidence linking between observation cards and offer viewer lines` | Manual check that hovering/focusing observation highlights line in viewer and clicking quote scrolls to observation | Manual |
 | `UI: Widescreen fluid container scaling up to 2000px without horizontal overflow` | Manual check verifying fluid container clamping across mobile, tablet, desktop, and ultra-wide displays | Manual |
 | `UI: Mobile bottom action bar on viewports <640px with safe area insets` | Manual check verifying sticky bottom bar renders with proper touch targets and safe area padding | Manual |
+| `UI: Phone checklist verification at 360, 390, and 430px (no horizontal overflow, >=44px tap targets, caret never covered)` | Manual check verifying full phone usability across viewports with single-column FAQ and stacked step cards | Manual |
 
 ---
 

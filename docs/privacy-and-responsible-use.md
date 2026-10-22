@@ -13,6 +13,8 @@ OfferCheck is built with a strict privacy-first, evidence-first design to assist
   When a user submits text for review, the text is transmitted via HTTPS to Google's Gemini API (using the Interactions API with the model fallback chain: `gemini-3.8-flash`, `gemini-3.6-flash`, and `gemini-3.5-flash-lite`).
 - **Destination of Uploaded Files (Phase 8 & 9c):**  
   When a user uploads screenshots (PNG, JPEG, WebP) or PDF documents, the files are transmitted over HTTPS to `/api/transcribe` and sent to Gemini's multimodal Interactions API for text transcription.
+- **Zero File Name Transmission:**  
+  Original file names are never extracted, saved, or sent to Google's Gemini API, nor are they recorded in server logs. Extracted text appended to the editor uses strictly generic numbering markers (such as `---- Text from Screenshot 1 ----` or `---- Text from PDF 1 ----`).
 - **Free-Tier Data Terms:**  
   OfferCheck runs on Google's Gemini API free tier. According to Google's published API terms, data submitted to the free-tier Gemini API may be retained and used by Google to train, tune, and improve its models and products.
 - **Pre-Paste and Pre-Upload Redaction Notices:**  

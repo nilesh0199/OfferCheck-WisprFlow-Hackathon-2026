@@ -12,6 +12,8 @@ import { detectOverclaiming } from "@/lib/analysis/guardrails";
 import { validateQuote } from "@/lib/analysis/quote-validator";
 import { ValidatedAnalysis } from "@/lib/analysis/schema";
 
+import { containsSourceMarkerLine } from "@/lib/upload";
+
 // 1. Load .env.local using Node's built-in process.loadEnvFile if it exists
 if (fs.existsSync(".env.local")) {
   try {
@@ -40,6 +42,10 @@ const testCases = [
     name: `Synthetic Example: ${ex.id} (${ex.title})`,
     text: ex.text,
   })),
+  {
+    name: "Combined Input: Notes + Labelled File Block",
+    text: "I was contacted about a remote data evaluation role.\n\n---- Text from Screenshot 1 ----\nCongratulations on your selection for the Data Associate role at VertexNest Solutions. To confirm your equipment shipment, please transfer a refundable fee of ₹1,500 via UPI today within 24 hours.",
+  },
   {
     name: `Prompt Injection Fixture: ${PROMPT_INJECTION_FIXTURE.id}`,
     text: PROMPT_INJECTION_FIXTURE.text,
@@ -139,6 +145,19 @@ describe.skipIf(!hasApiKey)("Live Gemini API Analysis Suite", () => {
           // Assert quote validates against original text
           const qVal = validateQuote(concern.quote, tc.text);
           expect(qVal.valid).toBe(true);
+
+          // Assert quote contains NO source marker lines
+          expect(containsSourceMarkerLine(concern.quote)).toBe(false);
+        }
+
+        console.log(`Missing Info Breakdown:`);
+        for (const [idx, missing] of analysis.missingInfo.entries()) {
+          console.log(`  [${idx + 1}] Topic: ${missing.topic}`);
+          console.log(`      Note: "${missing.note}"`);
+          if (missing.relatedQuote) {
+            console.log(`      Related Quote: "${missing.relatedQuote}"`);
+            expect(containsSourceMarkerLine(missing.relatedQuote)).toBe(false);
+          }
         }
 
         // Assert: ok is true, every quote verified

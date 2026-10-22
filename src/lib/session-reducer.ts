@@ -1,6 +1,6 @@
 import { ValidatedAnalysis } from "./analysis/schema";
 import { ErrorType } from "@/components/ErrorAlert";
-import { appendTranscript } from "./upload/transcribe";
+import { buildAppendBlock, TranscribedItem } from "./upload/markers";
 
 export type AnalysisStatus = "idle" | "loading" | "success" | "error";
 export type TranscribeStatus = "idle" | "loading" | "success" | "error";
@@ -71,7 +71,7 @@ export type OfferSessionAction =
   | { type: "TICK_TRANSCRIBE_ELAPSED"; payload: number }
   | {
       type: "TRANSCRIBE_SUCCESS";
-      payload: { transcript: string; warnings: string[]; fileCount?: number };
+      payload: { items: TranscribedItem[]; warnings: string[]; fileCount?: number };
     }
   | { type: "TRANSCRIBE_ERROR"; payload: { message: string; code?: string } | string }
   | { type: "CANCEL_TRANSCRIBE" }
@@ -175,8 +175,8 @@ export function offerSessionReducer(
       };
 
     case "TRANSCRIBE_SUCCESS": {
-      const fileCount = action.payload.fileCount ?? state.selectedFiles.length ?? 1;
-      const combined = appendTranscript(state.offerText, action.payload.transcript);
+      const fileCount = action.payload.fileCount ?? action.payload.items.length ?? 1;
+      const combined = buildAppendBlock(state.offerText, action.payload.items);
       return {
         ...state,
         transcribeStatus: "success",

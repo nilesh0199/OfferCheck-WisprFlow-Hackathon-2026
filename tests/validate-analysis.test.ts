@@ -147,7 +147,7 @@ describe("validateAnalysis", () => {
     expect(validated.verificationQuestions[1].relatedConcernId).toBe("c-kept");
   });
 
-  it("always attaches the immutable limits of the review", () => {
+  it("always attaches the immutable limits of the review including call/conversation description limit", () => {
     const mockOutput: ModelOutput = {
       concerns: [],
       missingInfo: [],
@@ -166,6 +166,52 @@ describe("validateAnalysis", () => {
         )
       )
     ).toBe(true);
+    expect(
+      validated.limits.some((l) =>
+        l.includes(
+          "If the text is your own description of a call or conversation, the review reflects your description, not a recording or a document."
+        )
+      )
+    ).toBe(true);
+  });
+
+  it("drops any concern whose quote contains a source marker line and increments droppedCount", () => {
+    const textWithMarker =
+      "Initial user text.\n---- Text from Screenshot 1 ----\nStipend is 20,000 INR.";
+    const mockOutput: ModelOutput = {
+      concerns: [
+        {
+          id: "c-marker-1",
+          category: "other",
+          observation: "Quoted a source marker.",
+          interpretation: "This should be dropped.",
+          quote: "---- Text from Screenshot 1 ----",
+        },
+        {
+          id: "c-valid-1",
+          category: "other",
+          observation: "Quoted actual offer text.",
+          interpretation: "This is valid.",
+          quote: "Stipend is 20,000 INR.",
+        },
+      ],
+      missingInfo: [
+        {
+          id: "m-1",
+          topic: "responsibilities",
+          note: "Roles not stated.",
+          relatedQuote: "---- Text from Screenshot 1 ----",
+        },
+      ],
+      verificationQuestions: [],
+    };
+
+    const validated = validateAnalysis(mockOutput, textWithMarker);
+    expect(validated.droppedCount).toBe(1);
+    expect(validated.concerns).toHaveLength(1);
+    expect(validated.concerns[0].id).toBe("c-valid-1");
+    expect(validated.missingInfo).toHaveLength(1);
+    expect(validated.missingInfo[0].relatedQuote).toBeUndefined(); // Marker relatedQuote stripped
   });
 
   it("case (a): 'as soon as possible.' (payment_urgency) nested in a longer sensitive_information_request quote is still dropped", () => {
@@ -570,6 +616,65 @@ describe("validateAnalysis", () => {
 
       const result = validateAnalysis(mock, sampleText);
       expect(result.entities).toBeUndefined();
+    });
+
+    it("validates mock analysis for Example 5 (phone call account) with zero droppedCount", () => {
+      const ex5 = SYNTHETIC_EXAMPLES.find((e) => e.id === "example-5-phone-call-account")!;
+      expect(ex5).toBeDefined();
+
+      const mockOutput: ModelOutput = {
+        concerns: [
+          {
+            id: "c-deposit",
+            category: "refundable_deposit",
+            observation: "The account describes a refundable registration fee of Rs 2,000 required before paperwork.",
+            interpretation: "Genuine employers do not charge candidate registration fees.",
+            quote: "refundable registration fee of Rs 2,000",
+          },
+          {
+            id: "c-urgency",
+            category: "payment_urgency",
+            observation: "You describe a deadline of 6 pm today to secure the joining slot.",
+            interpretation: "Short deadlines to pay are common pressure tactics.",
+            quote: "if I do not pay the fee by 6 pm today, the slot will be given to another candidate",
+          },
+          {
+            id: "c-sensitive",
+            category: "sensitive_information_request",
+            observation: "You describe requests for photos of your Aadhaar card and bank passbook.",
+            interpretation: "Sensitive identity documents should only be shared after formal verified hiring.",
+            quote: "photos of my Aadhaar card and the front page of my bank passbook",
+          },
+          {
+            id: "c-channel",
+            category: "off_platform_communication",
+            observation: "You describe communication directed through WhatsApp.",
+            interpretation: "Unofficial messaging channels should be verified with the company.",
+            quote: "on WhatsApp",
+          },
+        ],
+        missingInfo: [
+          {
+            id: "m-1",
+            topic: "responsibilities",
+            note: "Detailed daily responsibilities for the remote data entry role are not described.",
+          },
+        ],
+        verificationQuestions: [
+          {
+            id: "q-1",
+            question: "Can you provide a formal written contract before any fee or document submission?",
+            relatedConcernId: "c-deposit",
+          },
+        ],
+      };
+
+      const validated = validateAnalysis(mockOutput, ex5.text);
+      expect(validated.droppedCount).toBe(0);
+      expect(validated.concerns).toHaveLength(4);
+      expect(validated.concerns[0].span).toBeDefined();
+      expect(validated.missingInfo).toHaveLength(1);
+      expect(validated.verificationQuestions).toHaveLength(1);
     });
   });
 });

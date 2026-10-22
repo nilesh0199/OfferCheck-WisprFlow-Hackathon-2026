@@ -245,31 +245,22 @@ describe("Resources page structure and post-payment steps", () => {
     }
   });
 
-  it("ensures Privacy links to GitHub use the real default git branch and exact file path", async () => {
-    const { execSync } = await import("node:child_process");
+  it("ensures Privacy links in UI navigate to the /privacy route", async () => {
     const fs = await import("node:fs");
     const path = await import("node:path");
-
-    let branch = "main";
-    try {
-      branch = execSync("git branch --show-current", { encoding: "utf8" }).trim() || "main";
-    } catch {
-      branch = "main";
-    }
-
-    const expectedPrivacyUrl = `https://github.com/nilesh0199/OfferCheck-WisprFlow-Hackathon-2026/blob/${branch}/docs/privacy-and-responsible-use.md`;
 
     const filesWithPrivacyLink = [
       path.resolve(process.cwd(), "src/app/resources/page.tsx"),
       path.resolve(process.cwd(), "src/components/landing/LandingFooter.tsx"),
       path.resolve(process.cwd(), "src/components/landing/PrivacySection.tsx"),
+      path.resolve(process.cwd(), "src/app/check/CheckClient.tsx"),
     ];
 
     for (const file of filesWithPrivacyLink) {
       const fileContent = fs.readFileSync(file, "utf8");
       expect(
-        fileContent.includes(expectedPrivacyUrl),
-        `Expected ${file} to contain GitHub privacy link with branch "${branch}" and docs/privacy-and-responsible-use.md`
+        fileContent.includes('href="/privacy"'),
+        `Expected ${file} to contain Link with href="/privacy"`
       ).toBe(true);
     }
   });

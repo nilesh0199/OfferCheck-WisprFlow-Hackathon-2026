@@ -9,6 +9,7 @@ import {
 } from "./schema";
 import { validateQuote } from "./quote-validator";
 import { detectOverclaiming } from "./guardrails";
+import { containsSourceMarkerLine } from "@/lib/upload/markers";
 
 /**
  * Standardized review limitations attached from code (never from model output).
@@ -20,6 +21,7 @@ export const REVIEW_LIMITS: readonly string[] = [
   "Polished writing is not proof of legitimacy, and poor grammar is not proof of fraud.",
   "'Not stated in the provided text' is an observation about the text, not proof that a term does not exist in the actual offer.",
   "OfferCheck makes no claim about any named organisation; verify independently through official channels.",
+  "If the text is your own description of a call or conversation, the review reflects your description, not a recording or a document.",
 ];
 
 export type ParseModelOutputResult =
@@ -153,12 +155,13 @@ export function validateAnalysis(
       continue;
     }
 
-    // Validate quote against original source text
+    // Validate quote against original source text and ensure it does not contain source markers
     const quoteResult = validateQuote(concern.quote, sourceText);
     if (
       !quoteResult.valid ||
       quoteResult.start === undefined ||
-      quoteResult.end === undefined
+      quoteResult.end === undefined ||
+      containsSourceMarkerLine(concern.quote)
     ) {
       droppedCount++;
       continue;
@@ -230,7 +233,7 @@ export function validateAnalysis(
     let relatedQuote: string | undefined = item.relatedQuote;
     if (relatedQuote) {
       const qResult = validateQuote(relatedQuote, sourceText);
-      if (!qResult.valid) {
+      if (!qResult.valid || containsSourceMarkerLine(relatedQuote)) {
         // Remove only the invalid relatedQuote; the missing info item itself is kept
         relatedQuote = undefined;
       }

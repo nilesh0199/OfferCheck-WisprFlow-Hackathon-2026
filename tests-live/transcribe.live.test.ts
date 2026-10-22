@@ -43,7 +43,9 @@ describe.skipIf(!hasApiKey)("Live Gemini API Transcription Suite", () => {
     const result = await transcribeFiles(files, { apiKey });
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(typeof result.transcript).toBe("string");
+      expect(Array.isArray(result.files)).toBe(true);
+      expect(result.files).toHaveLength(1);
+      expect(typeof result.files[0].transcript).toBe("string");
       expect(Array.isArray(result.warnings)).toBe(true);
       expect(Array.isArray(result.perFileReadable)).toBe(true);
       expect(result.modelUsed).toBeDefined();

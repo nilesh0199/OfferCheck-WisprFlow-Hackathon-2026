@@ -239,3 +239,37 @@ This phased build plan outlines the implementation roadmap for OfferCheck, an in
   - Elimination of AI template tells: zero uppercase tracked eyebrows; zero duplicate numbering; zero text arrows or triangle glyphs (`&rarr;`, `→`, `▲`, `▼`); custom SVG rotating chevrons on all disclosure elements; mono font restricted to code/quotes/line numbers; decorative dot-grid textures removed.
   - Typography scale: Tailwind v4 scale overridden in `globals.css` (`text-xs` 13px, `text-sm` 14px, `text-base` 16px); 13px absolute minimum font size enforced across all source files by automated tests in `tests/token-audit.test.ts`.
   - Offline Vitest test suites, TypeScript typecheck, ESLint, and Next.js Turbopack production build pass cleanly.
+
+---
+
+## Phase 13: Layout, Navigation, Privacy Page & REM Text Scale
+- **Status:** Complete
+- **Goal:** Streamline `/check` input into a unified action bar with click-to-load sample cards, implement two independent flex columns for the FAQ, widen line-by-line step cards, introduce a dedicated static `/privacy` route, convert typography to a fluid rem-based scale with an enforced 0.875rem floor, and verify phone usability across all viewports.
+- **Acceptance Criteria:**
+  - Dropdown select completely removed from `/check` (zero `sample-select` or `SamplePicker`); samples load via `SampleCards` with "Synthetic example" badges and inline replacement confirmation.
+  - Unified top action bar on `/check`: Analyze button (`sm:inline-flex`), secondary "Attach files", ghost "Clear", live character count, hover-device Ctrl/Cmd+Enter shortcut, and one-line disabled reason linked via `aria-describedby`. Compact data notice below bar links to `/privacy`.
+  - Pre-review right column on desktop ($\ge 1280$px) displays `SampleCards` and "What you will get"; post-input displays "Before you review" panel (source summary, personal details reminder, collapsed "Try a sample instead" disclosure) with zero duplicate primary buttons.
+  - Mobile viewports ($< 640$px): top bar shows "Attach files" and "Clear"; primary Analyze button is in sticky bottom action bar; container has `pb-24 sm:pb-8`; textarea has `scroll-mb-24` ensuring caret is never obscured.
+  - FAQ two independent flex columns on desktop ($\ge 1024$px) via pure `splitIntoColumns(items)`, with `items-start` preventing sibling column shifting. Single column $< 1024$px. Zero CSS multi-column or grid rows. Unit tests in `tests/faq.test.ts`.
+  - Line-by-line inspection fallback renders a 3-column responsive grid on $\ge 768$px and $\ge 1024$px spanning full container with equal card heights; desktop pinned stage balanced (~5/12 and ~7/12).
+  - Dedicated static server component at `/privacy` with 7 sentence-case sections, verbatim `AI_DATA_NOTICE` and `AI_FILE_NOTICE`, "Last updated 22 Oct 2026", and zero verdict words. Unit tests in `tests/privacy.test.ts`. All UI privacy links point to `/privacy`.
+  - Root font-size clamp in `src/app/globals.css`: `html { font-size: clamp(16px, calc(12px + 0.3125vw), 18px); }` and `body { font-size: 1rem; }`. REM scale: `text-xs` 0.875rem, `text-sm` 0.9375rem, `text-base` 1rem. All font sizes in `src/` converted to rem. Automated test in `tests/token-audit.test.ts` fails if any px font size appears under `src/` (except html clamp and print 11pt) or if any token < 0.875rem.
+  - Phone checklist verified across 360, 390, 430, 768, 1024, 1280, 1440, and 1920px: no horizontal scroll, tap targets $\ge 44$px, caret never covered.
+  - Offline Vitest test suites, TypeScript typecheck, ESLint, and Next.js Turbopack production build pass cleanly.
+
+---
+
+## Phase 14: Source Labels, Described Conversations & Input Neutralization
+- **Status:** Complete
+- **Goal:** Implement generic, privacy-preserving source labels for multimodal file transcripts (`---- Text from Screenshot N ----` and `---- Text from PDF N ----`), support user-described verbal interactions (typed or dictated) with clear epistemic boundaries and a 7th fixed review limit, neutralize UI terminology from "offer" to "text", render source markers as muted divider rows in workspaces, add a 5th synthetic sample for a described phone call, and update privacy policies stating file names are never sent to Google.
+- **Acceptance Criteria:**
+  - Pure marker helpers in `src/lib/upload/markers.ts` (`formatSourceMarker`, `isSourceMarkerLine`, `containsSourceMarkerLine`, `nextSourceNumber`, `buildAppendBlock`) formatting source blocks with sequential numbering continuing from existing text and preserving user text byte-for-byte.
+  - Route `/api/transcribe` returns structured `{ ok: true, files: [{ kind, transcript, readable }] }` without server-side file joining.
+  - Analysis system instructions and `validateAnalysis` drop any concern or related quote containing a source marker line.
+  - `YourOfferWorkspace` and `HighlightedTextViewer` render source marker lines as muted divider rows with top borders and muted styling while preserving line numbers.
+  - 7th fixed limit added to `REVIEW_LIMITS`: `"If the text is your own description of a call or conversation, the review reflects your description, not a recording or a document."`
+  - Guidance under `<textarea>` in `OfferInputForm` explains how to describe calls or verbal conversations in one's own words (typed or dictated).
+  - Terminology neutralized across headings, left rails, viewers, and header steps ("Your text", "Editing text", "Input text or files").
+  - 5th synthetic sample added (`example-5-phone-call-account`) featuring fictional company `KiteSpindle Business Services`; `SampleCards` renders all 5 samples.
+  - Privacy policy updated on `/privacy` and in `docs/privacy-and-responsible-use.md` confirming original file names are never sent to Google or logged.
+  - Offline Vitest test suites, TypeScript typecheck, ESLint, and Next.js Turbopack production build pass cleanly.

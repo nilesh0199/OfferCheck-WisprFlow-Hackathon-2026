@@ -6,6 +6,7 @@ import {
 } from "@/lib/session-reducer";
 import { ValidatedAnalysis } from "@/lib/analysis/schema";
 import { appendTranscript } from "@/lib/upload/transcribe";
+import { TranscribedItem } from "@/lib/upload/markers";
 
 const mockAnalysis: ValidatedAnalysis = {
   overallNote: "One observation requiring verification.",
@@ -186,13 +187,21 @@ describe("Session Reducer (In-Memory Combined Input & Undo State)", () => {
     const state = offerSessionReducer(initialState, {
       type: "TRANSCRIBE_SUCCESS",
       payload: {
-        transcript: "Dear Candidate, Welcome to Acme Corp.",
+        items: [
+          {
+            kind: "Screenshot",
+            transcript: "Dear Candidate, Welcome to Acme Corp.",
+            readable: true,
+          },
+        ],
         warnings: [],
         fileCount: 1,
       },
     });
 
-    expect(state.offerText).toBe("Dear Candidate, Welcome to Acme Corp.");
+    expect(state.offerText).toBe(
+      "---- Text from Screenshot 1 ----\nDear Candidate, Welcome to Acme Corp."
+    );
     expect(state.undoOfferText).toBe("");
     expect(state.addedFileCount).toBe(1);
     expect(state.selectedFiles).toEqual([]); // Files cleared after success
@@ -200,7 +209,7 @@ describe("Session Reducer (In-Memory Combined Input & Undo State)", () => {
     expect(state.transcriptBannerDismissed).toBe(false);
   });
 
-  it("handles TRANSCRIBE_SUCCESS: appends to existing text with exactly one blank line separator", () => {
+  it("handles TRANSCRIBE_SUCCESS: appends to existing text with exactly one blank line separator and generic marker", () => {
     const existing = "Pasted header notes from email.";
     const dummyFile = new File(["dummy"], "page2.pdf", { type: "application/pdf" });
     const initialState: OfferSessionState = {
@@ -213,14 +222,16 @@ describe("Session Reducer (In-Memory Combined Input & Undo State)", () => {
     const state = offerSessionReducer(initialState, {
       type: "TRANSCRIBE_SUCCESS",
       payload: {
-        transcript: "Compensation: 30,000 INR per month.",
+        items: [
+          { kind: "PDF", transcript: "Compensation: 30,000 INR per month.", readable: true },
+        ],
         warnings: [],
         fileCount: 1,
       },
     });
 
     expect(state.offerText).toBe(
-      "Pasted header notes from email.\n\nCompensation: 30,000 INR per month."
+      "Pasted header notes from email.\n\n---- Text from PDF 1 ----\nCompensation: 30,000 INR per month."
     );
     expect(state.undoOfferText).toBe(existing); // Exact prior text
     expect(state.selectedFiles).toHaveLength(0); // Files cleared after success
@@ -228,8 +239,10 @@ describe("Session Reducer (In-Memory Combined Input & Undo State)", () => {
 
   it("preserves multi-file markers inside appended block and never reorders text", () => {
     const existing = "My pasted preliminary text.";
-    const multiFileTranscript =
-      "[File 1 of 2]\nPage one content.\n\n[File 2 of 2]\nPage two content.";
+    const items: TranscribedItem[] = [
+      { kind: "Screenshot", transcript: "Page one content.", readable: true },
+      { kind: "PDF", transcript: "Page two content.", readable: true },
+    ];
 
     const state = offerSessionReducer(
       {
@@ -243,7 +256,7 @@ describe("Session Reducer (In-Memory Combined Input & Undo State)", () => {
       {
         type: "TRANSCRIBE_SUCCESS",
         payload: {
-          transcript: multiFileTranscript,
+          items,
           warnings: [],
           fileCount: 2,
         },
@@ -251,7 +264,7 @@ describe("Session Reducer (In-Memory Combined Input & Undo State)", () => {
     );
 
     expect(state.offerText).toBe(
-      `My pasted preliminary text.\n\n[File 1 of 2]\nPage one content.\n\n[File 2 of 2]\nPage two content.`
+      `My pasted preliminary text.\n\n---- Text from Screenshot 1 ----\nPage one content.\n\n---- Text from PDF 1 ----\nPage two content.`
     );
     expect(state.offerText.startsWith("My pasted preliminary text.")).toBe(true);
     expect(state.addedFileCount).toBe(2);
@@ -279,7 +292,7 @@ describe("Session Reducer (In-Memory Combined Input & Undo State)", () => {
 
   it("handles limit-exceeded append: appends text even when total exceeds MAX_INPUT_CHARS", () => {
     const hugeText = "A".repeat(7990);
-    const addedText = "B".repeat(500); // Total will be 8492 (> 8000)
+    const addedText = "B".repeat(500);
 
     const state = offerSessionReducer(
       {
@@ -289,14 +302,14 @@ describe("Session Reducer (In-Memory Combined Input & Undo State)", () => {
       {
         type: "TRANSCRIBE_SUCCESS",
         payload: {
-          transcript: addedText,
+          items: [{ kind: "Screenshot", transcript: addedText, readable: true }],
           warnings: ["Review limit exceeded"],
           fileCount: 1,
         },
       }
     );
 
-    expect(state.offerText.length).toBe(7990 + 2 + 500);
+    expect(state.offerText.length).toBeGreaterThan(8000);
     expect(state.offerText.endsWith(addedText)).toBe(true);
   });
 

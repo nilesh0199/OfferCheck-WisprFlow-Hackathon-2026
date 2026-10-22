@@ -86,7 +86,7 @@ describe("API /api/transcribe route handler", () => {
 
     vi.spyOn(uploadModule, "transcribeFiles").mockResolvedValue({
       ok: true,
-      transcript: "Transcribed offer text",
+      files: [{ kind: "image", transcript: "Transcribed offer text", readable: true }],
       warnings: [],
       perFileReadable: [true],
       exceedsInputLimit: false,
@@ -162,14 +162,14 @@ describe("API /api/transcribe route handler", () => {
     expect(data.error.code).toBe("BUSY");
   });
 
-  it("returns 200 with transcript on valid upload", async () => {
+  it("returns 200 with files on valid upload", async () => {
     const pdfHeader = new Uint8Array([
       0x25, 0x50, 0x44, 0x46, 0x2d, 0x31, 0x2e, 0x37, 0x0a, 0x25,
     ]);
 
     vi.spyOn(uploadModule, "transcribeFiles").mockResolvedValue({
       ok: true,
-      transcript: "Internship Offer Letter Details",
+      files: [{ kind: "pdf", transcript: "Internship Offer Letter Details", readable: true }],
       warnings: [],
       perFileReadable: [true],
       exceedsInputLimit: false,
@@ -193,7 +193,9 @@ describe("API /api/transcribe route handler", () => {
     expect(res.headers.get("Cache-Control")).toContain("no-store");
     const data = await res.json();
     expect(data.ok).toBe(true);
-    expect(data.transcript).toBe("Internship Offer Letter Details");
+    expect(data.files).toEqual([
+      { kind: "pdf", transcript: "Internship Offer Letter Details", readable: true },
+    ]);
     expect(data.perFileReadable).toEqual([true]);
   });
 });

@@ -37,7 +37,7 @@ export function WhatWeDoNotDoSection() {
           <h2 className="text-2xl sm:text-3xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]">
             What OfferCheck will not do
           </h2>
-          <p className="text-[17px] text-[var(--text-muted)] leading-relaxed max-w-2xl">
+          <p className="text-[1.0625rem] text-[var(--text-muted)] leading-relaxed max-w-2xl">
             Honest boundaries are essential for safety. Here is what this tool
             explicitly avoids doing.
           </p>

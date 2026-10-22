@@ -263,7 +263,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           ok: true,
-          transcript: result.transcript,
+          files: result.files,
           warnings: result.warnings,
           perFileReadable: result.perFileReadable,
           exceedsInputLimit: result.exceedsInputLimit,

@@ -1,7 +1,8 @@
 import React from "react";
+import Link from "next/link";
 import { Container } from "@/components/Container";
 import { AI_DATA_NOTICE } from "@/lib/config";
-import { LockIcon, ExternalLinkIcon } from "@/components/Icons";
+import { LockIcon } from "@/components/Icons";
 
 export function PrivacySection() {
   return (
@@ -14,7 +15,7 @@ export function PrivacySection() {
           <h2 className="text-2xl sm:text-3xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]">
             Privacy and responsible data use
           </h2>
-          <p className="text-[17px] text-[var(--text-muted)] leading-relaxed max-w-2xl">
+          <p className="text-[1.0625rem] text-[var(--text-muted)] leading-relaxed max-w-2xl">
             How your information is processed when you use OfferCheck.
           </p>
         </div>
@@ -63,15 +64,12 @@ export function PrivacySection() {
           </div>
 
           <div className="pt-2">
-            <a
-              href="https://github.com/nilesh0199/OfferCheck-WisprFlow-Hackathon-2026/blob/main/docs/privacy-and-responsible-use.md"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--color-primary)] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded"
+            <Link
+              href="/privacy"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--color-primary)] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 min-h-[44px]"
             >
-              <span>Read the complete Privacy and Responsible Use policy on GitHub</span>
-              <ExternalLinkIcon className="w-3.5 h-3.5 opacity-80" />
-            </a>
+              <span>Read the full privacy page</span>
+            </Link>
           </div>
         </div>
       </Container>

@@ -8,14 +8,14 @@ import { ModelOutput } from "@/lib/analysis/schema";
 
 describe("Synthetic Examples and Test Fixtures", () => {
   describe("Synthetic Examples integrity", () => {
-    it("contains exactly four examples", () => {
-      expect(SYNTHETIC_EXAMPLES.length).toBe(4);
+    it("contains exactly five examples", () => {
+      expect(SYNTHETIC_EXAMPLES.length).toBe(5);
     });
 
     it("has unique IDs for every example", () => {
       const ids = SYNTHETIC_EXAMPLES.map((ex) => ex.id);
       const uniqueIds = new Set(ids);
-      expect(uniqueIds.size).toBe(4);
+      expect(uniqueIds.size).toBe(5);
     });
 
     it("all examples are labelled 'Synthetic example'", () => {
@@ -53,6 +53,16 @@ describe("Synthetic Examples and Test Fixtures", () => {
         /\b(deposit|deposits|fee|fees|pay|payment|payments|payable|paying|paid)\b/i;
       const match = ex3!.text.match(forbiddenWordsRegex);
       expect(match).toBeNull();
+    });
+
+    it("Example 5 represents a described phone call with synthetic employer name", () => {
+      const ex5 = SYNTHETIC_EXAMPLES.find(
+        (ex) => ex.id === "example-5-phone-call-account"
+      );
+      expect(ex5).toBeDefined();
+      expect(ex5!.label).toBe("Synthetic example");
+      expect(ex5!.text).toContain("KiteSpindle Business Services");
+      expect(ex5!.text).toContain("refundable registration fee");
     });
   });
 

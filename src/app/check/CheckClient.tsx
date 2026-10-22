@@ -14,7 +14,7 @@ import { SpinnerIcon, LockIcon } from "@/components/Icons";
 import { useOfferSession } from "@/components/SessionProvider";
 import { getResearchNudge } from "@/lib/research/nudge";
 import { buildReviewSummary } from "@/lib/analysis/summary";
-import { SYNTHETIC_EXAMPLES } from "@/data/examples";
+import { SampleCards } from "@/components/SampleCards";
 import Link from "next/link";
 
 export function CheckClient() {
@@ -26,6 +26,8 @@ export function CheckClient() {
     elapsedSeconds,
     errorState,
     isResultOutdated,
+    selectedFiles,
+    addedFileCount,
     setOfferText,
     handleAnalyze,
     handleCancel,
@@ -36,6 +38,16 @@ export function CheckClient() {
   const [activeConcernId, setActiveConcernId] = useState<string | null>(null);
   const [copiedSummary, setCopiedSummary] = useState(false);
   const [mobileOfferExpanded, setMobileOfferExpanded] = useState(false);
+
+  const hasInput = offerText.trim().length > 0 || (selectedFiles && selectedFiles.length > 0);
+  const charCount = offerText.length;
+  const filesCount = selectedFiles ? selectedFiles.length : 0;
+  const filesSummary =
+    filesCount > 0
+      ? `${filesCount} attached, ${filesCount} waiting to be added`
+      : addedFileCount > 0
+      ? `${addedFileCount} added`
+      : "none";
 
   // Compute sections dynamically for OnThisPageNav
   const navSections = useMemo<PageSectionItem[]>(() => {
@@ -103,110 +115,167 @@ export function CheckClient() {
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col justify-between transition-colors">
       <Header />
 
-      <Container as="main" className="py-6 sm:py-8 space-y-8 flex-1">
+      <Container as="main" className="py-6 sm:py-8 pb-24 sm:pb-8 space-y-8 flex-1">
         {/* ========================================================
             PRE-REVIEW STATE (Initial Visit / Before Analysis)
            ======================================================== */}
         {!isLoading && !analysis && !errorState && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* 7/12 Left: Input card with file upload & shortcut */}
-            <div className="lg:col-span-7 space-y-4">
-              <OfferInputForm
-                offerText={offerText}
-                setOfferText={setOfferText}
-                onAnalyze={async () => {
-                  setIsEditingOffer(false);
-                  await handleAnalyze();
-                }}
-                onCancel={handleCancel}
-                onClear={() => {
-                  setIsEditingOffer(false);
-                  handleClear();
-                }}
-                isLoading={isLoading}
-                elapsedSeconds={elapsedSeconds}
-              />
+          <div>
+            {/* Below 1280px (< xl): Single column with samples disclosure above input card */}
+            <div className="xl:hidden mb-6">
+              <details
+                open={!hasInput}
+                className="group rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 shadow-2xs space-y-3 transition-colors"
+              >
+                <summary className="flex items-center justify-between font-semibold text-xs sm:text-sm text-[var(--text)] cursor-pointer list-none [&::-webkit-details-marker]:hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 min-h-[44px]">
+                  <div className="flex items-center gap-2">
+                    <span>Try a sample offer</span>
+                    <span className="text-xs font-normal text-[var(--text-muted)]">
+                      {!hasInput ? "(click to load)" : "(collapsed)"}
+                    </span>
+                  </div>
+                  <svg
+                    aria-hidden="true"
+                    className="w-4 h-4 text-[var(--text-muted)] group-open:rotate-180 transition-transform duration-200 shrink-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </summary>
+                <div className="pt-3 border-t border-[var(--border)]">
+                  <SampleCards
+                    currentText={offerText}
+                    onSelectSample={setOfferText}
+                    disabled={isLoading}
+                  />
+                </div>
+              </details>
             </div>
 
-            {/* 5/12 Right: Try a sample, What you get, Privacy notice */}
-            <div className="lg:col-span-5 space-y-6">
-              {/* 1) Try a sample cards */}
-              <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs space-y-3.5 transition-colors">
-                <div className="flex items-center justify-between border-b border-[var(--border)] pb-2.5">
-                  <h3 className="text-xs font-sans font-semibold text-[var(--text-muted)]">
-                    Try a sample offer
-                  </h3>
-                  <span className="text-xs font-sans text-[var(--text-muted)]">
-                    Click to load
-                  </span>
-                </div>
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
+              {/* Left Column (7/12 on xl): Input card with file upload & shortcut */}
+              <div className="w-full xl:col-span-7 space-y-4">
+                <OfferInputForm
+                  offerText={offerText}
+                  setOfferText={setOfferText}
+                  onAnalyze={async () => {
+                    setIsEditingOffer(false);
+                    await handleAnalyze();
+                  }}
+                  onCancel={handleCancel}
+                  onClear={() => {
+                    setIsEditingOffer(false);
+                    handleClear();
+                  }}
+                  isLoading={isLoading}
+                  elapsedSeconds={elapsedSeconds}
+                />
+              </div>
 
-                <div className="space-y-2.5">
-                  {SYNTHETIC_EXAMPLES.slice(0, 3).map((sample) => (
-                    <button
-                      key={sample.id}
-                      type="button"
-                      onClick={() => setOfferText(sample.text)}
-                      className="w-full text-left p-3 rounded-lg border border-[var(--border)] bg-[var(--surface-muted)]/60 hover:bg-[var(--surface-muted)] hover:border-[var(--border-strong)] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px] group"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs sm:text-sm font-semibold text-[var(--text)] group-hover:text-[var(--color-primary)]">
-                          {sample.title}
-                        </span>
-                        <span className="text-xs font-sans text-[var(--color-primary)] opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                          Use sample
-                        </span>
-                      </div>
-                      <p className="mt-1 text-xs text-[var(--text-muted)] line-clamp-2 leading-relaxed">
-                        {sample.text.slice(0, 140)}...
+              {/* Right Column (5/12 on xl, visible on desktop >= 1280px) */}
+              <div className="hidden xl:block xl:col-span-5 space-y-6">
+                {!hasInput ? (
+                  /* BEFORE any input: Sample cards and What you will get */
+                  <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs space-y-3.5 transition-colors">
+                    <div className="flex items-center justify-between border-b border-[var(--border)] pb-2.5">
+                      <h3 className="text-xs font-sans font-semibold text-[var(--text-muted)]">
+                        Try a sample offer
+                      </h3>
+                      <span className="text-xs font-sans text-[var(--text-muted)]">
+                        Click to load
+                      </span>
+                    </div>
+
+                    <SampleCards
+                      currentText={offerText}
+                      onSelectSample={setOfferText}
+                      disabled={isLoading}
+                    />
+                  </div>
+                ) : (
+                  /* AFTER text or files exist: "Before you review" panel */
+                  <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs space-y-4 transition-colors">
+                    <h3 className="text-xs font-sans font-semibold text-[var(--text)] border-b border-[var(--border)] pb-2.5">
+                      Before you review
+                    </h3>
+
+                    {/* Source summary */}
+                    <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] p-3 text-xs text-[var(--text)] space-y-1">
+                      <span className="font-semibold block text-[var(--text)]">Source summary:</span>
+                      <p className="font-mono text-xs text-[var(--text-muted)]">
+                        text: {charCount.toLocaleString()} characters; files: {filesSummary}
                       </p>
-                    </button>
-                  ))}
-                </div>
-              </div>
+                    </div>
 
-              {/* 2) What you will get card */}
-              <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs space-y-3 transition-colors">
-                <h3 className="text-xs font-sans font-semibold text-[var(--text-muted)] border-b border-[var(--border)] pb-2">
-                  What you will get
-                </h3>
-                <ul className="space-y-2 text-xs sm:text-sm text-[var(--text)] leading-relaxed">
-                  <li className="flex items-start gap-2.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)] mt-2 shrink-0" />
-                    <span>
-                      <strong>Potential concerns:</strong> Quote-linked observations on upfront deposits, pressure tactics, and irregular channels.
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)] mt-2 shrink-0" />
-                    <span>
-                      <strong>Missing details:</strong> Essential terms absent from the offer (stipend amount, dates, responsibilities).
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)] mt-2 shrink-0" />
-                    <span>
-                      <strong>Questions to verify:</strong> Specific, non-accusatory questions to clarify directly with the employer.
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)] mt-2 shrink-0" />
-                    <span>
-                      <strong>Independent research:</strong> Neutral guidance and prompts to verify the entity before committing.
-                    </span>
-                  </li>
-                </ul>
-              </div>
+                    {/* Reminder to remove personal details */}
+                    <div className="flex items-start gap-2.5 text-xs text-[var(--text-muted)] leading-relaxed">
+                      <LockIcon className="w-4 h-4 text-[var(--color-primary)] shrink-0 mt-0.5" />
+                      <p>
+                        Remove names, phone numbers, email addresses, bank details, government IDs, and passwords before analyzing.
+                      </p>
+                    </div>
 
-              {/* 3) Privacy notice reminder */}
-              <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-xs text-[var(--text-muted)] space-y-2 text-left">
-                <div className="flex items-center gap-2 text-[var(--text)] font-semibold">
-                  <LockIcon className="w-4 h-4 text-[var(--color-primary)] shrink-0" />
-                  <span>Privacy reminder</span>
+                    {/* Collapsed disclosure to try a sample instead */}
+                    <details className="group rounded-lg border border-[var(--border)] bg-[var(--surface-muted)]/60 p-3 text-xs">
+                      <summary className="flex items-center justify-between font-semibold text-[var(--text)] cursor-pointer list-none [&::-webkit-details-marker]:hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 min-h-[44px]">
+                        <span>Try a sample instead</span>
+                        <svg
+                          aria-hidden="true"
+                          className="w-3.5 h-3.5 text-[var(--text-muted)] group-open:rotate-180 transition-transform duration-200 shrink-0"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </summary>
+                      <div className="pt-3 border-t border-[var(--border)] mt-2">
+                        <SampleCards
+                          currentText={offerText}
+                          onSelectSample={setOfferText}
+                          disabled={isLoading}
+                        />
+                      </div>
+                    </details>
+                  </div>
+                )}
+
+                {/* What you will get card */}
+                <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs space-y-3 transition-colors">
+                  <h3 className="text-xs font-sans font-semibold text-[var(--text-muted)] border-b border-[var(--border)] pb-2">
+                    What you will get
+                  </h3>
+                  <ul className="space-y-2 text-xs sm:text-sm text-[var(--text)] leading-relaxed">
+                    <li className="flex items-start gap-2.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)] mt-2 shrink-0" />
+                      <span>
+                        <strong>Potential concerns:</strong> Quote-linked observations on upfront deposits, pressure tactics, and irregular channels.
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)] mt-2 shrink-0" />
+                      <span>
+                        <strong>Missing details:</strong> Essential terms absent from the offer (stipend amount, dates, responsibilities).
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)] mt-2 shrink-0" />
+                      <span>
+                        <strong>Questions to verify:</strong> Specific, non-accusatory questions to clarify directly with the employer.
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)] mt-2 shrink-0" />
+                      <span>
+                        <strong>Independent research:</strong> Neutral guidance and prompts to verify the entity before committing.
+                      </span>
+                    </li>
+                  </ul>
                 </div>
-                <p className="leading-relaxed">
-                  Pasted text stays in your browser memory and is sent only to the Gemini API for analysis. It is never logged to disks, saved to databases, or stored across sessions.
-                </p>
               </div>
             </div>
           </div>
@@ -285,12 +354,12 @@ export function CheckClient() {
             {isEditingOffer && (
               <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-xs sm:text-sm">
                 <span className="font-semibold text-[var(--text)]">
-                  Editing offer text
+                  Editing text
                 </span>
                 <button
                   type="button"
                   onClick={() => setIsEditingOffer(false)}
-                  className="text-xs text-[var(--color-primary)] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded px-2 py-1 font-medium min-h-[36px]"
+                  className="text-xs text-[var(--color-primary)] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded px-2 py-1 font-medium min-h-[44px] inline-flex items-center"
                 >
                   Back to review snapshot
                 </button>
@@ -318,9 +387,9 @@ export function CheckClient() {
             ) : (
               /* Post-review 3-Zone Desktop Layout (>= 1280px), 2-Zone (1024-1279px), 1-Zone (< 1024px) */
               <div className="grid grid-cols-1 lg:grid-cols-[1fr_260px] xl:grid-cols-[400px_1fr_260px] gap-8 items-start">
-                {/* 1) Left Rail (~400px, desktop only >= 1280px, sticky): 'Your offer' document viewer */}
+                {/* 1) Left Rail (~400px, desktop only >= 1280px, sticky): 'Your text' document viewer */}
                 <aside
-                  aria-label="Your offer document viewer"
+                  aria-label="Your text document viewer"
                   className="hidden xl:block xl:sticky xl:top-20 space-y-4"
                 >
                   <YourOfferWorkspace
@@ -341,7 +410,7 @@ export function CheckClient() {
                   aria-label="Review findings and observations"
                   className="min-w-0 space-y-6"
                 >
-                  {/* Expandable 'Your offer' panel for screens < 1280px (medium and mobile) */}
+                  {/* Expandable 'Your text' panel for screens < 1280px (medium and mobile) */}
                   <div className="xl:hidden rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3">
                     <button
                       type="button"
@@ -350,10 +419,10 @@ export function CheckClient() {
                       aria-expanded={mobileOfferExpanded}
                     >
                       <span>
-                        Your offer text ({analyzedSnapshotText.length.toLocaleString()} characters)
+                        Your text ({analyzedSnapshotText.length.toLocaleString()} characters)
                       </span>
                       <span className="inline-flex items-center gap-1.5 text-[var(--color-primary)] text-xs font-medium">
-                        <span>{mobileOfferExpanded ? "Collapse" : "View offer"}</span>
+                        <span>{mobileOfferExpanded ? "Collapse" : "View text"}</span>
                         <svg
                           aria-hidden="true"
                           className={`w-3.5 h-3.5 transition-transform duration-200 ${
@@ -428,19 +497,25 @@ export function CheckClient() {
           <div className="flex items-center gap-4">
             <Link
               href="/"
-              className="hover:text-[var(--text)] underline underline-offset-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 min-h-[36px] inline-flex items-center"
+              className="hover:text-[var(--text)] underline underline-offset-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1.5 min-h-[44px] inline-flex items-center"
             >
               Home
             </Link>
             <Link
               href="/resources"
-              className="hover:text-[var(--text)] underline underline-offset-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 min-h-[36px] inline-flex items-center"
+              className="hover:text-[var(--text)] underline underline-offset-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1.5 min-h-[44px] inline-flex items-center"
             >
               Official resources
             </Link>
+            <Link
+              href="/privacy"
+              className="hover:text-[var(--text)] underline underline-offset-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1.5 min-h-[44px] inline-flex items-center"
+            >
+              Privacy
+            </Link>
             <a
               href="#about-this-tool"
-              className="hover:text-[var(--text)] underline underline-offset-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 min-h-[36px] inline-flex items-center"
+              className="hover:text-[var(--text)] underline underline-offset-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1.5 min-h-[44px] inline-flex items-center"
             >
               About this tool
             </a>

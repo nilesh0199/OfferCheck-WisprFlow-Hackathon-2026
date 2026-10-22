@@ -71,7 +71,7 @@ export default function PrivacyPage() {
       <main className="flex-1 py-8 sm:py-12 space-y-12">
         <Container className="space-y-10">
           {/* Header */}
-          <div className="max-w-3xl space-y-3 text-left">
+          <div className="max-w-3xl mx-auto space-y-3 text-center">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-[var(--surface)] text-[var(--color-primary)] border border-[var(--border)] shadow-2xs">
               <span className="w-2 h-2 rounded-full bg-[var(--color-highlight)]" />
               <span>Privacy and data handling</span>
@@ -79,7 +79,7 @@ export default function PrivacyPage() {
             <h1 className="text-2xl sm:text-4xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]">
               Privacy and responsible data use
             </h1>
-            <p className="text-sm sm:text-base text-[var(--text-muted)] leading-relaxed">
+            <p className="text-sm sm:text-base text-[var(--text-muted)] leading-relaxed max-w-2xl mx-auto">
               How your information is processed when you use OfferCheck, what is sent to external services, and what remains in your browser.
             </p>
             <p className="text-xs text-[var(--text-muted)] pt-1 font-mono">
@@ -87,7 +87,7 @@ export default function PrivacyPage() {
             </p>
           </div>
 
-          <div className="space-y-8 max-w-4xl text-left">
+          <div className="space-y-8 max-w-4xl mx-auto text-left">
             {/* Section 1: What is sent to other services */}
             <section
               id="sent-to-other-services"

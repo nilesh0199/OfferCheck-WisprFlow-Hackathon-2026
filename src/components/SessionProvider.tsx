@@ -16,6 +16,16 @@ import {
   AnalysisStatus,
   TranscribeStatus,
   SelectedFileItem,
+  WizardStep,
+  SourceChannel,
+  AppliedStatus,
+  WizardSourceState,
+  WizardConversationState,
+  PaymentAskedStatus,
+  PaymentPurpose,
+  DocumentType,
+  WizardPaymentState,
+  OfferSessionAction,
 } from "@/lib/session-reducer";
 import {
   isAnalyzeSuccessResponse,
@@ -24,6 +34,7 @@ import {
 import { ValidatedAnalysis } from "@/lib/analysis/schema";
 import { MIN_INPUT_CHARS } from "@/lib/config";
 import { compressFileForUpload, TranscribedItem } from "@/lib/upload";
+import { buildCombinedText, isReadyToAnalyse } from "@/lib/combined-text";
 
 const CLIENT_TIMEOUT_MS = 65000; // 65-second client-side timeout cap
 
@@ -35,6 +46,38 @@ interface TranscribeApiResponse {
 }
 
 export interface OfferSessionContextValue {
+  // Wizard state:
+  currentStep: WizardStep;
+  visitedSteps: Record<number, boolean>;
+  skippedSteps: Record<number, boolean>;
+  source: WizardSourceState;
+  conversation: WizardConversationState;
+  payment: WizardPaymentState;
+  combinedText: string;
+  isReady: boolean;
+  readyReason?: string;
+
+  // Wizard dispatchers:
+  setStep: (step: WizardStep) => void;
+  setStepVisited: (step: number, visited?: boolean) => void;
+  setStepSkipped: (step: number, skipped?: boolean) => void;
+  setSourceChannel: (channel: SourceChannel) => void;
+  setSourceApplied: (applied: AppliedStatus) => void;
+  setSourceNote: (note: string) => void;
+  setConversationText: (text: string) => void;
+  setPaymentAsked: (asked: PaymentAskedStatus) => void;
+  setPaymentPurposes: (purposes: PaymentPurpose[]) => void;
+  togglePaymentPurpose: (purpose: PaymentPurpose) => void;
+  setPaymentAmount: (amount: string) => void;
+  setPaymentDeadline: (deadline: string) => void;
+  setDocsAsked: (docs: DocumentType[]) => void;
+  toggleDocsAsked: (doc: DocumentType) => void;
+  setDocsShared: (docs: DocumentType[]) => void;
+  toggleDocsShared: (doc: DocumentType) => void;
+  setPaymentNote: (note: string) => void;
+  loadWizardSample: (sample: Extract<OfferSessionAction, { type: "LOAD_WIZARD_SAMPLE" }>["payload"]) => void;
+
+  // Offer text & analysis:
   offerText: string;
   undoOfferText: string | null;
   addedFileCount: number;
@@ -50,6 +93,7 @@ export interface OfferSessionContextValue {
   handleAnalyze: () => Promise<void>;
   handleCancel: () => void;
   handleClear: () => void;
+  handleClearAll: () => void;
   handleUndoAppendTranscript: () => void;
 
   // File upload & transcription:
@@ -98,20 +142,15 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       if (timeoutHandleRef.current) clearTimeout(timeoutHandleRef.current);
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
       if (abortControllerRef.current) abortControllerRef.current.abort();
-
       if (transcribeTimeoutRef.current) clearTimeout(transcribeTimeoutRef.current);
       if (transcribeIntervalRef.current) clearInterval(transcribeIntervalRef.current);
       if (transcribeAbortControllerRef.current) transcribeAbortControllerRef.current.abort();
 
-      selectedFilesRef.current.forEach((item) => {
+      for (const item of selectedFilesRef.current) {
         if (item.previewUrl) {
-          try {
-            URL.revokeObjectURL(item.previewUrl);
-          } catch {
-            // Ignore in environments where URL.revokeObjectURL is unavailable
-          }
+          URL.revokeObjectURL(item.previewUrl);
         }
-      });
+      }
     };
   }, []);
 
@@ -123,49 +162,106 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: "SET_OFFER_TEXT", payload: text });
   }, []);
 
-  const addSelectedFiles = useCallback((files: File[]) => {
-    const items: SelectedFileItem[] = files.map((file) => {
-      let previewUrl: string | undefined;
-      if (file.type.startsWith("image/") && typeof URL?.createObjectURL === "function") {
-        try {
-          previewUrl = URL.createObjectURL(file);
-        } catch {
-          // Ignore if object URL creation fails
-        }
-      }
-      return {
-        id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-        file,
-        previewUrl,
-      };
-    });
+  const setStep = useCallback((step: WizardStep) => {
+    dispatch({ type: "SET_STEP", payload: step });
+  }, []);
+
+  const setStepVisited = useCallback((step: number, visited?: boolean) => {
+    dispatch({ type: "SET_STEP_VISITED", payload: { step, visited } });
+  }, []);
+
+  const setStepSkipped = useCallback((step: number, skipped?: boolean) => {
+    dispatch({ type: "SET_STEP_SKIPPED", payload: { step, skipped } });
+  }, []);
+
+  const setSourceChannel = useCallback((channel: SourceChannel) => {
+    dispatch({ type: "SET_SOURCE_CHANNEL", payload: channel });
+  }, []);
+
+  const setSourceApplied = useCallback((applied: AppliedStatus) => {
+    dispatch({ type: "SET_SOURCE_APPLIED", payload: applied });
+  }, []);
+
+  const setSourceNote = useCallback((note: string) => {
+    dispatch({ type: "SET_SOURCE_NOTE", payload: note });
+  }, []);
+
+  const setConversationText = useCallback((text: string) => {
+    dispatch({ type: "SET_CONVERSATION_TEXT", payload: text });
+  }, []);
+
+  const setPaymentAsked = useCallback((asked: PaymentAskedStatus) => {
+    dispatch({ type: "SET_PAYMENT_ASKED", payload: asked });
+  }, []);
+
+  const setPaymentPurposes = useCallback((purposes: PaymentPurpose[]) => {
+    dispatch({ type: "SET_PAYMENT_PURPOSES", payload: purposes });
+  }, []);
+
+  const togglePaymentPurpose = useCallback((purpose: PaymentPurpose) => {
+    dispatch({ type: "TOGGLE_PAYMENT_PURPOSE", payload: purpose });
+  }, []);
+
+  const setPaymentAmount = useCallback((amount: string) => {
+    dispatch({ type: "SET_PAYMENT_AMOUNT", payload: amount });
+  }, []);
+
+  const setPaymentDeadline = useCallback((deadline: string) => {
+    dispatch({ type: "SET_PAYMENT_DEADLINE", payload: deadline });
+  }, []);
+
+  const setDocsAsked = useCallback((docs: DocumentType[]) => {
+    dispatch({ type: "SET_DOCS_ASKED", payload: docs });
+  }, []);
+
+  const toggleDocsAsked = useCallback((doc: DocumentType) => {
+    dispatch({ type: "TOGGLE_DOCS_ASKED", payload: doc });
+  }, []);
+
+  const setDocsShared = useCallback((docs: DocumentType[]) => {
+    dispatch({ type: "SET_DOCS_SHARED", payload: docs });
+  }, []);
+
+  const toggleDocsShared = useCallback((doc: DocumentType) => {
+    dispatch({ type: "TOGGLE_DOCS_SHARED", payload: doc });
+  }, []);
+
+  const setPaymentNote = useCallback((note: string) => {
+    dispatch({ type: "SET_PAYMENT_NOTE", payload: note });
+  }, []);
+
+  const loadWizardSample = useCallback(
+    (sample: Parameters<OfferSessionContextValue["loadWizardSample"]>[0]) => {
+      dispatch({ type: "LOAD_WIZARD_SAMPLE", payload: sample });
+    },
+    []
+  );
+
+  const addSelectedFiles = useCallback((newFiles: File[]) => {
+    const items: SelectedFileItem[] = newFiles.map((file) => ({
+      id: `${file.name}-${file.size}-${Date.now()}-${Math.random()}`,
+      file,
+      previewUrl: file.type.startsWith("image/") ? URL.createObjectURL(file) : undefined,
+    }));
     dispatch({ type: "ADD_SELECTED_FILES", payload: items });
   }, []);
 
   const removeSelectedFile = useCallback((id: string) => {
-    const item = state.selectedFiles.find((f) => f.id === id);
-    if (item?.previewUrl && typeof URL?.revokeObjectURL === "function") {
-      try {
-        URL.revokeObjectURL(item.previewUrl);
-      } catch {
-        // Ignore
-      }
+    const found = selectedFilesRef.current.find((item) => item.id === id);
+    if (found?.previewUrl) {
+      URL.revokeObjectURL(found.previewUrl);
     }
     dispatch({ type: "REMOVE_SELECTED_FILE", payload: id });
-  }, [state.selectedFiles]);
+  }, []);
 
   const clearSelectedFiles = useCallback(() => {
-    state.selectedFiles.forEach((item) => {
-      if (item.previewUrl && typeof URL?.revokeObjectURL === "function") {
-        try {
-          URL.revokeObjectURL(item.previewUrl);
-        } catch {
-          // Ignore
-        }
+    for (const item of selectedFilesRef.current) {
+      if (item.previewUrl) {
+        URL.revokeObjectURL(item.previewUrl);
       }
-    });
+    }
     dispatch({ type: "CLEAR_SELECTED_FILES" });
-  }, [state.selectedFiles]);
+  }, []);
 
   const dismissTranscriptBanner = useCallback(() => {
     dispatch({ type: "DISMISS_TRANSCRIPT_BANNER" });
@@ -182,9 +278,8 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const handleTranscribe = useCallback(async () => {
-    if (state.selectedFiles.length === 0 || state.transcribeStatus === "loading") {
-      return;
-    }
+    if (state.transcribeStatus === "loading") return;
+    if (state.selectedFiles.length === 0) return;
 
     dispatch({ type: "START_TRANSCRIBE" });
 
@@ -259,20 +354,12 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
           data?.error?.code ||
           (response.status === 429
             ? "RATE_LIMITED_CLIENT"
-            : response.status === 503
-            ? "BUSY"
             : response.status === 413
             ? "TOTAL_TOO_LARGE"
-            : "TRANSCRIBE_FAILED");
-        const msg =
-          data?.error?.message ||
-          (response.status === 429
-            ? "The transcription service is currently busy. Please wait a moment and try again."
-            : response.status === 503
-            ? "The transcription service is busy right now. Please try again in a minute."
-            : response.status === 413
-            ? "Uploaded files exceed the 4 MB size limit. Please remove or compress some files."
-            : "Unable to transcribe uploaded files. Please check the files or try pasting the text directly.");
+            : response.status === 415
+            ? "UNSUPPORTED_MEDIA_TYPE"
+            : "UPSTREAM_ERROR");
+        const msg = data?.error?.message || "File transcription failed. Please try again.";
         dispatch({
           type: "TRANSCRIBE_ERROR",
           payload: { message: msg, code },
@@ -282,52 +369,54 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       if (transcribeTimeoutRef.current) clearTimeout(transcribeTimeoutRef.current);
       if (transcribeIntervalRef.current) clearInterval(transcribeIntervalRef.current);
 
-      if (timedOut) {
+      const isAbort =
+        (err as Error)?.name === "AbortError" ||
+        controller.signal.aborted ||
+        (err as { name?: string })?.name === "AbortError";
+
+      if (isAbort && timedOut) {
         dispatch({
           type: "TRANSCRIBE_ERROR",
           payload: {
-            message: "The transcription request timed out. Please try uploading fewer or smaller files.",
+            message: "Transcription timed out. Please try again with fewer or smaller files.",
             code: "TIMEOUT",
           },
         });
-      } else if (
-        err instanceof Error &&
-        (err.name === "AbortError" || controller.signal.aborted)
-      ) {
+      } else if (isAbort) {
         dispatch({ type: "CANCEL_TRANSCRIBE" });
       } else {
         dispatch({
           type: "TRANSCRIBE_ERROR",
-          payload: {
-            message: "A network error occurred while uploading your files. Please check your connection and try again.",
-            code: "NETWORK_ERROR",
-          },
+          payload: "A network error occurred while transcribing your files.",
         });
       }
     } finally {
       transcribeAbortControllerRef.current = null;
     }
-  }, [state.selectedFiles, state.transcribeStatus]);
+  }, [state.transcribeStatus, state.selectedFiles]);
 
   const handleClear = useCallback(() => {
-    if (state.status === "loading" || state.transcribeStatus === "loading") return;
+    if (state.status === "loading" && abortControllerRef.current) {
+      abortControllerRef.current.abort("user_cancelled");
+    }
+    if (state.transcribeStatus === "loading" && transcribeAbortControllerRef.current) {
+      transcribeAbortControllerRef.current.abort("user_cancelled");
+    }
     if (timeoutHandleRef.current) clearTimeout(timeoutHandleRef.current);
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
     if (transcribeTimeoutRef.current) clearTimeout(transcribeTimeoutRef.current);
     if (transcribeIntervalRef.current) clearInterval(transcribeIntervalRef.current);
 
-    state.selectedFiles.forEach((item) => {
-      if (item.previewUrl && typeof URL?.revokeObjectURL === "function") {
-        try {
-          URL.revokeObjectURL(item.previewUrl);
-        } catch {
-          // Ignore
-        }
-      }
-    });
+    for (const item of selectedFilesRef.current) {
+      if (item.previewUrl) URL.revokeObjectURL(item.previewUrl);
+    }
 
     dispatch({ type: "CLEAR_SESSION" });
-  }, [state.status, state.transcribeStatus, state.selectedFiles]);
+  }, [state.status, state.transcribeStatus]);
+
+  const handleClearAll = useCallback(() => {
+    handleClear();
+  }, [handleClear]);
 
   const handleCancel = useCallback(() => {
     if (abortControllerRef.current) {
@@ -335,34 +424,35 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const combinedText = useMemo(() => {
+    return buildCombinedText(state).text;
+  }, [state]);
+
+  const readyCheck = useMemo(() => {
+    return isReadyToAnalyse(state);
+  }, [state]);
+
   const handleAnalyze = useCallback(async () => {
     if (state.status === "loading") return;
 
-    const trimmed = state.offerText.trim();
-    if (!trimmed) {
+    const currentCombined = buildCombinedText(state).text;
+    const check = isReadyToAnalyse(state);
+
+    if (!check.ready) {
       dispatch({
         type: "ANALYSIS_ERROR",
         payload: {
           type: "TOO_SHORT",
-          message: "Please paste offer text to review.",
+          message:
+            check.reason ||
+            `Please provide at least ${MIN_INPUT_CHARS} characters of text to review.`,
         },
       });
       return;
     }
 
-    if (trimmed.length < MIN_INPUT_CHARS) {
-      dispatch({
-        type: "ANALYSIS_ERROR",
-        payload: {
-          type: "TOO_SHORT",
-          message: `Offer text is too short (minimum ${MIN_INPUT_CHARS} characters). Please provide more context from the offer.`,
-        },
-      });
-      return;
-    }
-
-    // Snapshot current text being submitted for deterministic quotation validation
-    const currentSnapshot = state.offerText;
+    // Snapshot current combined text being submitted for deterministic quotation validation
+    const currentSnapshot = currentCombined;
 
     dispatch({
       type: "START_ANALYSIS",
@@ -449,83 +539,150 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
               code: "BUSY",
             },
           });
-        } else if (status === 429 || code === "RATE_LIMITED") {
-          dispatch({
-            type: "ANALYSIS_ERROR",
-            payload: { type: "RATE_LIMITED", code: "RATE_LIMITED" },
-          });
-        } else if (status === 504 || code === "TIMEOUT") {
-          dispatch({
-            type: "ANALYSIS_ERROR",
-            payload: { type: "TIMEOUT", code: "TIMEOUT" },
-          });
-        } else if (code === "NOT_CONFIGURED" || status >= 500) {
-          dispatch({
-            type: "ANALYSIS_ERROR",
-            payload: { type: "UNAVAILABLE", code: code || "UPSTREAM_ERROR" },
-          });
         } else if (code === "TOO_SHORT") {
           dispatch({
             type: "ANALYSIS_ERROR",
-            payload: { type: "TOO_SHORT", message: data.error.message, code: "TOO_SHORT" },
+            payload: {
+              type: "TOO_SHORT",
+              message: data.error.message,
+              code: "TOO_SHORT",
+            },
           });
         } else if (code === "TOO_LONG") {
           dispatch({
             type: "ANALYSIS_ERROR",
-            payload: { type: "TOO_LONG", message: data.error.message, code: "TOO_LONG" },
+            payload: {
+              type: "TOO_LONG",
+              message: data.error.message,
+              code: "TOO_LONG",
+            },
+          });
+        } else if (code === "INVALID_INPUT") {
+          dispatch({
+            type: "ANALYSIS_ERROR",
+            payload: {
+              type: "MALFORMED_RESPONSE",
+              message: data.error.message,
+              code: "INVALID_INPUT",
+            },
+          });
+        } else if (code === "NOT_CONFIGURED") {
+          dispatch({
+            type: "ANALYSIS_ERROR",
+            payload: {
+              type: "UNAVAILABLE",
+              message: data.error.message,
+              code: "NOT_CONFIGURED",
+            },
+          });
+        } else if (status === 429 || code === "RATE_LIMITED") {
+          dispatch({
+            type: "ANALYSIS_ERROR",
+            payload: {
+              type: "RATE_LIMITED",
+              message:
+                data.error.message ||
+                "Analysis limit reached. Please wait a moment before trying again.",
+              code: "RATE_LIMITED",
+            },
           });
         } else {
           dispatch({
             type: "ANALYSIS_ERROR",
             payload: {
-              type: "GENERIC",
-              message: data.error.message,
-              code: code || "UNKNOWN_ERROR",
+              type: "UNAVAILABLE",
+              message:
+                data.error.message ||
+                "The analysis service is temporarily unavailable. Please try again shortly.",
+              code: code || "UPSTREAM_ERROR",
             },
           });
         }
       } else {
         dispatch({
           type: "ANALYSIS_ERROR",
-          payload: { type: "MALFORMED_RESPONSE" },
+          payload: {
+            type: "MALFORMED_RESPONSE",
+            message: "Unexpected response format from analysis service.",
+          },
         });
       }
     } catch (err: unknown) {
+      // Clear timers
       if (timeoutHandleRef.current) clearTimeout(timeoutHandleRef.current);
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
 
-      if (timedOut) {
+      const isAbort =
+        (err as Error)?.name === "AbortError" ||
+        controller.signal.aborted ||
+        (err as { name?: string })?.name === "AbortError";
+
+      if (isAbort && timedOut) {
         dispatch({
           type: "ANALYSIS_ERROR",
-          payload: { type: "TIMEOUT" },
+          payload: {
+            type: "TIMEOUT",
+            message:
+              "The analysis took longer than expected. Please try again with shorter text.",
+            code: "TIMEOUT",
+          },
         });
-      } else if (
-        err instanceof Error &&
-        (err.name === "AbortError" || controller.signal.aborted)
-      ) {
-        dispatch({
-          type: "CANCEL_ANALYSIS",
-        });
+      } else if (isAbort) {
+        dispatch({ type: "CANCEL_ANALYSIS" });
       } else {
         dispatch({
           type: "ANALYSIS_ERROR",
-          payload: { type: "NETWORK_ERROR" },
+          payload: {
+            type: "NETWORK_ERROR",
+            message: "A network error occurred. Please check your connection and try again.",
+          },
         });
       }
     } finally {
       abortControllerRef.current = null;
     }
-  }, [state.offerText, state.status]);
+  }, [state]);
 
   const isResultOutdated = useMemo(() => {
     return (
       Boolean(state.analysis) &&
-      state.offerText.trim() !== state.analyzedSnapshotText.trim()
+      combinedText.trim() !== state.analyzedSnapshotText.trim()
     );
-  }, [state.analysis, state.offerText, state.analyzedSnapshotText]);
+  }, [state.analysis, combinedText, state.analyzedSnapshotText]);
 
   const contextValue: OfferSessionContextValue = useMemo(
     () => ({
+      // Wizard:
+      currentStep: state.currentStep,
+      visitedSteps: state.visitedSteps,
+      skippedSteps: state.skippedSteps,
+      source: state.source,
+      conversation: state.conversation,
+      payment: state.payment,
+      combinedText,
+      isReady: readyCheck.ready,
+      readyReason: readyCheck.reason,
+
+      setStep,
+      setStepVisited,
+      setStepSkipped,
+      setSourceChannel,
+      setSourceApplied,
+      setSourceNote,
+      setConversationText,
+      setPaymentAsked,
+      setPaymentPurposes,
+      togglePaymentPurpose,
+      setPaymentAmount,
+      setPaymentDeadline,
+      setDocsAsked,
+      toggleDocsAsked,
+      setDocsShared,
+      toggleDocsShared,
+      setPaymentNote,
+      loadWizardSample,
+
+      // OfferText & analysis:
       offerText: state.offerText,
       undoOfferText: state.undoOfferText,
       addedFileCount: state.addedFileCount,
@@ -541,6 +698,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       handleAnalyze,
       handleCancel,
       handleClear,
+      handleClearAll,
       handleUndoAppendTranscript,
       selectedFiles: state.selectedFiles,
       addSelectedFiles,
@@ -558,6 +716,33 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       dismissTranscriptBanner,
     }),
     [
+      state.currentStep,
+      state.visitedSteps,
+      state.skippedSteps,
+      state.source,
+      state.conversation,
+      state.payment,
+      combinedText,
+      readyCheck.ready,
+      readyCheck.reason,
+      setStep,
+      setStepVisited,
+      setStepSkipped,
+      setSourceChannel,
+      setSourceApplied,
+      setSourceNote,
+      setConversationText,
+      setPaymentAsked,
+      setPaymentPurposes,
+      togglePaymentPurpose,
+      setPaymentAmount,
+      setPaymentDeadline,
+      setDocsAsked,
+      toggleDocsAsked,
+      setDocsShared,
+      toggleDocsShared,
+      setPaymentNote,
+      loadWizardSample,
       state.offerText,
       state.undoOfferText,
       state.addedFileCount,
@@ -572,6 +757,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       handleAnalyze,
       handleCancel,
       handleClear,
+      handleClearAll,
       handleUndoAppendTranscript,
       state.selectedFiles,
       addSelectedFiles,

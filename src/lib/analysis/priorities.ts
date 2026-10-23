@@ -2,6 +2,7 @@ import { ConcernCategory } from "./schema";
 
 export const CONCERN_CATEGORY_PRIORITY_ORDER: readonly ConcernCategory[] = [
   "upfront_payment",
+  "paid_training_described",
   "refundable_deposit",
   "payment_urgency",
   "sensitive_information_request",
@@ -11,6 +12,7 @@ export const CONCERN_CATEGORY_PRIORITY_ORDER: readonly ConcernCategory[] = [
 
 const PRIORITY_MAP: Record<ConcernCategory, number> = {
   upfront_payment: 1,
+  paid_training_described: 1,
   refundable_deposit: 2,
   payment_urgency: 3,
   sensitive_information_request: 4,

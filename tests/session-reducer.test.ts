@@ -3,6 +3,7 @@ import {
   INITIAL_SESSION_STATE,
   offerSessionReducer,
   OfferSessionState,
+  WizardStep,
 } from "@/lib/session-reducer";
 import { ValidatedAnalysis } from "@/lib/analysis/schema";
 import { appendTranscript } from "@/lib/upload/transcribe";
@@ -34,15 +35,35 @@ const mockAnalysis: ValidatedAnalysis = {
 describe("Session Reducer (In-Memory Combined Input & Undo State)", () => {
   it("initializes with empty, idle state and null undo", () => {
     expect(INITIAL_SESSION_STATE).toEqual({
+      currentStep: 1,
+      visitedSteps: { 1: true, 2: false, 3: false, 4: false, 5: false },
+      skippedSteps: { 1: false, 2: false, 3: false, 4: false, 5: false },
       offerText: "",
       undoOfferText: null,
       addedFileCount: 0,
+      selectedFiles: [],
+      source: {
+        channel: null,
+        applied: null,
+        note: "",
+      },
+      conversation: {
+        text: "",
+      },
+      payment: {
+        asked: null,
+        purposes: [],
+        amount: "",
+        deadline: "",
+        docsAsked: [],
+        docsShared: [],
+        note: "",
+      },
       analyzedSnapshotText: "",
       analysis: null,
       status: "idle",
       errorState: null,
       elapsedSeconds: 0,
-      selectedFiles: [],
       transcribeStatus: "idle",
       transcribeError: null,
       transcribeErrorCode: null,
@@ -330,6 +351,201 @@ describe("Session Reducer (In-Memory Combined Input & Undo State)", () => {
     expect(state.transcribeError).toBe("The service is busy.");
     expect(state.transcribeErrorCode).toBe("BUSY");
     expect(state.selectedFiles).toHaveLength(1); // Files KEPT after failure
+  });
+
+  describe("Wizard step transitions and field caps", () => {
+    it("handles SET_STEP and clamps within bounds (1-5), marking visited", () => {
+      let state = offerSessionReducer(INITIAL_SESSION_STATE, {
+        type: "SET_STEP",
+        payload: 3,
+      });
+      expect(state.currentStep).toBe(3);
+      expect(state.visitedSteps[3]).toBe(true);
+
+      // Clamping over 5
+      state = offerSessionReducer(state, {
+        type: "SET_STEP",
+        payload: 9 as unknown as WizardStep,
+      });
+      expect(state.currentStep).toBe(5);
+      expect(state.visitedSteps[5]).toBe(true);
+
+      // Clamping below 1
+      state = offerSessionReducer(state, {
+        type: "SET_STEP",
+        payload: 0 as unknown as WizardStep,
+      });
+      expect(state.currentStep).toBe(1);
+    });
+
+    it("handles SET_STEP_VISITED and SET_STEP_SKIPPED", () => {
+      let state = offerSessionReducer(INITIAL_SESSION_STATE, {
+        type: "SET_STEP_VISITED",
+        payload: { step: 2, visited: true },
+      });
+      expect(state.visitedSteps[2]).toBe(true);
+
+      state = offerSessionReducer(state, {
+        type: "SET_STEP_SKIPPED",
+        payload: { step: 3, skipped: true },
+      });
+      expect(state.skippedSteps[3]).toBe(true);
+    });
+
+    it("handles Source step updates and caps source note at 200 characters", () => {
+      let state = offerSessionReducer(INITIAL_SESSION_STATE, {
+        type: "SET_SOURCE_CHANNEL",
+        payload: "messaging",
+      });
+      expect(state.source.channel).toBe("messaging");
+
+      state = offerSessionReducer(state, {
+        type: "SET_SOURCE_APPLIED",
+        payload: "no",
+      });
+      expect(state.source.applied).toBe("no");
+
+      const longNote = "a".repeat(250);
+      state = offerSessionReducer(state, {
+        type: "SET_SOURCE_NOTE",
+        payload: longNote,
+      });
+      expect(state.source.note).toHaveLength(200);
+      expect(state.source.note).toBe("a".repeat(200));
+    });
+
+    it("handles Conversation step updates and caps conversation text at 4000 characters", () => {
+      const longConv = "c".repeat(4500);
+      const state = offerSessionReducer(INITIAL_SESSION_STATE, {
+        type: "SET_CONVERSATION_TEXT",
+        payload: longConv,
+      });
+      expect(state.conversation.text).toHaveLength(4000);
+      expect(state.conversation.text).toBe("c".repeat(4000));
+    });
+
+    it("handles Money and documents step updates and field caps", () => {
+      let state = offerSessionReducer(INITIAL_SESSION_STATE, {
+        type: "SET_PAYMENT_ASKED",
+        payload: "yes_unpaid",
+      });
+      expect(state.payment.asked).toBe("yes_unpaid");
+
+      state = offerSessionReducer(state, {
+        type: "SET_PAYMENT_PURPOSES",
+        payload: ["registration", "training"],
+      });
+      expect(state.payment.purposes).toEqual(["registration", "training"]);
+
+      state = offerSessionReducer(state, {
+        type: "TOGGLE_PAYMENT_PURPOSE",
+        payload: "equipment",
+      });
+      expect(state.payment.purposes).toContain("equipment");
+
+      state = offerSessionReducer(state, {
+        type: "TOGGLE_PAYMENT_PURPOSE",
+        payload: "registration",
+      });
+      expect(state.payment.purposes).not.toContain("registration");
+
+      // Amount cap (40)
+      state = offerSessionReducer(state, {
+        type: "SET_PAYMENT_AMOUNT",
+        payload: "Rs 5,000 via UPI ".repeat(5), // > 40 chars
+      });
+      expect(state.payment.amount.length).toBeLessThanOrEqual(40);
+
+      // Deadline cap (100)
+      state = offerSessionReducer(state, {
+        type: "SET_PAYMENT_DEADLINE",
+        payload: "Within 24 hours of receiving this message ".repeat(5), // > 100 chars
+      });
+      expect(state.payment.deadline.length).toBeLessThanOrEqual(100);
+
+      // Payment note cap (200)
+      state = offerSessionReducer(state, {
+        type: "SET_PAYMENT_NOTE",
+        payload: "x".repeat(250),
+      });
+      expect(state.payment.note).toHaveLength(200);
+
+      // Documents asked and toggle
+      state = offerSessionReducer(state, {
+        type: "SET_DOCS_ASKED",
+        payload: ["identity", "bank"],
+      });
+      expect(state.payment.docsAsked).toEqual(["identity", "bank"]);
+
+      // Toggling "none" clears other options
+      state = offerSessionReducer(state, {
+        type: "TOGGLE_DOCS_ASKED",
+        payload: "none",
+      });
+      expect(state.payment.docsAsked).toEqual(["none"]);
+
+      // Toggling another option clears "none"
+      state = offerSessionReducer(state, {
+        type: "TOGGLE_DOCS_ASKED",
+        payload: "photo",
+      });
+      expect(state.payment.docsAsked).toEqual(["photo"]);
+
+      // Documents shared
+      state = offerSessionReducer(state, {
+        type: "SET_DOCS_SHARED",
+        payload: ["identity"],
+      });
+      expect(state.payment.docsShared).toEqual(["identity"]);
+
+      state = offerSessionReducer(state, {
+        type: "TOGGLE_DOCS_SHARED",
+        payload: "bank",
+      });
+      expect(state.payment.docsShared).toEqual(["identity", "bank"]);
+    });
+
+    it("handles LOAD_WIZARD_SAMPLE and sets wizard fields, navigating to step 5", () => {
+      const state = offerSessionReducer(INITIAL_SESSION_STATE, {
+        type: "LOAD_WIZARD_SAMPLE",
+        payload: {
+          offerText: "Offer text from sample",
+          source: { channel: "email", applied: "yes", note: "Sample note" },
+          conversation: { text: "Spoke on phone" },
+          payment: { asked: "yes_unpaid", amount: "Rs 2,000", purposes: ["registration"] },
+          step: 5,
+        },
+      });
+
+      expect(state.currentStep).toBe(5);
+      expect(state.visitedSteps[5]).toBe(true);
+      expect(state.offerText).toBe("Offer text from sample");
+      expect(state.source.channel).toBe("email");
+      expect(state.source.applied).toBe("yes");
+      expect(state.conversation.text).toBe("Spoke on phone");
+      expect(state.payment.asked).toBe("yes_unpaid");
+      expect(state.payment.amount).toBe("Rs 2,000");
+    });
+
+    it("handles CLEAR_ALL and resets entire wizard state and analysis to initial", () => {
+      const modifiedState = offerSessionReducer(INITIAL_SESSION_STATE, {
+        type: "LOAD_WIZARD_SAMPLE",
+        payload: {
+          offerText: "Some text",
+          source: { channel: "call", applied: "no", note: "Called me" },
+          conversation: { text: "Described call" },
+          payment: { asked: "yes_paid", amount: "Rs 3,000" },
+        },
+      });
+
+      const cleared = offerSessionReducer(modifiedState, { type: "CLEAR_ALL" });
+      expect(cleared.offerText).toBe("");
+      expect(cleared.currentStep).toBe(1);
+      expect(cleared.source.channel).toBeNull();
+      expect(cleared.conversation.text).toBe("");
+      expect(cleared.payment.asked).toBeNull();
+      expect(cleared.analysis).toBeNull();
+    });
   });
 });
 

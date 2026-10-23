@@ -1,115 +1,70 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { Container } from "@/components/Container";
-import { OfferInputForm } from "@/components/OfferInputForm";
+import { WizardContainer } from "@/components/wizard/WizardContainer";
 import { AnalysisResults } from "@/components/AnalysisResults";
 import { OutdatedBanner } from "@/components/OutdatedBanner";
 import { ErrorAlert } from "@/components/ErrorAlert";
 import { AboutTool } from "@/components/AboutTool";
 import { YourOfferWorkspace } from "@/components/YourOfferWorkspace";
-import { OnThisPageNav, PageSectionItem } from "@/components/OnThisPageNav";
-import { SpinnerIcon, LockIcon } from "@/components/Icons";
+import { ResultsNav, ResultsNavItem } from "@/components/ResultsNav";
+import { ResultsActionsBar } from "@/components/ResultsActionsBar";
+import { SpinnerIcon } from "@/components/Icons";
 import { useOfferSession } from "@/components/SessionProvider";
-import { getResearchNudge } from "@/lib/research/nudge";
-import { buildReviewSummary } from "@/lib/analysis/summary";
-import { SampleCards } from "@/components/SampleCards";
+import { FULL_WIZARD_SAMPLES } from "@/data/wizard-samples";
 import Link from "next/link";
 
 export function CheckClient() {
   const {
-    offerText,
     analyzedSnapshotText,
     analysis,
     isLoading,
     elapsedSeconds,
     errorState,
     isResultOutdated,
-    selectedFiles,
-    addedFileCount,
-    setOfferText,
+    source,
+    conversation,
     handleAnalyze,
     handleCancel,
     handleClear,
+    loadWizardSample,
+    setStep,
   } = useOfferSession();
 
   const [isEditingOffer, setIsEditingOffer] = useState(false);
   const [activeConcernId, setActiveConcernId] = useState<string | null>(null);
-  const [copiedSummary, setCopiedSummary] = useState(false);
   const [mobileOfferExpanded, setMobileOfferExpanded] = useState(false);
 
-  const hasInput = offerText.trim().length > 0 || (selectedFiles && selectedFiles.length > 0);
-  const charCount = offerText.length;
-  const filesCount = selectedFiles ? selectedFiles.length : 0;
-  const filesSummary =
-    filesCount > 0
-      ? `${filesCount} attached, ${filesCount} waiting to be added`
-      : addedFileCount > 0
-      ? `${addedFileCount} added`
-      : "none";
-
-  // Compute sections dynamically for OnThisPageNav
-  const navSections = useMemo<PageSectionItem[]>(() => {
-    if (!analysis) return [];
-    const nudge = getResearchNudge({
-      analysis,
-      sourceText: analyzedSnapshotText,
-    });
-    const isRecommended = nudge.level === "recommended";
-
-    const sections: PageSectionItem[] = [
-      { id: "section-summary", label: "Review summary" },
-    ];
-
-    if (isRecommended) {
-      sections.push({ id: "section-research", label: "Recommended research" });
-    }
-
-    sections.push(
-      {
-        id: "section-observations",
-        label: "Potential concerns",
-        count: analysis.concerns.length,
-      },
-      {
-        id: "section-missing",
-        label: "Missing details",
-        count: analysis.missingInfo.length,
-      },
-      {
-        id: "section-questions",
-        label: "Questions to verify",
-        count: analysis.verificationQuestions.length,
+  // Auto-load sample if ?sample= query parameter is present in URL
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const sampleId = params.get("sample");
+      if (sampleId) {
+        const full = FULL_WIZARD_SAMPLES.find((s) => s.id === sampleId);
+        if (full) {
+          loadWizardSample(full);
+          setStep(5);
+        }
       }
-    );
-
-    if (!isRecommended) {
-      sections.push({
-        id: "section-research",
-        label: "Company research (optional)",
-      });
     }
+  }, [loadWizardSample, setStep]);
 
-    sections.push(
-      { id: "section-resources", label: "Official resources" },
-      { id: "section-limits", label: "Review limits" }
-    );
-
-    return sections;
-  }, [analysis, analyzedSnapshotText]);
-
-  const handleCopySummary = useCallback(async () => {
-    if (!analysis) return;
-    const summaryText = buildReviewSummary(analysis, analyzedSnapshotText);
-    try {
-      await navigator.clipboard.writeText(summaryText);
-      setCopiedSummary(true);
-      setTimeout(() => setCopiedSummary(false), 2000);
-    } catch {
-      // Fallback handled in results component
-    }
-  }, [analysis, analyzedSnapshotText]);
+  // Compute sections dynamically for ResultsNav (left rail)
+  const resultsNavItems = useMemo<ResultsNavItem[]>(() => {
+    if (!analysis) return [];
+    return [
+      { id: "section-summary", label: "Overview" },
+      { id: "section-observations", label: "Observations", badge: analysis.concerns.length },
+      { id: "section-missing", label: "Missing details", badge: analysis.missingInfo.length },
+      { id: "section-questions", label: "Questions & checks", badge: analysis.verificationQuestions.length },
+      { id: "section-research", label: "Company research" },
+      { id: "section-advisories", label: "Advisories & resources", badge: 3 },
+      { id: "section-your-text", label: "Your text" },
+    ];
+  }, [analysis]);
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col justify-between transition-colors">
@@ -120,165 +75,11 @@ export function CheckClient() {
             PRE-REVIEW STATE (Initial Visit / Before Analysis)
            ======================================================== */}
         {!isLoading && !analysis && !errorState && (
-          <div>
-            {/* Below 1280px (< xl): Single column with samples disclosure above input card */}
-            <div className="xl:hidden mb-6">
-              <details
-                open={!hasInput}
-                className="group rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 shadow-2xs space-y-3 transition-colors"
-              >
-                <summary className="flex items-center justify-between font-semibold text-xs sm:text-sm text-[var(--text)] cursor-pointer list-none [&::-webkit-details-marker]:hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 min-h-[44px]">
-                  <div className="flex items-center gap-2">
-                    <span>Try a sample offer</span>
-                    <span className="text-xs font-normal text-[var(--text-muted)]">
-                      {!hasInput ? "(click to load)" : "(collapsed)"}
-                    </span>
-                  </div>
-                  <svg
-                    aria-hidden="true"
-                    className="w-4 h-4 text-[var(--text-muted)] group-open:rotate-180 transition-transform duration-200 shrink-0"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </summary>
-                <div className="pt-3 border-t border-[var(--border)]">
-                  <SampleCards
-                    currentText={offerText}
-                    onSelectSample={setOfferText}
-                    disabled={isLoading}
-                  />
-                </div>
-              </details>
-            </div>
-
-            <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
-              {/* Left Column (7/12 on xl): Input card with file upload & shortcut */}
-              <div className="w-full xl:col-span-7 space-y-4">
-                <OfferInputForm
-                  offerText={offerText}
-                  setOfferText={setOfferText}
-                  onAnalyze={async () => {
-                    setIsEditingOffer(false);
-                    await handleAnalyze();
-                  }}
-                  onCancel={handleCancel}
-                  onClear={() => {
-                    setIsEditingOffer(false);
-                    handleClear();
-                  }}
-                  isLoading={isLoading}
-                  elapsedSeconds={elapsedSeconds}
-                />
-              </div>
-
-              {/* Right Column (5/12 on xl, visible on desktop >= 1280px) */}
-              <div className="hidden xl:block xl:col-span-5 space-y-6">
-                {!hasInput ? (
-                  /* BEFORE any input: Sample cards and What you will get */
-                  <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs space-y-3.5 transition-colors">
-                    <div className="flex items-center justify-between border-b border-[var(--border)] pb-2.5">
-                      <h3 className="text-xs font-sans font-semibold text-[var(--text-muted)]">
-                        Try a sample offer
-                      </h3>
-                      <span className="text-xs font-sans text-[var(--text-muted)]">
-                        Click to load
-                      </span>
-                    </div>
-
-                    <SampleCards
-                      currentText={offerText}
-                      onSelectSample={setOfferText}
-                      disabled={isLoading}
-                    />
-                  </div>
-                ) : (
-                  /* AFTER text or files exist: "Before you review" panel */
-                  <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs space-y-4 transition-colors">
-                    <h3 className="text-xs font-sans font-semibold text-[var(--text)] border-b border-[var(--border)] pb-2.5">
-                      Before you review
-                    </h3>
-
-                    {/* Source summary */}
-                    <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] p-3 text-xs text-[var(--text)] space-y-1">
-                      <span className="font-semibold block text-[var(--text)]">Source summary:</span>
-                      <p className="font-mono text-xs text-[var(--text-muted)]">
-                        text: {charCount.toLocaleString()} characters; files: {filesSummary}
-                      </p>
-                    </div>
-
-                    {/* Reminder to remove personal details */}
-                    <div className="flex items-start gap-2.5 text-xs text-[var(--text-muted)] leading-relaxed">
-                      <LockIcon className="w-4 h-4 text-[var(--color-primary)] shrink-0 mt-0.5" />
-                      <p>
-                        Remove names, phone numbers, email addresses, bank details, government IDs, and passwords before analyzing.
-                      </p>
-                    </div>
-
-                    {/* Collapsed disclosure to try a sample instead */}
-                    <details className="group rounded-lg border border-[var(--border)] bg-[var(--surface-muted)]/60 p-3 text-xs">
-                      <summary className="flex items-center justify-between font-semibold text-[var(--text)] cursor-pointer list-none [&::-webkit-details-marker]:hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 min-h-[44px]">
-                        <span>Try a sample instead</span>
-                        <svg
-                          aria-hidden="true"
-                          className="w-3.5 h-3.5 text-[var(--text-muted)] group-open:rotate-180 transition-transform duration-200 shrink-0"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          strokeWidth={2}
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </summary>
-                      <div className="pt-3 border-t border-[var(--border)] mt-2">
-                        <SampleCards
-                          currentText={offerText}
-                          onSelectSample={setOfferText}
-                          disabled={isLoading}
-                        />
-                      </div>
-                    </details>
-                  </div>
-                )}
-
-                {/* What you will get card */}
-                <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs space-y-3 transition-colors">
-                  <h3 className="text-xs font-sans font-semibold text-[var(--text-muted)] border-b border-[var(--border)] pb-2">
-                    What you will get
-                  </h3>
-                  <ul className="space-y-2 text-xs sm:text-sm text-[var(--text)] leading-relaxed">
-                    <li className="flex items-start gap-2.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)] mt-2 shrink-0" />
-                      <span>
-                        <strong>Potential concerns:</strong> Quote-linked observations on upfront deposits, pressure tactics, and irregular channels.
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-2.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)] mt-2 shrink-0" />
-                      <span>
-                        <strong>Missing details:</strong> Essential terms absent from the offer (stipend amount, dates, responsibilities).
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-2.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)] mt-2 shrink-0" />
-                      <span>
-                        <strong>Questions to verify:</strong> Specific, non-accusatory questions to clarify directly with the employer.
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-2.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)] mt-2 shrink-0" />
-                      <span>
-                        <strong>Independent research:</strong> Neutral guidance and prompts to verify the entity before committing.
-                      </span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
+          <WizardContainer
+            onAnalyze={handleAnalyze}
+            isLoading={isLoading}
+            elapsedSeconds={elapsedSeconds}
+          />
         )}
 
         {/* ========================================================
@@ -368,50 +169,45 @@ export function CheckClient() {
 
             {isEditingOffer ? (
               <div className="max-w-4xl mx-auto">
-                <OfferInputForm
-                  offerText={offerText}
-                  setOfferText={setOfferText}
+                <WizardContainer
                   onAnalyze={async () => {
                     setIsEditingOffer(false);
                     await handleAnalyze();
-                  }}
-                  onCancel={handleCancel}
-                  onClear={() => {
-                    setIsEditingOffer(false);
-                    handleClear();
                   }}
                   isLoading={isLoading}
                   elapsedSeconds={elapsedSeconds}
                 />
               </div>
             ) : (
-              /* Post-review 3-Zone Desktop Layout (>= 1280px), 2-Zone (1024-1279px), 1-Zone (< 1024px) */
-              <div className="grid grid-cols-1 lg:grid-cols-[1fr_260px] xl:grid-cols-[400px_1fr_260px] gap-8 items-start">
-                {/* 1) Left Rail (~400px, desktop only >= 1280px, sticky): 'Your text' document viewer */}
+              /* Post-review 3-Zone Desktop Layout: Left Rail (~240px ResultsNav), Centre Primary (~640-760px), Right Rail (~360px YourOfferWorkspace) */
+              <div className="grid grid-cols-1 xl:grid-cols-[240px_1fr] 2xl:grid-cols-[240px_1fr_360px] gap-8 items-start">
+                {/* 1) Left Rail (~240px, desktop only >= 1280px, sticky): On-page section navigation */}
                 <aside
-                  aria-label="Your text document viewer"
+                  aria-label="Review on-page navigation"
                   className="hidden xl:block xl:sticky xl:top-20 space-y-4"
                 >
-                  <YourOfferWorkspace
-                    text={analyzedSnapshotText}
-                    concerns={analysis.concerns}
-                    onEditText={() => setIsEditingOffer(true)}
-                    onNewReview={() => {
-                      setIsEditingOffer(false);
-                      handleClear();
-                    }}
-                    activeConcernId={activeConcernId}
-                    onSelectConcern={setActiveConcernId}
-                  />
+                  <ResultsNav items={resultsNavItems} />
                 </aside>
 
                 {/* 2) Centre Fluid Column: Review results (prose <= 70ch) */}
                 <section
                   aria-label="Review findings and observations"
-                  className="min-w-0 space-y-6"
+                  className="min-w-0 space-y-6 max-w-3xl w-full mx-auto"
                 >
-                  {/* Expandable 'Your text' panel for screens < 1280px (medium and mobile) */}
-                  <div className="xl:hidden rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3">
+                  {/* Results Action Bar (Save as PDF, Copy summary, Share, Start new review) */}
+                  <ResultsActionsBar
+                    analysis={analysis}
+                    analyzedSnapshotText={analyzedSnapshotText}
+                    sourceNote={source.note}
+                    conversationText={conversation.text}
+                    onClearSession={() => {
+                      setIsEditingOffer(false);
+                      handleClear();
+                    }}
+                  />
+
+                  {/* Expandable 'Your text' panel for screens < 1536px (2xl) */}
+                  <div className="2xl:hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3">
                     <button
                       type="button"
                       onClick={() => setMobileOfferExpanded(!mobileOfferExpanded)}
@@ -463,15 +259,21 @@ export function CheckClient() {
                   />
                 </section>
 
-                {/* 3) Right Rail (~260px, sticky on lg >= 1024px): On this page nav + Quick actions */}
+                {/* 3) Right Rail (~360px, desktop >= 1536px / 2xl, sticky): 'Your text' document viewer */}
                 <aside
-                  aria-label="Review page navigation and actions"
-                  className="hidden lg:block lg:sticky lg:top-20 space-y-4"
+                  aria-label="Your text document viewer"
+                  className="hidden 2xl:block 2xl:sticky 2xl:top-20 space-y-4"
                 >
-                  <OnThisPageNav
-                    sections={navSections}
-                    onCopySummary={handleCopySummary}
-                    copiedSummary={copiedSummary}
+                  <YourOfferWorkspace
+                    text={analyzedSnapshotText}
+                    concerns={analysis.concerns}
+                    onEditText={() => setIsEditingOffer(true)}
+                    onNewReview={() => {
+                      setIsEditingOffer(false);
+                      handleClear();
+                    }}
+                    activeConcernId={activeConcernId}
+                    onSelectConcern={setActiveConcernId}
                   />
                 </aside>
               </div>

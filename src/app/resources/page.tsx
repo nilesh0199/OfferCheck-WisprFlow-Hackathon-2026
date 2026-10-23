@@ -7,6 +7,8 @@ import { LogoIcon, GitHubIcon, ExternalLinkIcon } from "@/components/Icons";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { VERIFICATION_RESOURCES } from "@/data/verification-resources";
 import { POST_PAYMENT_STEPS } from "@/data/post-payment-steps";
+import { BackToReviewBanner } from "@/components/BackToReviewBanner";
+import { OfficialAdvisoriesSection } from "@/components/OfficialAdvisoriesSection";
 import { APP_NAME } from "@/lib/config";
 
 export const metadata: Metadata = {
@@ -63,6 +65,9 @@ export default function ResourcesPage() {
           </div>
         </Container>
       </nav>
+
+      {/* Active Review Navigation Banner (if session exists) */}
+      <BackToReviewBanner />
 
       {/* Main Content */}
       <main className="flex-1 py-8 sm:py-12 space-y-12">
@@ -147,6 +152,9 @@ export default function ResourcesPage() {
               ))}
             </div>
           </section>
+
+          {/* Institutional Advisories */}
+          <OfficialAdvisoriesSection />
         </Container>
       </main>
 

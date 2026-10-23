@@ -17,7 +17,8 @@ import { sortConcernsByPriority } from "./priorities";
  */
 export function buildReviewSummary(
   analysis: ValidatedAnalysis,
-  sourceText: string = ""
+  sourceText: string = "",
+  extraContext?: { sourceNote?: string; conversationText?: string }
 ): string {
   const lines: string[] = [];
 
@@ -29,6 +30,17 @@ export function buildReviewSummary(
   // Overall Note (if present)
   if (analysis.overallNote) {
     lines.push(`Note: ${analysis.overallNote}`);
+    lines.push("");
+  }
+
+  // Source note & described conversation (if present)
+  if (extraContext?.sourceNote) {
+    lines.push(`Source note: ${extraContext.sourceNote}`);
+  }
+  if (extraContext?.conversationText) {
+    lines.push(`Described conversation: ${extraContext.conversationText}`);
+  }
+  if (extraContext?.sourceNote || extraContext?.conversationText) {
     lines.push("");
   }
 

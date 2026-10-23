@@ -52,6 +52,19 @@ describe("Source Markers - containsSourceMarkerLine", () => {
     expect(containsSourceMarkerLine(textWithMarker)).toBe(true);
   });
 
+  it("detects section heading marker lines within quotes or texts", () => {
+    expect(containsSourceMarkerLine("Quote with ---- Offer text ---- inside")).toBe(true);
+    expect(
+      containsSourceMarkerLine("Line 1\n---- How you received it (your answers) ----\nLine 2")
+    ).toBe(true);
+    expect(
+      containsSourceMarkerLine("---- Call or conversation (your description) ----")
+    ).toBe(true);
+    expect(
+      containsSourceMarkerLine("---- Money and documents (your answers) ----")
+    ).toBe(true);
+  });
+
   it("returns false when text contains no marker lines", () => {
     const normalText = "Dear Candidate,\nYour monthly stipend is 20,000 INR.";
     expect(containsSourceMarkerLine(normalText)).toBe(false);

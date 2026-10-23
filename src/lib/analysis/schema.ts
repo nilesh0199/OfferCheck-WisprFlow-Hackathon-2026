@@ -5,6 +5,7 @@ import { z } from "zod";
  */
 export const ConcernCategoryEnum = z.enum([
   "upfront_payment",
+  "paid_training_described",
   "refundable_deposit",
   "payment_urgency",
   "sensitive_information_request",

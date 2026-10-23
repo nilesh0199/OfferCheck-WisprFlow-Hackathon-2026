@@ -8,14 +8,14 @@ import { ModelOutput } from "@/lib/analysis/schema";
 
 describe("Synthetic Examples and Test Fixtures", () => {
   describe("Synthetic Examples integrity", () => {
-    it("contains exactly five examples", () => {
-      expect(SYNTHETIC_EXAMPLES.length).toBe(5);
+    it("contains exactly six examples", () => {
+      expect(SYNTHETIC_EXAMPLES.length).toBe(6);
     });
 
     it("has unique IDs for every example", () => {
       const ids = SYNTHETIC_EXAMPLES.map((ex) => ex.id);
       const uniqueIds = new Set(ids);
-      expect(uniqueIds.size).toBe(5);
+      expect(uniqueIds.size).toBe(6);
     });
 
     it("all examples are labelled 'Synthetic example'", () => {

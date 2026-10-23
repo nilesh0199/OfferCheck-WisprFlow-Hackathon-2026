@@ -10,6 +10,10 @@
  * - User text is never modified, reordered, or labelled.
  */
 
+import { isSectionMarkerLine, SECTION_MARKER_LINES } from "../combined-text";
+
+export { isSectionMarkerLine } from "../combined-text";
+
 export type SourceKind = "Screenshot" | "PDF";
 
 export interface TranscribedItem {
@@ -31,17 +35,33 @@ export function formatSourceMarker(kind: SourceKind, n: number): string {
  */
 export function isSourceMarkerLine(line: string): boolean {
   if (!line || typeof line !== "string") return false;
-  const clean = line.replace(/\r$/, "");
+  const clean = line.replace(/\r$/, "").trim();
   return /^---- Text from (Screenshot|PDF) \d+ ----$/.test(clean);
 }
 
 /**
- * Checks if a multi-line text or quote contains any source marker line.
+ * Checks if a string line matches either a source marker or a wizard section marker line.
+ */
+export function isAnyMarkerLine(line: string): boolean {
+  return isSourceMarkerLine(line) || isSectionMarkerLine(line);
+}
+
+/**
+ * Checks if a multi-line text or quote contains any source marker line or section marker line.
  */
 export function containsSourceMarkerLine(text: string): boolean {
   if (!text || typeof text !== "string") return false;
   const lines = text.split("\n");
-  return lines.some((line) => isSourceMarkerLine(line.trim()));
+  if (lines.some((line) => isAnyMarkerLine(line.trim()))) {
+    return true;
+  }
+  if (SECTION_MARKER_LINES.some((heading) => text.includes(heading))) {
+    return true;
+  }
+  if (/---- Text from (Screenshot|PDF) \d+ ----/.test(text)) {
+    return true;
+  }
+  return false;
 }
 
 /**

@@ -22,11 +22,11 @@ describe("/api/analyze Route Handler", () => {
     }
   });
 
-  it("returns 413 when Content-Length header exceeds 40 KB", async () => {
+  it("returns 413 when Content-Length header exceeds 64 KB", async () => {
     const req = new NextRequest("http://localhost:3000/api/analyze", {
       method: "POST",
       headers: {
-        "content-length": String(50 * 1024), // 50 KB
+        "content-length": String(70 * 1024), // 70 KB
         "content-type": "application/json",
       },
       body: JSON.stringify({ text: "Hello" }),
@@ -37,11 +37,12 @@ describe("/api/analyze Route Handler", () => {
     const body = await res.json();
     expect(body.ok).toBe(false);
     expect(body.error.code).toBe("TOO_LONG");
+    expect(body.error.message).toContain("64 KB");
     expect(res.headers.get("Cache-Control")).toContain("no-store");
   });
 
-  it("returns 413 when body length exceeds 40 KB", async () => {
-    const oversizedText = "x".repeat(45 * 1024);
+  it("returns 413 when body length exceeds 64 KB", async () => {
+    const oversizedText = "x".repeat(70 * 1024);
     const req = new NextRequest("http://localhost:3000/api/analyze", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -53,6 +54,7 @@ describe("/api/analyze Route Handler", () => {
     const body = await res.json();
     expect(body.ok).toBe(false);
     expect(body.error.code).toBe("TOO_LONG");
+    expect(body.error.message).toContain("64 KB");
   });
 
   it("returns 400 when body is not valid JSON", async () => {

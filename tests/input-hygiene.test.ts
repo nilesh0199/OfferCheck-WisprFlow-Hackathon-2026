@@ -71,7 +71,7 @@ describe("Input Hygiene Validator", () => {
     }
   });
 
-  it("rejects text longer than MAX_INPUT_CHARS (8000) with 413 TOO_LONG", () => {
+  it("rejects text longer than MAX_INPUT_CHARS (12000) with 413 TOO_LONG", () => {
     const longText = "A".repeat(MAX_INPUT_CHARS + 1);
 
     const res = validateInputHygiene(longText);
@@ -79,6 +79,7 @@ describe("Input Hygiene Validator", () => {
     if (!res.ok) {
       expect(res.code).toBe("TOO_LONG");
       expect(res.httpStatus).toBe(413);
+      expect(res.message).toContain("12,000");
     }
   });
 

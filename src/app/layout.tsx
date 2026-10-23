@@ -5,6 +5,7 @@ import { APP_NAME, TAGLINE } from "@/lib/config";
 import { THEME_INLINE_SCRIPT } from "@/lib/theme";
 import { SessionProvider } from "@/components/SessionProvider";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { CommandBar } from "@/components/CommandBar";
 
 const newsreader = Newsreader({
   subsets: ["latin"],
@@ -85,6 +86,7 @@ export default function RootLayout({
         <SessionProvider>
           <ScrollToTop />
           {children}
+          <CommandBar />
         </SessionProvider>
       </body>
     </html>

@@ -143,4 +143,13 @@ describe("buildReviewSummary", () => {
     );
     expect(summary).toContain("Role title: Cloud Engineering Internship");
   });
+
+  it("includes source note and conversation text when extraContext is provided", () => {
+    const summary = buildReviewSummary(sampleAnalysis, "", {
+      sourceNote: "Received via unsolicited WhatsApp message",
+      conversationText: "Recruiter called and insisted on immediate payment.",
+    });
+    expect(summary).toContain("Source note: Received via unsolicited WhatsApp message");
+    expect(summary).toContain("Described conversation: Recruiter called and insisted on immediate payment.");
+  });
 });

@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { ValidatedConcern } from "@/lib/analysis/schema";
 import { buildHighlightSegments, HighlightSegment } from "@/lib/analysis/highlights";
-import { isSourceMarkerLine } from "@/lib/upload";
+import { isAnyMarkerLine } from "@/lib/upload";
 import { ChevronDownIcon, FileTextIcon } from "./Icons";
 
 interface HighlightedTextViewerProps {
@@ -113,7 +113,7 @@ export function HighlightedTextViewer({
         >
           {documentLines.map((line, lIdx) => {
             const lineText = line.segments.map((s) => s.text).join("");
-            const isMarker = isSourceMarkerLine(lineText.trim());
+            const isMarker = isAnyMarkerLine(lineText.trim());
 
             if (isMarker) {
               return (

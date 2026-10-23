@@ -3,7 +3,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { ValidatedConcern } from "@/lib/analysis/schema";
 import { buildHighlightSegments, HighlightSegment } from "@/lib/analysis/highlights";
-import { isSourceMarkerLine } from "@/lib/upload";
+import { isAnyMarkerLine } from "@/lib/upload";
 import { CheckIcon } from "./Icons";
 
 export interface YourOfferWorkspaceProps {
@@ -126,7 +126,7 @@ export function YourOfferWorkspace({
       >
         {documentLines.map((line) => {
           const fullLineText = line.segments.map((s) => s.text).join("");
-          const isMarker = isSourceMarkerLine(fullLineText.trim());
+          const isMarker = isAnyMarkerLine(fullLineText.trim());
 
           if (isMarker) {
             return (

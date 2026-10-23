@@ -15,7 +15,7 @@ export type InputHygieneResult =
  * 2. Blocks text with > 30% unprintable control characters.
  * 3. Enforces non-empty input.
  * 4. Enforces minimum characters (MIN_INPUT_CHARS = 40).
- * 5. Enforces maximum characters (MAX_INPUT_CHARS = 8000).
+ * 5. Enforces maximum characters (MAX_INPUT_CHARS = 12000).
  * 6. Normalises CRLF to LF only if it does not change quote offsets (if text contains CRLF,
  *    stripping \r would alter offsets for quotes, so normalisation is NOT performed).
  */

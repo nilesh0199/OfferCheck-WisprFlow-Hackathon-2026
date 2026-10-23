@@ -126,47 +126,33 @@ Used consistently across all routes: landing page, `/check`, `/resources`, 404, 
 
 ### 4.2 Tool Page (`/check`) Layout Architecture
 
-1. **Pre-Review Input State:**
-   - **Unified Action Bar:** A single top action bar directly atop the input card containing:
-     - Primary "Analyze offer" button (`sm:inline-flex`, min-h 44px).
-     - Secondary "Attach files" button (triggers native file chooser).
-     - Ghost "Clear" button (resets offer text and attached files).
-     - Live character counter with tabular numbers.
-     - Hover-device only keyboard shortcut hint (`Press Ctrl+Enter or ⌘+Enter to analyze`).
-     - One-line disabled reason ("Add at least 40 characters, or add text from your files, to review.") linked via `aria-describedby`.
-   - **Privacy Notice:** Compact policy notice directly under the action bar with "Details" linking to `/privacy`.
-   - **Sample Cards:** The legacy dropdown select has been completely eliminated. Samples load via `SampleCards` with "Synthetic example" badges and an inline replacement confirmation prompt when custom text exists.
-   - **Desktop ($\ge 1280$px / `xl`): Two Columns**
-     - Left column (~7/12): Input form card and optional file upload dropzone.
-     - Right column (~5/12):
-       - *Before input:* `SampleCards` + "What you will get" overview.
-       - *After input:* "Before you review" panel displaying a source summary (character and attached file counts), personal details reminder, and a collapsed "Try a sample instead" disclosure (zero redundant primary buttons).
-   - **Tablet ($640$px – $1279$px): Single Column**
-     - Full-width input form with collapsible "Try a sample instead" disclosure placed cleanly above the card (auto-expanded when empty, collapsed when input exists).
-   - **Mobile ($< 640$px): Mobile Action Pattern**
-     - Top bar displays "Attach files" and "Clear" buttons.
-     - Primary "Analyze offer" button moves to a sticky bottom action bar with `min-h-[44px]`.
-     - Container provides `pb-24 sm:pb-8` bottom padding to prevent content obstruction.
-     - Textarea has `scroll-mb-24` ensuring the text caret is never obscured while typing.
+1. **Pre-Review State: 5-Step Wizard (`/check`)**
+   - **Step 1: Offer** (`Step1Offer.tsx`): Large verbatim textarea, drag-and-drop file upload (`FileUploadDropzone`), attached files list (`SelectedFileList`), character counter against 12,000 characters, full synthetic wizard samples (A & B), and inline replacement confirmations.
+   - **Step 2: Source** (`Step2Source.tsx`): Communication channel radio selector (Email, LinkedIn, WhatsApp, Telegram, Job Portal, Campus, Other), application status ("Did you apply?"), and optional 200-character context note with sensitive identifier detection.
+   - **Step 3: Conversation** (`Step3Conversation.tsx`): 4,000-character narrative textarea for student accounts of verbal phone calls, interviews, or recruiter assurances (typed or dictated), with sensitive identifier warning.
+   - **Step 4: Money and documents** (`Step4Payment.tsx`): Monetary payment status (Yes, No, Not sure), conditional fee purpose checkboxes (Training, Security deposit, Background check, Laptop, Other), amount input, deadline input, document requests/shares checkboxes, and calming helpline callout.
+   - **Step 5: Review** (`Step5Review.tsx`): Concise structured summaries of steps 1-4 with direct "Edit" shortcuts, combined character counter against 12,000, verbatim AI data notices, embedded company research card, and expandable combined text preview.
+   - **Stepper Navigation** (`WizardStepper.tsx`): 5 distinct numbered steps. Grid on desktop ($\ge 640$px) with visited/skipped/current indicators; horizontally scrollable compact chips on mobile (< 640px).
 
-2. **Post-Review State (After Analysis Completes):**
-   - **Desktop ($\ge 1280$px / `xl`): Three-Zone Desk**
-     - *Left Rail (~400px, Sticky):* 'Your offer' document viewer with line numbers (split by `\n`), interactive quote highlights, line-by-line hover effects, and buttons to 'Edit offer' or start a 'New review'.
-     - *Centre Column (Fluid):* Review results (`AnalysisResults.tsx`). All findings, checklist, questions, and resources formatted with prose lines $\le 70$ch.
-     - *Right Rail (~260px, Sticky):* 'On this page' section navigation with active scroll-spy, plus quick actions for 'Copy summary' (plain text) and 'Print / PDF'.
-   - **Medium Screens ($1024$px – $1279$px / `lg`): Two Columns**
-     - Fluid centre column + Right rail navigation.
-     - 'Your offer' is presented above the results in an expandable accordion panel.
-   - **Mobile Screens ($< 1024$px): Single Column**
-     - Sticky horizontal nav pills for jumping between sections.
-     - Expandable 'Your offer' document panel.
-     - All interactive touch targets $\ge 44$px.
+2. **Post-Review State: Master-Detail Desktop Layout ($\ge 1280$px / `xl`):**
+   - **Left Rail (~240px, Sticky):** `ResultsNav.tsx` on-page section navigation with live `IntersectionObserver` scroll-spy, highlighting the active section and displaying count badges (Overview, Observations, Missing details, Questions & checks, Company research, Advisories & resources, Your text).
+   - **Centre Column (~640-760px, Primary Fluid):**
+     - `ResultsActionsBar.tsx`: Save as PDF (dynamic title `OfferCheck Review - [Company] - [Date].pdf`), Copy summary, Share (Web Share API with safe non-leaking excerpt), and Start new review with native `<dialog>` confirmation.
+     - Section 1: Overview card (id `section-summary` / `section-overview`).
+     - Section 2: Observations list (id `section-observations`).
+     - Section 3: Missing details checklist (id `section-missing`).
+     - Section 4: Questions to ask & self-checks (id `section-questions`).
+     - Section 5: Company research card (id `section-research`).
+     - Section 6: Official Institutional Advisories (id `section-advisories`).
+     - Section 7: Verbatim highlighted document viewer (id `section-your-text`).
+   - **Right Rail (~360px, Sticky on $\ge 1536$px / `2xl`):** `YourOfferWorkspace.tsx` live document viewer with line numbers, section markers, interactive yellow quote highlights, and bidirectional scroll linking with observation cards.
+   - **Mobile & Tablet (< 1536px):** Single column layout with expandable "Your text" drawer, responsive action bar, and sticky safe-area mobile navigation.
 
-### 4.3 FAQ Two-Independent-Column Grid
-- Desktop ($\ge 1024$px): Two independent flex columns using pure function `splitIntoColumns(items)` (first $\lceil n/2 \rceil$ items left, remaining items right).
-- Styled with `items-start` so expanding any accordion item does not vertically stretch or shift items in the sibling column.
-- Mobile / tablet ($< 1024$px): Single flex column preserving exact item ordering.
-- Zero CSS `columns` or multi-row grid templates that cause cross-column item height distortion.
+### 4.3 Static, Fast Landing Page
+- Complete simplification from previous animated prototypes: zero entrance animation, zero magnifying lens canvas, zero scroll-driven sticky scenes, zero timers.
+- Instant 0ms render with zero Cumulative Layout Shift (CLS).
+- Interactive features demonstrated via a crisp, static annotated document card with 3 yellow-highlighted phrases and margin observation badges.
+- Highlights the 5-step wizard, Global Command Bar, side-by-side capabilities comparison, and dual-column FAQ.
 
 ### 4.4 Dedicated Privacy Route (`/privacy`)
 - Dedicated static server component at `/privacy` styled with standard layout containers, headers, and footers matching `/resources`.
@@ -179,20 +165,33 @@ Used consistently across all routes: landing page, `/check`, `/resources`, 404, 
 
 ## 5. Evidence Linking & Interaction
 
-- **Centre Column $\to$ Left Rail:** Hovering or focusing an observation card in the findings column activates the quote highlight in the left rail document viewer with an amber ring and smoothly scrolls the left rail to reveal that line if not in view.
-- **Left Rail $\to$ Centre Column:** Clicking or pressing Enter on a highlighted quote in the document rail scrolls directly to the corresponding observation card in the centre column and shifts keyboard focus to it.
+- **Centre Column $\to$ Right Rail:** Clicking "Show in text" or hovering an observation card in the findings column activates the quote highlight in the right rail document viewer with an amber ring and smoothly scrolls the document rail to reveal that line if not in view.
+- **Right Rail $\to$ Centre Column:** Clicking or pressing Enter on a highlighted quote in the document rail scrolls directly to the corresponding observation card in the centre column and shifts keyboard focus to it.
 - **Accessible Markup:** Linked via semantic IDs (`rail-highlight-${id}` and `concern-card-${id}`), `role="button"`, and visible keyboard focus outlines.
 
 ---
 
 ## 6. Motion & Resilience
 
-- **Native Only:** Strictly CSS transforms, transitions, and native `requestAnimationFrame`. Zero third-party animation engines.
-- **Hero Entrance Animation:**
-  - Measures target phrases only after `document.fonts.ready` has resolved and layout has settled.
-  - User skip listeners (pointer, keydown, scroll) enforce a 300ms initial grace period to avoid accidental cancellation from browser scroll restoration or synthetic events.
-  - Always provides a visible, keyboard-accessible ghost button (`Play animation` / `Replay animation`) with a 44px tap target.
-  - Respects `prefers-reduced-motion: reduce` by defaulting to the complete static state without autoplay.
-- **Scroll Scene:**
-  - Parent containers use `overflow-x: clip` rather than `overflow: hidden`, guaranteeing that CSS `position: sticky` functions reliably across reloads and zoom levels.
-  - Automatically falls back to stacked cards in normal document flow on mobile, short viewports ($< 640$px), or reduced-motion environments.
+- **Static-First Philosophy:** The landing page and review tools avoid decorative autoplay animations. Motion is strictly restricted to user-initiated interactions (smooth scroll, accordion dropdowns, dialog open/close).
+- **Reduced Motion:** Fully conforms to `prefers-reduced-motion: reduce` by disabling smooth scroll and transitions.
+- **Responsive Viewport Resilience:** Zero horizontal overflow across all tested viewports: 360px (Galaxy S8), 390px (iPhone 14), 430px (iPhone 14 Pro Max), 768px (iPad), 1024px, 1280px, 1440px, 1920px.
+
+---
+
+## 7. Global Command Bar (Dictate or Type)
+
+- **Purpose:** Enables complete keyboard and voice accessibility without requiring browser microphone permissions or proprietary speech APIs. Works seamlessly with system speech-to-text tools like Wispr Flow.
+- **Placement:** Docked bottom center on desktop, expanding on focus or hover. Keyboard shortcut: `/` or `Ctrl+K` / `Cmd+K`. Dismissable with `Escape`.
+- **Pure Matcher:** `matchCommand` in `src/lib/commands/match.ts` parses over 80 natural language commands, stripping leading/trailing conversational filler words (`please`, `can you`, `could you`, `just`, `now`, `take me to`).
+- **Confirmation Countdown:** Recognized actions display a 2-second visual countdown before executing, with immediate Enter/Click override and an "Add to offer text instead" option.
+- **Dictation Fallback:** Dictated phrases exceeding 80 characters or unrecognised inputs automatically display an "Add to offer text" button.
+
+---
+
+## 8. Design Token Audit & Accessibility Rules
+
+- **Zero Default Palette Color Classes:** Automated audit (`tests/token-audit.test.ts`) enforces that no file in `src/` uses hard-coded Tailwind default palette classes (`text-blue-500`, `bg-gray-100`, `bg-black`, etc.).
+- **Zero Raw Hex Colors in JSX:** All colors must reference CSS semantic design tokens.
+- **Font Size Scale Floor:** Root `clamp(16px, calc(12px + 0.3125vw), 18px)` with all typography defined in `rem` (`text-xs` 0.875rem, `text-sm` 0.9375rem, `text-base` 1rem). No token or class below 0.875rem is permitted.
+- **High Contrast:** All token pairs meet or exceed WCAG 2.1 AA contrast requirements across light and dark themes.

@@ -32,17 +32,21 @@ To protect users and maintain absolute integrity, OfferCheck is explicitly **NOT
 OfferCheck strictly limits its core MVP scope to keep complexity low, eliminate security vulnerabilities, and ensure zero-cost reliability:
 
 ### In Scope (MVP & Core Pipeline)
-- Direct plain-text input of internship or job offer communications (emails, letters, chat messages) up to a maximum character limit (`MAX_INPUT_CHARS = 8000`).
-- Strict client-side and server-side text validation.
-- Server-side analysis returning structured, evidence-backed findings.
+- Direct plain-text input of internship or job offer communications (emails, letters, chat messages) up to a maximum character limit (`MAX_INPUT_CHARS = 12000`).
+- Strict client-side and server-side text validation (64 KB request body cap, 12,000 character limit).
+- 5-step structured review wizard (Offer text/files, Source channel, Verbal conversation, Money & documents, Review snapshot).
+- Global Command Bar (keyboard shortcut `/` or `Ctrl+K` / `Cmd+K`, pure matcher with 80+ patterns, natural filler stripping, 2-second countdown, dictation fallback).
+- Master-detail review results layout (3 desktop columns, PDF export, plain-text summary copy, Web Share API, native `<dialog>` clear confirmation).
+- Server-side analysis returning structured, evidence-backed findings across a 3-model fallback chain (`gemini-3.8-flash` $\to$ `gemini-3.6-flash` $\to$ `gemini-3.5-flash-lite`).
 - Client-side quotation verification to ensure no fabricated quotes appear.
 - Plain-language verification questions tailored to the provided offer.
+- Institutional advisories and verified notices (IIT Bhubaneswar, St. Xavier's Jaipur, Careers360 / IIT Roorkee report).
 
-### Document Input Feature (Phase 8 & 9c - Implemented)
+### Document Input Feature
 - Users may paste text, attach up to 5 files (screenshots: PNG, JPEG, WebP; and/or PDF documents up to 4 MB total), or both.
-- **Combined Input:** A single unified card replaces separate tabs. Text extracted from uploaded files is appended below any existing text in the editor, allowing candidates to combine pasted email headers or notes with attached offer PDFs/screenshots.
+- **Combined Input:** A single unified card in Step 1. Text extracted from uploaded files is appended below any existing text in the editor, allowing candidates to combine pasted email headers or notes with attached offer PDFs/screenshots.
 - **Generic Source Labels:** Appended file blocks are demarcated with generic source markers (`---- Text from Screenshot N ----` and `---- Text from PDF N ----`) without sending original filenames to upstream models. User-entered text is preserved byte-for-byte.
-- **Candidate-Described Conversations:** Candidates without written documents can describe a phone call or verbal interaction in their own words (typed or dictated). The pipeline evaluates candidate accounts with clear epistemic humility, noting that it reflects candidate recall rather than an original document.
+- **Candidate-Described Conversations:** Candidates without written documents can describe a phone call or verbal interaction in their own words (typed or dictated in Step 3). The pipeline evaluates candidate accounts with clear epistemic humility, noting that it reflects candidate recall rather than an original document.
 - **Transcription Only:** Gemini multimodal Interactions API is used solely to transcribe the uploaded document/images into raw text.
 - **Client Canvas Downscaling:** Large screenshots are downscaled in the browser (max 1600 px width, 6000 px height, 12 MP cap) to respect payload limits.
 - **User Review, Redaction & Undo:** The user reviews and can freely edit the combined text in the textarea, or click Undo to revert an appended transcript.
@@ -53,13 +57,16 @@ OfferCheck strictly limits its core MVP scope to keep complexity low, eliminate 
 - **No Video Upload:** Video ingestion/processing is NOT planned (listed as potential future work).
 - **No Inbox or Messaging Integration:** No automated connectors for Gmail, Outlook, WhatsApp, Telegram, or LinkedIn.
 - **No Browser Extension:** Standalone accessible web application only.
+- **No In-Browser Speech APIs or Microphone Access:** Dictation handled via OS/system speech tools (Wispr Flow) outside the browser.
 - **No User Accounts or Authentication:** Publicly accessible for students, job seekers, and judges without login or credentials.
 - **No Database or Saved History:** Ephemeral processing only. Once the user closes or refreshes the page, the submitted text and results are discarded.
 
 ### Application Routing Architecture
-OfferCheck is structured into two dedicated routes:
-- **`/` (Landing Page):** An asymmetric introduction to the product featuring an interactive annotated paper card (using synthetic Example 1 with cursor-hover highlights and sliding margin notes), a three-step scroll-reveal process, product deliverables, epistemic limits, privacy notice, accessible `<details>` FAQ accordion, and primary call-to-action above the fold.
-- **`/check` (Review Workspace):** The complete review workspace for students and first-time job seekers with a two-column workspace ($\ge 1024\text{ px}$), sticky input card, sample picker with confirmation, cancelable in-flight analysis, verbatim quotation highlights, missing term checklist, verification questions with clipboard copy, and official Indian verification resources.
+OfferCheck is structured into dedicated routes:
+- **`/` (Landing Page):** A fast, static introduction to the product featuring a realistic static annotated paper card (using synthetic Example 1 with 3 highlighted phrases and observation badges), a 5-step wizard overview grid, Global Command Bar preview with interactive chips, side-by-side capabilities comparison, and dual-column FAQ.
+- **`/check` (Review Workspace):** The complete review workspace for students and first-time job seekers featuring the 5-step wizard pre-review and a master-detail 3-column layout post-review with left rail section navigation (`ResultsNav`), primary results findings (`AnalysisResults`), right rail document viewer (`YourOfferWorkspace`), and action controls (`ResultsActionsBar`).
+- **`/resources` (Official Resources & Helplines):** Dedicated directory of official government portals, cybercrime reporting channels, post-payment emergency checklists, and verified institutional advisories, with an active review return banner.
+- **`/privacy` (Dedicated Privacy Page):** Static policy explaining ephemeral processing, zero database retention, free-tier Google AI data boundaries, and safe diagnostic logging.
 
 ### In-Memory Session State Architecture Decision
 All active session data (entered offer text, analysis snapshot, analysis result, status, elapsed seconds, and AbortController) is held in client memory (RAM) via a root React Context provider (`SessionProvider`) driven by a pure reducer (`offerSessionReducer`).

@@ -8,6 +8,7 @@ describe("sortConcernsByPriority", () => {
       { id: "c1", category: "other" },
       { id: "c2", category: "payment_urgency" },
       { id: "c3", category: "upfront_payment" },
+      { id: "c3b", category: "paid_training_described" },
       { id: "c4", category: "off_platform_communication" },
       { id: "c5", category: "refundable_deposit" },
       { id: "c6", category: "sensitive_information_request" },
@@ -16,6 +17,7 @@ describe("sortConcernsByPriority", () => {
     const sorted = sortConcernsByPriority(input);
     expect(sorted.map((c) => c.category)).toEqual([
       "upfront_payment",
+      "paid_training_described",
       "refundable_deposit",
       "payment_urgency",
       "sensitive_information_request",

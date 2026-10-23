@@ -6,7 +6,7 @@ import { defaultConcurrencyGuard } from "@/lib/concurrency";
 
 export const maxDuration = 60;
 
-const MAX_BODY_BYTES = 40 * 1024; // 40 KB
+const MAX_BODY_BYTES = 64 * 1024; // 64 KB
 
 const NO_STORE_HEADERS = {
   "Cache-Control": "no-store, no-cache, must-revalidate",
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
         ok: false,
         error: {
           code: "TOO_LONG",
-          message: "Payload exceeds maximum allowed size of 40 KB.",
+          message: "Payload exceeds maximum allowed size of 64 KB.",
         },
       },
       { status: 413, headers: NO_STORE_HEADERS }
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
         ok: false,
         error: {
           code: "TOO_LONG",
-          message: "Payload exceeds maximum allowed size of 40 KB.",
+          message: "Payload exceeds maximum allowed size of 64 KB.",
         },
       },
       { status: 413, headers: NO_STORE_HEADERS }

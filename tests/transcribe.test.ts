@@ -242,8 +242,8 @@ describe("transcribeFiles execution, fallbacks, and output processing", () => {
     }
   });
 
-  it("flags exceedsInputLimit and adds calm warning when transcript length > 8,000", async () => {
-    const longText = "Offer details line. ".repeat(450); // ~9000 chars
+  it("flags exceedsInputLimit and adds calm warning when transcript length > 12,000", async () => {
+    const longText = "Offer details line. ".repeat(650); // ~13,000 chars
     const mockOutput = JSON.stringify({
       files: [
         {
@@ -280,7 +280,7 @@ describe("transcribeFiles execution, fallbacks, and output processing", () => {
       expect(res.exceedsInputLimit).toBe(true);
       expect(res.charCount).toBeGreaterThan(MAX_INPUT_CHARS);
       expect(res.files[0].transcript.length).toBeGreaterThan(MAX_INPUT_CHARS);
-      expect(res.warnings.some((w) => w.includes("exceeds the 8,000-character review limit"))).toBe(true);
+      expect(res.warnings.some((w) => w.includes("exceeds the 12,000-character review limit"))).toBe(true);
     }
   });
 

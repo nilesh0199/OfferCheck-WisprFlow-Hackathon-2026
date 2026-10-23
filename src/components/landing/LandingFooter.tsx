@@ -9,7 +9,7 @@ export function LandingFooter() {
       <Container className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--text-muted)]">
         <div className="space-y-1 text-center sm:text-left">
           <p className="font-medium text-[var(--text)]">OfferCheck</p>
-          <p>Built for the No Hands: Wispr Challenge.</p>
+          <p>Built for the No Hands: Wispr Challenge (WeMakeDevs x Wispr Flow).</p>
         </div>
 
         <div className="flex flex-wrap items-center justify-center gap-5">

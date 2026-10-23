@@ -9,8 +9,10 @@ import { MissingInfoSection } from "./MissingInfoSection";
 import { QuestionsSection } from "./QuestionsSection";
 import { CompanyResearchCard } from "./CompanyResearchCard";
 import { OfficialResourcesSection } from "./OfficialResourcesSection";
+import { OfficialAdvisoriesSection } from "./OfficialAdvisoriesSection";
 import { LimitsSection } from "./LimitsSection";
 import { HighlightedTextViewer } from "./HighlightedTextViewer";
+import { selectAdvisories } from "@/data/advisories";
 import { CopyIcon, CheckIcon } from "./Icons";
 
 interface AnalysisResultsProps {
@@ -224,7 +226,7 @@ export function AnalysisResults({
         />
       )}
 
-      {/* Mobile-Only Horizontal Jump Navigation (Hidden on desktop where Left Panel has OnThisPageNav) */}
+      {/* Mobile-Only Horizontal Jump Navigation (Hidden on desktop where Left Panel has ResultsNav) */}
       <nav
         aria-label="Results sections jump navigation"
         className="sticky top-14 z-10 lg:hidden flex items-center gap-2 overflow-x-auto py-2 px-1 bg-[var(--surface)]/95 border-y border-[var(--border)] text-xs font-medium custom-scrollbar"
@@ -318,17 +320,27 @@ export function AnalysisResults({
         sourceText={analyzedSnapshotText}
       />
 
+      {/* Section: Institutional Advisories & Public Alerts */}
+      <OfficialAdvisoriesSection
+        advisories={selectAdvisories({
+          offerText: analyzedSnapshotText,
+          categoryKeys: sortedConcerns.map((c) => c.category),
+        })}
+      />
+
       {/* Section D: Limits of this review */}
       <LimitsSection limits={analysis.limits} />
 
       {/* "Your text, with quotes highlighted" (collapsible, hidden if 0 concerns) */}
-      <HighlightedTextViewer
-        text={analyzedSnapshotText}
-        concerns={sortedConcerns}
-        activeConcernId={activeConcernId}
-        isOpen={isViewerOpen}
-        onToggle={setIsViewerOpen}
-      />
+      <div id="section-your-text">
+        <HighlightedTextViewer
+          text={analyzedSnapshotText}
+          concerns={sortedConcerns}
+          activeConcernId={activeConcernId}
+          isOpen={isViewerOpen}
+          onToggle={setIsViewerOpen}
+        />
+      </div>
     </div>
   );
 }

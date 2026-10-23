@@ -22,12 +22,13 @@ Official advisories in India state that genuine internship and job services do n
 
 OfferCheck is built for students and first-time job seekers receiving internship or entry-level job solicitations via email, messaging apps, job boards, or phone calls.
 
-A review works in four steps:
+A review works in five structured steps:
 
-1. **Input text or files:** Paste offer text, attach up to 5 screenshots or PDFs (max 4 MB total), or describe a call or conversation in your own words. File text is transcribed and added below existing text with generic source labels, fully editable before analysis with one-click undo.
-2. **Read quote-linked observations:** Every potential concern is tied to an exact verbatim quote validated by deterministic application code against the text.
-3. **Review missing details:** Check a separate list of foundational employment terms that standard offers usually include (stipend or salary, responsibilities, working hours, workplace location, and official contact).
-4. **Take independent next steps:** Copy professionally phrased verification questions to ask the prospective employer, review contextual self-checks, consult verified official reporting channels, or prepare an independent company research prompt.
+1. **Step 1 — Offer text and documents:** Paste offer text, attach up to 5 screenshots or PDFs (max 4 MB total), or load sample offers. Text from files is transcribed and appended below existing text with generic source labels, fully editable with one-click undo.
+2. **Step 2 — Source and channel:** Specify how the offer was received (email, LinkedIn, WhatsApp, Telegram, campus, or job portal) and whether an application was submitted.
+3. **Step 3 — Described conversation:** Describe recruiter phone calls, verbal promises, or interview details in your own words (typed or dictated).
+4. **Step 4 — Money and documents:** Note any requested training fees, security deposits, equipment charges, or sensitive identity documents.
+5. **Step 5 — Review and submit:** Inspect the structured summary, check character limits (up to 12,000 characters), review AI data notices, and launch the evidence-linked review.
 
 ---
 
@@ -38,6 +39,7 @@ A review works in four steps:
 - **No scores or verdicts:** The tool never issues numeric risk scores, percentages, or binary verdict badges ("safe", "verified", "legit", "scam", or "fraud").
 - **Stated limits:** Every review includes immutable limits explaining what the tool cannot know (it cannot verify sender identity, corporate incorporation, or off-document oral promises).
 - **External research handoff:** Rather than claiming to verify company legitimacy in-app, the tool prepares a structured search prompt that candidates can copy to Perplexity to research company presence independently.
+- **Global Command Bar (Dictate or Type):** Use `/` or `Ctrl+K` to jump across steps or sections, run reviews, or export PDFs without touching mouse or menus, with dictation fallback to offer text.
 
 ---
 
@@ -45,18 +47,22 @@ A review works in four steps:
 
 | Feature | Status | Notes |
 | :--- | :--- | :--- |
-| **Text review** | Implemented | Evaluates pasted text up to 8,000 characters. |
-| **File input** | Implemented | Up to 5 screenshots (PNG, JPEG, WebP) or PDFs (max 4 MB total); transcribed via Gemini multimodal API, added below existing text with generic source labels (`---- Text from Screenshot N ----`, `---- Text from PDF N ----`), editable before analysis with 1-level undo. |
-| **Call or conversation descriptions** | Implemented | Candidates can type or dictate an account of a call or conversation in their own words; reviewed with a dedicated review limit acknowledging candidate descriptions. |
-| **Observations with line numbers and highlights** | Implemented | Sticky left rail document viewer with line numbers and quote highlights; bi-directional linking between observation cards and text lines. |
+| **5-step review wizard** | Implemented | Step-by-step guidance separating offer documents, source channel, candidate-described conversations, payment/document requests, and review snapshot at `/check`. |
+| **Combined text & file review** | Implemented | Evaluates combined text up to 12,000 characters; up to 5 screenshots (PNG, JPEG, WebP) or PDFs (max 4 MB total) transcribed via Gemini multimodal API and appended with generic source markers (`---- Text from Screenshot N ----`, `---- Text from PDF N ----`) and 1-level undo. |
+| **Global Command Bar** | Implemented | Docked bottom bar (`/` or `Ctrl+K` / `Cmd+K`) matching 80+ spoken or typed patterns, stripping conversational fillers, 2-second visual countdown, and dictation fallback for text > 80 chars. |
+| **Master-detail results layout** | Implemented | 3 desktop columns: left rail `ResultsNav` with live scroll-spy, middle fluid `AnalysisResults`, and right rail `YourOfferWorkspace` document viewer with line numbers and quote highlights. |
+| **Review actions & export** | Implemented | `ResultsActionsBar` with print-ready PDF export (dynamic title `OfferCheck Review - [Company] - [Date].pdf`), markdown summary clipboard copy, Web Share API, and native `<dialog>` clear confirmation. |
+| **Call or conversation descriptions** | Implemented | Candidates can type or dictate an account of a phone call or verbal interaction in their own words; reviewed with a dedicated review limit acknowledging candidate descriptions. |
+| **Observations with line numbers and highlights** | Implemented | Document viewer with line numbers and quote highlights; bi-directional linking between observation cards and text lines. |
 | **Missing details table** | Implemented | Foundational contractual terms (compensation, roles, working hours, workplace location) displayed in a compact 2-column table (`Topic \| Note`), kept separate from concerns. |
 | **Verification questions** | Implemented | Suggested questions drafted to clarify ambiguous terms, with one-click clipboard copying. |
 | **"Check these yourself" steps** | Implemented | Contextually prioritised verification steps based on identified concerns (payment, sensitive data, off-platform messaging). |
+| **Official institutional advisories** | Implemented | Contextually matched verified notices from IIT Bhubaneswar, St. Xavier's College Jaipur placement cell, and Careers360 / IIT Roorkee report. |
 | **Official resources and resources page** | Implemented | Static `/resources` page with verified links and helpline numbers for AICTE, NCS (1514), MCA Company Search, and the National Cyber Crime Reporting Portal (1930). Zero runtime network calls. |
 | **Company research prompt for Perplexity** | Implemented | Prepares a structured search prompt with confirmed company details, depth switcher, and direct link to Perplexity. No in-app search API or web scraping. |
 | **Light, dark, and system theme** | Implemented | Ink Blue dual-theme palette with navy header bar, WCAG 2.1 AA/AAA contrast, anti-FOUC script, and accessible segmented `ThemeToggle`. |
-| **Landing page** | Implemented | Asymmetric landing page at `/` with interactive annotated paper card, non-blocking hero entrance animation with opt-in reduced-motion playback, and scroll-driven inspection scene. |
-| **Privacy page** | Implemented | Dedicated static `/privacy` route detailing data flows, storage practices, and free-tier AI disclosures. |
+| **Static landing page** | Implemented | Fast static landing page at `/` with static annotated paper card, 5 wizard steps overview, command bar preview, capabilities comparison, dual-column FAQ, and WeMakeDevs x Wispr Flow attribution. |
+| **Privacy page** | Implemented | Dedicated static `/privacy` route detailing ephemeral tab-memory processing, zero database retention, free-tier Google AI disclosures, and client-side sensitive identifier warnings. |
 | **Safeguards** | Implemented | In-memory sliding-window rate limiting (8/15m, 30/24h for analysis; 6/15m, 20/24h for uploads) with salted SHA-256 IP hashing, model circuit breaker, in-memory concurrency guard (max 4), input hygiene (blocking NUL/control characters), and security headers. |
 | **Job-offer coverage** | Partially implemented | The review prompt treats salary, probation period, joining date and contract terms as missing details when unstated, and display labels say "Stipend or salary" and "Duration or contract term". There are no job-offer sample texts and no job-offer evaluation yet; clauses such as service bonds or training-fee agreements are not specifically handled. |
 
@@ -239,9 +245,12 @@ The test suite runs completely offline with zero network calls and mock client i
 npm test
 ```
 
-As of 22 Oct 2026, the offline test suite passes **379 tests across 40 test files**.
+As of 23 Oct 2026, the offline test suite passes **420 tests across 43 test files**.
 
 The offline test suite validates:
+- 5-step wizard workflow and pure session reducer state transitions.
+- Global Command Bar natural language matching across 80+ patterns and conversational filler stripping.
+- Institutional advisories pure matching against offer context and payment requests.
 - Deterministic quote validation (Unicode grapheme handling, exact substring search, nested quote containment, and duplicate deduplication).
 - Epistemic overclaiming guardrails and tone compliance.
 - Zod schema validation and model output parsing.

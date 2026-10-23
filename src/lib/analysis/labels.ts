@@ -9,6 +9,7 @@ import {
  */
 export const CONCERN_CATEGORY_LABELS: Record<ConcernCategory, string> = {
   upfront_payment: "Upfront Payment Requested",
+  paid_training_described: "Paid training or course presented as an internship",
   refundable_deposit: "Refundable Deposit Requested",
   payment_urgency: "Urgent Payment Deadline",
   sensitive_information_request: "Sensitive Information Requested",

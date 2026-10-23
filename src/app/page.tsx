@@ -2,11 +2,10 @@ import React from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { LandingNav } from "@/components/landing/LandingNav";
-import { HeroInteractiveDocument } from "@/components/landing/HeroInteractiveDocument";
-import { ScrollSceneSection } from "@/components/landing/ScrollSceneSection";
-import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
-import { WhatYouGetSection } from "@/components/landing/WhatYouGetSection";
-import { WhatWeDoNotDoSection } from "@/components/landing/WhatWeDoNotDoSection";
+import { StaticAnnotatedCard } from "@/components/landing/StaticAnnotatedCard";
+import { WizardOverviewSection } from "@/components/landing/WizardOverviewSection";
+import { CommandBarPreviewSection } from "@/components/landing/CommandBarPreviewSection";
+import { CapabilitiesComparisonSection } from "@/components/landing/CapabilitiesComparisonSection";
 import { PrivacySection } from "@/components/landing/PrivacySection";
 import { FaqSection } from "@/components/landing/FaqSection";
 import { FinalCta } from "@/components/landing/FinalCta";
@@ -29,7 +28,7 @@ export default function LandingPage() {
         {/* Asymmetric Hero Section */}
         <section className="pt-8 pb-16 sm:pt-14 sm:pb-24 border-b border-[var(--border)] bg-[var(--tint-info-bg)]/40 transition-colors">
           <Container className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
-            {/* Left Column: Asymmetric Typography and CTAs */}
+            {/* Left Column: Asymmetric Typography, Actions & Trust Bar */}
             <div className="lg:col-span-6 space-y-6 text-left">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-medium bg-[var(--surface)] text-[var(--color-primary)] border border-[var(--border)] shadow-2xs">
                 <span className="w-2 h-2 rounded-full bg-[var(--accent-highlighter)]" />
@@ -37,55 +36,53 @@ export default function LandingPage() {
               </div>
 
               <h1 className="text-3xl sm:text-5xl lg:text-5xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]">
-                {TAGLINE}
+                Review an internship or job offer before you pay or share documents
               </h1>
 
               <p className="text-[1.0625rem] sm:text-[1.1875rem] text-[var(--text-muted)] max-w-xl leading-relaxed">
-                Paste an internship or job offer and get quote-linked observations and
-                questions to verify before you pay or share documents.
+                Paste an offer letter, describe a call, or attach screenshots. OfferCheck highlights requested fees, urgent deadlines, and missing details — with direct quotes from your text.
               </p>
 
-              {/* Primary & Secondary CTAs (Guaranteed above fold at 1366x768 and 390x844) */}
+              {/* Primary & Secondary CTAs */}
               <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
                 <Link
                   href="/check"
-                  className="inline-flex items-center justify-center rounded-xl bg-[var(--color-primary)] text-[var(--color-primary-contrast)] px-6 py-3 text-base font-medium shadow-xs hover:bg-[var(--color-primary-hover)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px]"
+                  className="inline-flex items-center justify-center rounded-xl bg-[var(--color-primary)] text-[var(--color-primary-contrast)] px-6 py-3 text-base font-semibold shadow-xs hover:bg-[var(--color-primary-hover)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px]"
                 >
                   Check an offer
                 </Link>
-                <a
-                  href="#how-it-works"
+                <Link
+                  href="/check?sample=full-sample-a"
                   className="inline-flex items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] px-5 py-3 text-base font-medium shadow-xs hover:bg-[var(--surface-muted)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px]"
                 >
-                  See how it works
-                </a>
+                  View sample review
+                </Link>
               </div>
 
-              <div className="pt-2 flex items-center gap-4 text-xs text-[var(--text-muted)] font-mono">
-                <span>• Nothing saved after you leave</span>
-                <span>• No accounts</span>
-                <span>• Free</span>
+              {/* Trust Bar */}
+              <div className="pt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[var(--text-muted)] font-mono">
+                <span>• No sign-up</span>
+                <span>• Nothing stored on our servers</span>
+                <span>• Typed or dictated</span>
+                <span>• Free-tier AI with fallback</span>
               </div>
             </div>
 
-            {/* Right Column: Interactive Annotated Document Card */}
+            {/* Right Column: Static Annotated Card */}
             <div className="lg:col-span-6 w-full">
-              <HeroInteractiveDocument />
+              <StaticAnnotatedCard />
             </div>
           </Container>
         </section>
 
-        {/* Scroll-Driven Scene: A second look, line by line */}
-        <ScrollSceneSection />
+        {/* 5-Step Guided Review Wizard Overview */}
+        <WizardOverviewSection />
 
-        {/* How It Works Section */}
-        <HowItWorksSection />
+        {/* Global Command Bar Preview & Voice Tool Compatibility */}
+        <CommandBarPreviewSection />
 
-        {/* What You Get Section */}
-        <WhatYouGetSection />
-
-        {/* What OfferCheck Will Not Do Section */}
-        <WhatWeDoNotDoSection />
+        {/* What OfferCheck Does and Does Not Do (Two-Column Comparison) */}
+        <CapabilitiesComparisonSection />
 
         {/* Privacy & Transparency Section */}
         <PrivacySection />

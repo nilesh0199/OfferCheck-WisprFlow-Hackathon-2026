@@ -32,7 +32,11 @@ OfferCheck operates statelessly with zero persistence for offers or user identit
 - **No Databases or Accounts:**  
   The application maintains no database, user accounts, authentication tokens, tracking cookies, or server-side persistent storage.
 - **In-Memory Offer Processing & Single Storage Exception:**  
-  All user-submitted offer text, uploaded files, and analysis results are held strictly in the active browser tab's volatile memory (`SessionProvider`) and are completely cleared when the tab is closed or refreshed. The only item saved in browser storage (`localStorage`) is the user's explicit theme preference (`"offercheck-theme"`: `"light"`, `"dark"`, or `"system"`). No text, filenames, or analysis outputs are ever placed in local storage or cookies.
+  All user-submitted offer text, wizard answers (across all 5 steps), uploaded files, and analysis results are held strictly in the active browser tab's volatile memory (`SessionProvider`) and are completely cleared when the tab is closed, refreshed, or cleared via the "Clear and start over" action. The only item saved in browser storage (`localStorage`) is the user's explicit theme preference (`"offercheck-theme"`: `"light"`, `"dark"`, or `"system"`). No text, filenames, wizard responses, or analysis outputs are ever placed in local storage or cookies.
+- **Zero In-Browser Speech APIs or Microphone Access:**  
+  OfferCheck never requests browser microphone permissions, never listens to audio, and never calls proprietary speech-to-text APIs. Voice input is supported solely through the Global Command Bar by accepting text from OS dictation, accessibility tools, or external software like Wispr Flow running entirely outside the browser.
+- **Client-Side Sensitive Identifier Warning:**  
+  Steps 2, 3, and 4 run client-side regex detection (`detectSensitiveIdentifiers`) for Indian identity documents, payment addresses, and financial coordinates (Aadhaar, PAN, bank account numbers, IFSC codes, UPI IDs, and passports), alerting the user before text is sent to upstream models.
 - **No Server-Side File Storage:**  
   Uploaded files are never saved to server disk, temporary directories, or cloud object stores (S3, GCS, Blob). Files exist in memory only during the active request and are discarded immediately.
 - **No Third-Party Analytics:**  

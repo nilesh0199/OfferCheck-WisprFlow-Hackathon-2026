@@ -75,4 +75,18 @@ Operations Desk, LanternSpoke Venture Associates`,
     label: "Synthetic example",
     text: `I got a phone call today around noon from someone saying they were from KiteSpindle Business Services. The caller said my profile was shortlisted for a remote data entry job after looking at my resume on a job portal, and there is no interview needed. They said the monthly pay is Rs 22,000. But before sending any paperwork, they asked me to pay a refundable registration fee of Rs 2,000 through UPI today to confirm my joining slot. They told me that if I do not pay the fee by 6 pm today, the slot will be given to another candidate. They also asked me to send photos of my Aadhaar card and the front page of my bank passbook on WhatsApp so they could set up my employee profile. They promised that the official offer letter will be emailed to me right after the payment is verified.`,
   },
+  {
+    id: "example-6-course-as-internship",
+    title: "Course sold as an internship",
+    label: "Synthetic example",
+    text: `Dear Candidate,
+
+Congratulations! Based on your academic profile, you have been selected for the Web Development Internship Batch at HelixBrattice Skillcraft.
+
+To confirm your admission and reserve your workstation in the batch, candidates are required to pay a mandatory internship programme fee of Rs 3,499 today. This fee covers our 4-week guided training curriculum, hands-on practice modules, and a verified internship completion certificate. We also provide dedicated placement support after completion of all modules to help you connect with potential hiring partners.
+
+Please join our official WhatsApp group for orientation using the link: https://chat.example.com/invite/HelixBatch2026. Seats for this cohort are strictly limited and registrations close tonight at 11:59 pm. Any unconfirmed slots will be allocated to waitlisted candidates immediately tomorrow morning.
+
+For queries or payment receipts, email coordinator@example.com. Welcome to the cohort!`,
+  },
 ];

@@ -46,6 +46,10 @@ describe("matchCommand - Navigation-Only Matcher (60+ tests)", () => {
       expect(matchCommand("close sidebar")).toEqual({ kind: "CLOSE_SIDEBAR" });
       expect(matchCommand("close side bar")).toEqual({ kind: "CLOSE_SIDEBAR" });
       expect(matchCommand("close menu")).toEqual({ kind: "CLOSE_SIDEBAR" });
+      expect(matchCommand("close")).toEqual({ kind: "CLOSE_SIDEBAR" });
+      expect(matchCommand("close it")).toEqual({ kind: "CLOSE_SIDEBAR" });
+      expect(matchCommand("dismiss")).toEqual({ kind: "CLOSE_SIDEBAR" });
+      expect(matchCommand("hide")).toEqual({ kind: "CLOSE_SIDEBAR" });
       expect(matchCommand("hide sidebar")).toEqual({ kind: "CLOSE_SIDEBAR" });
       expect(matchCommand("hide side bar")).toEqual({ kind: "CLOSE_SIDEBAR" });
       expect(matchCommand("dismiss sidebar")).toEqual({ kind: "CLOSE_SIDEBAR" });
@@ -105,9 +109,13 @@ describe("matchCommand - Navigation-Only Matcher (60+ tests)", () => {
 
     it("matches landing section anchor targets", () => {
       expect(matchCommand("how it works")).toEqual({ kind: "NAVIGATE", target: "/#how-it-works", label: "How it works" });
+      expect(matchCommand("how does it work")).toEqual({ kind: "NAVIGATE", target: "/#how-it-works", label: "How it works" });
       expect(matchCommand("what you get")).toEqual({ kind: "NAVIGATE", target: "/#what-you-get", label: "What you get" });
+      expect(matchCommand("what do i get")).toEqual({ kind: "NAVIGATE", target: "/#what-you-get", label: "What you get" });
       expect(matchCommand("faq")).toEqual({ kind: "NAVIGATE", target: "/#faq", label: "FAQ" });
+      expect(matchCommand("faqs")).toEqual({ kind: "NAVIGATE", target: "/#faq", label: "FAQ" });
       expect(matchCommand("frequently asked questions")).toEqual({ kind: "NAVIGATE", target: "/#faq", label: "FAQ" });
+      expect(matchCommand("frequently asked question")).toEqual({ kind: "NAVIGATE", target: "/#faq", label: "FAQ" });
       expect(matchCommand("questions and answers")).toEqual({ kind: "NAVIGATE", target: "/#faq", label: "FAQ" });
     });
 

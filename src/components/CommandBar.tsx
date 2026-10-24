@@ -29,6 +29,9 @@ export function CommandBar() {
   const [countdown, setCountdown] = useState<number | null>(null);
   const [pendingCommand, setPendingCommand] = useState<Command | null>(null);
   const [highlightHelp, setHighlightHelp] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+
+  const isActive = isFocused || Boolean(pendingCommand) || Boolean(rawInput.trim());
 
   const inputRef = useRef<HTMLInputElement>(null);
   const helpDialogRef = useRef<HTMLDialogElement>(null);
@@ -92,13 +95,17 @@ export function CommandBar() {
       clearCountdown();
       clearUnrecognisedTimer();
       setRawInput("");
-      inputRef.current?.blur();
+      // Keep input focused so user can continue voice or keyboard navigation
+      inputRef.current?.focus();
 
       switch (cmd.kind) {
         case "OPEN_SIDEBAR": {
           window.dispatchEvent(
             new CustomEvent("toggle-sidebar", { detail: { open: true } })
           );
+          setTimeout(() => {
+            inputRef.current?.focus();
+          }, 50);
           break;
         }
 
@@ -106,6 +113,9 @@ export function CommandBar() {
           window.dispatchEvent(
             new CustomEvent("toggle-sidebar", { detail: { open: false } })
           );
+          setTimeout(() => {
+            inputRef.current?.focus();
+          }, 50);
           break;
         }
 
@@ -115,14 +125,38 @@ export function CommandBar() {
         }
 
         case "NAVIGATE": {
-          router.push(cmd.target);
-          if (cmd.target.includes("#")) {
+          // If sidebar is open, close it so navigated page or section is visible
+          window.dispatchEvent(
+            new CustomEvent("toggle-sidebar", { detail: { open: false } })
+          );
+
+          if (cmd.target === "/" && pathname === "/") {
+            window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+            if (typeof window !== "undefined" && window.location.hash) {
+              window.history.pushState(null, "", "/");
+            }
+          } else if (cmd.target.startsWith("/#") && pathname === "/") {
             const hash = cmd.target.split("#")[1];
             const el = document.getElementById(hash);
             if (el) {
-              el.scrollIntoView({ behavior: "smooth" });
+              setTimeout(() => {
+                el.scrollIntoView({ behavior: "smooth" });
+              }, 50);
+              window.history.pushState(null, "", `#${hash}`);
+            }
+          } else {
+            router.push(cmd.target);
+            if (cmd.target.includes("#")) {
+              const hash = cmd.target.split("#")[1];
+              setTimeout(() => {
+                const el = document.getElementById(hash);
+                el?.scrollIntoView({ behavior: "smooth" });
+              }, 120);
             }
           }
+          setTimeout(() => {
+            inputRef.current?.focus();
+          }, 50);
           break;
         }
 
@@ -163,10 +197,16 @@ export function CommandBar() {
         }
 
         case "JUMP_SECTION": {
+          window.dispatchEvent(
+            new CustomEvent("toggle-sidebar", { detail: { open: false } })
+          );
           const el = document.getElementById(cmd.sectionId);
           if (el) {
             el.scrollIntoView({ behavior: "smooth" });
           }
+          setTimeout(() => {
+            inputRef.current?.focus();
+          }, 50);
           break;
         }
 
@@ -186,6 +226,7 @@ export function CommandBar() {
       currentStep,
       handleAnalyze,
       isReady,
+      pathname,
       router,
       setStep,
       setStepSkipped,
@@ -367,7 +408,7 @@ export function CommandBar() {
       {/* Docked Command Bar Container */}
       <aside
         aria-label="Command bar"
-        className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-full max-w-[min(480px,94vw)] px-3 sm:px-0 pointer-events-none pb-[calc(env(safe-area-inset-bottom,0px))] print:hidden"
+        className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-[min(480px,94vw)] px-3 sm:px-0 pointer-events-none pb-[calc(env(safe-area-inset-bottom,0px))] print:hidden"
       >
         {/* Status Line: Countdown or Announcement */}
         {pendingCommand && countdown !== null && (
@@ -423,11 +464,48 @@ export function CommandBar() {
         )}
 
         {/* Input Bar */}
-        <div className="pointer-events-auto rounded-xl border border-[var(--border)] bg-[var(--surface)] p-1.5 shadow-md flex items-center gap-1.5 sm:gap-2">
+        <div
+          className={`pointer-events-auto rounded-xl bg-[var(--surface)] p-1.5 flex items-center gap-1.5 sm:gap-2 transition-all duration-300 ${
+            isActive
+              ? "border-2 border-[var(--command-active-border)] ring-3 ring-[var(--command-active-border)]/25 shadow-[0_0_24px_var(--command-active-glow)]"
+              : "border border-[var(--border)] shadow-md"
+          }`}
+        >
+          {/* Active Status Indicator Light */}
+          <div className="pl-2 shrink-0 flex items-center justify-center" aria-hidden="true">
+            {isActive ? (
+              <span className="relative flex h-2.5 w-2.5" title="Command bar active">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--command-active-border)] opacity-75" />
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[var(--command-active-border)]" />
+              </span>
+            ) : (
+              <svg
+                className="w-4 h-4 text-[var(--text-muted)]"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                <line x1="12" x2="12" y1="19" y2="22" />
+              </svg>
+            )}
+          </div>
+
           <input
             ref={inputRef}
             type="text"
             value={rawInput}
+            onFocus={() => setIsFocused(true)}
+            onBlur={(e) => {
+              if (e.currentTarget.parentElement?.contains(e.relatedTarget as Node)) {
+                return;
+              }
+              setIsFocused(false);
+            }}
             onChange={(e) => handleInputChange(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") {

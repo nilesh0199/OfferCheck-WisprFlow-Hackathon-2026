@@ -65,7 +65,12 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
     if (isOpen) {
       if (!dialog.open) {
-        dialog.showModal();
+        // Use non-modal show() so command bar remains accessible and active
+        if (typeof dialog.show === "function") {
+          dialog.show();
+        } else {
+          dialog.showModal();
+        }
       }
       document.documentElement.style.overflow = "hidden";
       document.body.style.overflow = "hidden";
@@ -83,11 +88,29 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     };
   }, [isOpen]);
 
+  // Handle Escape key to close sidebar
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   // Prevent wheel and touch dragging from scrolling background page while sidebar is open
   useEffect(() => {
     if (!isOpen) return;
 
     const preventDefault = (e: Event) => {
+      const target = e.target as HTMLElement | null;
+      if (target?.closest?.('aside[aria-label="Command bar"]')) {
+        return;
+      }
       e.preventDefault();
     };
 
@@ -167,10 +190,19 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const isCompact = viewportHeight < 560;
 
   return (
-    <dialog
-      id="app-sidebar"
-      ref={dialogRef}
-      aria-label="OfferClara navigation sidebar"
+    <>
+      {isOpen && (
+        <div
+          role="presentation"
+          aria-hidden="true"
+          onClick={onClose}
+          className="fixed inset-0 bg-[rgba(0,0,0,0.45)] backdrop-blur-xs z-40 transition-opacity duration-200 pointer-events-auto print:hidden"
+        />
+      )}
+      <dialog
+        id="app-sidebar"
+        ref={dialogRef}
+        aria-label="OfferClara navigation sidebar"
       onCancel={(e) => {
         e.preventDefault();
         onClose();
@@ -551,5 +583,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         </nav>
       </div>
     </dialog>
+    </>
   );
 }

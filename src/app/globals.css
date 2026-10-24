@@ -66,6 +66,12 @@
   --color-tint-attention-accent: #d9a400;
   --color-tint-attention-text: #593e00;
 
+  /* Command Bar Active State (Green light surround) */
+  --color-command-active-border: #10b981;
+  --color-command-active-glow: rgba(16, 185, 129, 0.35);
+  --command-active-border: var(--color-command-active-border);
+  --command-active-glow: var(--color-command-active-glow);
+
   /* Backwards-compatible aliases */
   --bg: var(--color-canvas);
   --surface: var(--color-surface);
@@ -154,6 +160,12 @@
   --color-tint-attention-border: #947620;
   --color-tint-attention-accent: #d9a400;
   --color-tint-attention-text: #fde896;
+
+  /* Command Bar Active State (Green light surround) */
+  --color-command-active-border: #34d399;
+  --color-command-active-glow: rgba(52, 211, 153, 0.45);
+  --command-active-border: var(--color-command-active-border);
+  --command-active-glow: var(--color-command-active-glow);
 
   /* Backwards-compatible aliases */
   --bg: var(--color-canvas);

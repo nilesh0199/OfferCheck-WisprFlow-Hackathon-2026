@@ -123,6 +123,13 @@ export function matchCommand(
 
   // Sidebar controls
   if (
+    cleaned === "close" ||
+    cleaned === "close it" ||
+    cleaned === "close please" ||
+    cleaned === "dismiss" ||
+    cleaned === "hide" ||
+    cleaned === "shut" ||
+    cleaned === "exit" ||
     cleaned === "close sidebar" ||
     cleaned === "close menu" ||
     cleaned === "hide sidebar" ||
@@ -288,7 +295,10 @@ export function matchCommand(
   if (
     cleaned === "how it works" ||
     cleaned === "how does it work" ||
-    cleaned === "how this works"
+    cleaned === "how this works" ||
+    cleaned === "how does this work" ||
+    cleaned === "how work" ||
+    (words.length <= 4 && /\b(how)\b/.test(cleaned) && /\b(work|works)\b/.test(cleaned))
   ) {
     return { kind: "NAVIGATE", target: "/#how-it-works", label: "How it works" };
   }
@@ -297,7 +307,9 @@ export function matchCommand(
     cleaned === "what you get" ||
     cleaned === "what do i get" ||
     cleaned === "what i get" ||
-    cleaned === "features"
+    cleaned === "what we get" ||
+    cleaned === "features" ||
+    (words.length <= 4 && /\b(what)\b/.test(cleaned) && /\b(get)\b/.test(cleaned))
   ) {
     return { kind: "NAVIGATE", target: "/#what-you-get", label: "What you get" };
   }
@@ -306,8 +318,14 @@ export function matchCommand(
     cleaned === "faq" ||
     cleaned === "faqs" ||
     cleaned === "frequently asked questions" ||
+    cleaned === "frequently asked question" ||
     cleaned === "questions and answers" ||
-    cleaned === "frequently asked"
+    cleaned === "question and answer" ||
+    cleaned === "frequently asked" ||
+    cleaned === "q and a" ||
+    cleaned === "q&a" ||
+    cleaned === "faq section" ||
+    (words.length <= 4 && /\b(faq|faqs)\b/.test(cleaned))
   ) {
     return { kind: "NAVIGATE", target: "/#faq", label: "FAQ" };
   }

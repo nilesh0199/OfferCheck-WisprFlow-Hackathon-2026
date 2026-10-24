@@ -58,7 +58,7 @@ export default function PrivacyPage() {
                   If you choose to use the independent company research helper, the generated search prompt contains only confirmed company details (such as organisation name, website, and location) and is copied by you into Perplexity, an external service with its own terms and privacy policy. Raw offer letters are never included in the research prompt.
                 </p>
                 <p>
-                  If you choose to play embedded awareness videos on the Help and reporting page, they are loaded from YouTube&apos;s privacy-enhanced mode (youtube-nocookie.com) only upon your explicit click, which may set operational cookies under Google&apos;s privacy policy.
+                  Video awareness guides on the Help and reporting page display static video thumbnails and link directly to YouTube in a new tab. Videos are not played directly on our website, and OfferClara embeds no video players or third-party tracking scripts.
                 </p>
                 <p>
                   OfferClara is hosted on Vercel, which processes incoming web requests and maintains standard operational infrastructure logs under its own privacy policy.

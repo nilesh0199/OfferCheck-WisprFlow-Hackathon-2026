@@ -61,7 +61,7 @@ describe("/about page and TopBar/Sidebar architecture", () => {
     expect(content).not.toMatch(bannedVerdicts);
   });
 
-  it("TopBar renders a single shared navy header bar with toggle, logo, nav links and CTA", () => {
+  it("TopBar renders a single shared navy header bar with toggle, logo, Home link, and CTA", () => {
     expect(fs.existsSync(topBarPath)).toBe(true);
     const content = fs.readFileSync(topBarPath, "utf-8");
     expect(content).toContain("bg-[var(--header-bg)]");
@@ -69,9 +69,8 @@ describe("/about page and TopBar/Sidebar architecture", () => {
     expect(content).toContain("text-[var(--header-nav-text)]");
     expect(content).toContain('aria-controls="app-sidebar"');
     expect(content).toContain('aria-label="OfferClara, home"');
+    expect(content).toContain('href="/"');
     expect(content).toContain('href="/check"');
-    expect(content).toContain('href="/resources"');
-    expect(content).toContain("Help and reporting");
   });
 
   it("Sidebar uses HTML5 dialog with zero-scroll flex layout and no WhatsApp link", () => {

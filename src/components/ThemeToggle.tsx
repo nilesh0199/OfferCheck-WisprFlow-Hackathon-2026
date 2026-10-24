@@ -116,7 +116,7 @@ export function ThemeToggle({
     <div
       role="radiogroup"
       aria-label="Theme preference"
-      className={`inline-flex items-center rounded border p-0.5 text-xs shadow-2xs ${
+      className={`inline-flex items-center rounded-full border p-1 gap-1 text-xs shadow-2xs transition-colors ${
         onHeader
           ? "border-[var(--color-border-strong)]/40 bg-[var(--color-header-bg)]/80"
           : "border-[var(--border)] bg-[var(--surface-muted)]"
@@ -138,23 +138,21 @@ export function ThemeToggle({
             aria-label={opt.label}
             onClick={() => selectPreference(opt.value)}
             onKeyDown={(e) => handleKeyDown(e, idx)}
-            className={`relative flex items-center justify-center rounded-xs p-1.5 transition-colors focus:outline-none focus-visible:ring-2 ${
+            className={`relative flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full transition-all duration-150 focus:outline-none focus-visible:ring-2 ${
               onHeader
                 ? "focus-visible:ring-[var(--header-text)] focus-visible:z-10"
                 : "focus-visible:ring-[var(--focus-ring)] focus-visible:z-10"
             } ${
               isSelected
-                ? onHeader
-                  ? "bg-[var(--header-text)] text-[var(--color-header-bg)] font-semibold shadow-xs"
-                  : "bg-[var(--surface)] text-[var(--text)] font-medium shadow-2xs"
+                ? "bg-[var(--color-primary)] text-[var(--color-primary-contrast)] shadow-xs font-semibold"
                 : onHeader
-                ? "text-[var(--header-nav-text)] hover:text-[var(--header-text)]"
-                : "text-[var(--text-muted)] hover:text-[var(--text)]"
+                ? "text-[var(--header-nav-text)] hover:text-[var(--header-text)] hover:bg-[var(--surface-muted)]/10"
+                : "text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface)]/50"
             }`}
           >
             {opt.value === "light" && (
               <svg
-                className="w-3.5 h-3.5"
+                className="w-4 h-4"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -176,7 +174,7 @@ export function ThemeToggle({
             )}
             {opt.value === "dark" && (
               <svg
-                className="w-3.5 h-3.5"
+                className="w-4 h-4"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -190,7 +188,7 @@ export function ThemeToggle({
             )}
             {opt.value === "system" && (
               <svg
-                className="w-3.5 h-3.5"
+                className="w-4 h-4"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"

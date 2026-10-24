@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { APP_NAME } from "@/lib/config";
 import { Logo } from "@/components/Logo";
-import { GitHubIcon, ExternalLinkIcon } from "@/components/Icons";
 import { Container } from "@/components/Container";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Sidebar } from "@/components/Sidebar";
@@ -29,18 +28,6 @@ export function TopBar() {
     return () => window.removeEventListener("toggle-sidebar", handleToggle);
   }, []);
 
-  // Smooth scroll handler for anchor links when already on the landing page
-  const handleAnchorClick = (e: React.MouseEvent<HTMLAnchorElement>, hash: string) => {
-    if (pathname === "/") {
-      e.preventDefault();
-      const el = document.getElementById(hash);
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth" });
-        window.history.pushState(null, "", `#${hash}`);
-      }
-    }
-  };
-
   return (
     <>
       <header
@@ -48,9 +35,9 @@ export function TopBar() {
         aria-label="Main site navigation"
         className="sticky top-0 z-30 w-full border-b border-[var(--border)] bg-[var(--header-bg)] text-[var(--header-text)] transition-colors print:hidden"
       >
-        <Container className="h-16 flex items-center justify-between">
-          {/* Left Side: [sidebar toggle button] [16 px gap] [logo mark + wordmark as one link to "/"] */}
-          <div className="flex items-center gap-4">
+        <Container className="h-16 flex items-center justify-between gap-3 sm:gap-4">
+          {/* Left Side: [sidebar toggle button] [logo mark + wordmark as one link to "/"] */}
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
             {/* Sidebar toggle button: 44px square ghost button */}
             <button
               type="button"
@@ -79,91 +66,28 @@ export function TopBar() {
             <Link
               href="/"
               aria-label="OfferClara, home"
-              className="inline-flex items-center gap-2.5 font-bold text-base tracking-tight text-[var(--header-text)] py-1.5 px-2 -ml-2 rounded-lg outline-none hover:opacity-90 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] min-h-[44px]"
+              className="inline-flex items-center gap-2 sm:gap-2.5 font-bold text-base tracking-tight text-[var(--header-text)] py-1.5 px-2 -ml-1 sm:-ml-2 rounded-lg outline-none hover:opacity-90 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] min-h-[44px]"
             >
               <Logo size={24} className="shrink-0" />
               <span>{APP_NAME}</span>
             </Link>
           </div>
 
-          {/* Right of the logo (viewport >= 1100 px): Desktop nav links */}
-          <nav
-            aria-label="Desktop navigation links"
-            className="hidden min-[1100px]:flex items-center gap-5 text-base font-medium text-[var(--header-nav-text)]"
-          >
+          {/* Right Controls: Theme toggle + Home link + Primary "Check an offer" CTA button */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <ThemeToggle onHeader className="hidden sm:inline-flex" />
+
             <Link
               href="/"
               aria-current={pathname === "/" ? "page" : undefined}
-              className={`hover:text-[var(--header-text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] rounded py-1.5 px-2 inline-flex items-center min-h-[44px] ${
-                pathname === "/" ? "text-[var(--header-text)] font-semibold" : ""
+              className={`hover:text-[var(--header-text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] rounded py-1.5 px-2.5 text-sm sm:text-base font-medium inline-flex items-center min-h-[44px] ${
+                pathname === "/"
+                  ? "text-[var(--header-text)] font-semibold"
+                  : "text-[var(--header-nav-text)]"
               }`}
             >
               Home
             </Link>
-            <Link
-              href="/#how-it-works"
-              onClick={(e) => handleAnchorClick(e, "how-it-works")}
-              className="hover:text-[var(--header-text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] rounded py-1.5 px-2 inline-flex items-center min-h-[44px]"
-            >
-              How it works
-            </Link>
-            <Link
-              href="/#what-you-get"
-              onClick={(e) => handleAnchorClick(e, "what-you-get")}
-              className="hover:text-[var(--header-text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] rounded py-1.5 px-2 inline-flex items-center min-h-[44px]"
-            >
-              What you get
-            </Link>
-            <Link
-              href="/privacy"
-              aria-current={pathname === "/privacy" ? "page" : undefined}
-              className={`hover:text-[var(--header-text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] rounded py-1.5 px-2 inline-flex items-center min-h-[44px] ${
-                pathname === "/privacy" ? "text-[var(--header-text)] font-semibold" : ""
-              }`}
-            >
-              Privacy
-            </Link>
-            <Link
-              href="/#faq"
-              onClick={(e) => handleAnchorClick(e, "faq")}
-              className="hover:text-[var(--header-text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] rounded py-1.5 px-2 inline-flex items-center min-h-[44px]"
-            >
-              FAQ
-            </Link>
-            <Link
-              href="/ask"
-              aria-current={pathname === "/ask" ? "page" : undefined}
-              className={`hover:text-[var(--header-text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] rounded py-1.5 px-2 inline-flex items-center min-h-[44px] ${
-                pathname === "/ask" ? "text-[var(--header-text)] font-semibold" : ""
-              }`}
-            >
-              Clear doubt
-            </Link>
-            <Link
-              href="/resources"
-              aria-current={pathname === "/resources" ? "page" : undefined}
-              className={`hover:text-[var(--header-text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] rounded py-1.5 px-2 inline-flex items-center min-h-[44px] ${
-                pathname === "/resources" ? "text-[var(--header-text)] font-semibold" : ""
-              }`}
-            >
-              Help and reporting
-            </Link>
-            <a
-              href="https://github.com/nilesh0199/OfferCheck-WisprFlow-Hackathon-2026"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="GitHub repository (opens in a new tab)"
-              className="inline-flex items-center gap-1.5 hover:text-[var(--header-text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] rounded py-1.5 px-2 min-h-[44px]"
-            >
-              <GitHubIcon className="w-4 h-4" />
-              <span>GitHub</span>
-              <ExternalLinkIcon className="w-3 h-3 opacity-60" />
-            </a>
-          </nav>
-
-          {/* Right Controls: Theme toggle + Primary "Check an offer" button */}
-          <div className="flex items-center gap-2.5 sm:gap-3">
-            <ThemeToggle onHeader />
 
             <Link
               href="/check"

@@ -25,8 +25,8 @@ OfferClara is built with a strict privacy-first, evidence-first design to assist
   OfferClara operates on free-tier API services. Content submitted to Google's Gemini API free tier may be reviewed by human reviewers and used by Google to train and tune products.
 - **Clear Doubt with AI (`/ask`):**  
   Questions submitted in the `/ask` route are sent over HTTPS to Groq first (for low-latency answers) and fall back to the Gemini chain if Groq is unavailable. If the optional "Use my current review as context" toggle is enabled, only high-level observation categories and topics are included. Raw offer text, uploaded files, and transcripts are NEVER shared with the doubt inquiry.
-- **External Video Guides and YouTube Embeds:**  
-  Video guides on the Help and reporting page (`/resources`) use a click-to-load architecture. No video script, player, or network request to YouTube is initiated until the user clicks the play button. Once activated, videos load from `https://www.youtube-nocookie.com/embed/<id>`. OfferClara sets no cookies. If a user clicks to play an embedded video, YouTube loads and may set its own cookies.
+- **External Video Guides and YouTube Links:**  
+  Video guides on the Help and reporting page (`/resources`) display static video thumbnails and link directly to YouTube in a new tab. Videos are not played directly on our website, and OfferClara embeds no video players or third-party tracking scripts. OfferClara sets zero cookies.
 - **Pre-Paste and Pre-Upload Redaction Advisories:**  
   Because of upstream free-tier data terms, OfferClara displays persistent advisories:
   - Above the text input field (`AI_DATA_NOTICE`), advising users to redact personal identifiable information (names, email addresses, phone numbers, home addresses, government IDs, bank details, passwords, and OTPs) prior to pasting.

@@ -291,10 +291,12 @@ describe("Resources page structure and post-payment steps", () => {
     expect(resourcesContent).toContain("Kr-B8sAE6ek");
     expect(afterPaymentContent).toContain("3S47zE8cWCI");
 
-    // Privacy-respecting youtube-nocookie embed
-    expect(videoContent).toContain("https://www.youtube-nocookie.com/embed/");
+    // Direct YouTube thumbnail and links (not played on website)
+    expect(videoContent).toContain("https://img.youtube.com/vi/");
+    expect(videoContent).toContain("https://www.youtube.com/");
+    expect(videoContent).not.toContain("<iframe");
     expect(videoContent).toContain("loading=\"lazy\"");
-    expect(videoContent).toContain("referrerPolicy=\"strict-origin-when-cross-origin\"");
+    expect(videoContent).toContain("target=\"_blank\"");
 
     // ID already-paid exists
     expect(afterPaymentContent).toContain('id="already-paid"');

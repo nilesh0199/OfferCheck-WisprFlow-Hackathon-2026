@@ -77,9 +77,21 @@ describe("matchCommand - Navigation-Only Matcher (60+ tests)", () => {
       expect(matchCommand("check an offer")).toEqual({ kind: "NAVIGATE", target: "/check", label: "Check an offer" });
       expect(matchCommand("check offer")).toEqual({ kind: "NAVIGATE", target: "/check", label: "Check an offer" });
       expect(matchCommand("check")).toEqual({ kind: "NAVIGATE", target: "/check", label: "Check an offer" });
+      expect(matchCommand("offer", { page: "/" })).toEqual({ kind: "NAVIGATE", target: "/check", label: "Check an offer" });
+      expect(matchCommand("offers", { page: "/" })).toEqual({ kind: "NAVIGATE", target: "/check", label: "Check an offer" });
       expect(matchCommand("start check")).toEqual({ kind: "NAVIGATE", target: "/check", label: "Check an offer" });
       expect(matchCommand("check tool")).toEqual({ kind: "NAVIGATE", target: "/check", label: "Check an offer" });
       expect(matchCommand("please check an offer")).toEqual({ kind: "NAVIGATE", target: "/check", label: "Check an offer" });
+    });
+
+    it("matches github and share commands", () => {
+      expect(matchCommand("github")).toEqual({ kind: "OPEN_GITHUB" });
+      expect(matchCommand("open github")).toEqual({ kind: "OPEN_GITHUB" });
+      expect(matchCommand("view github")).toEqual({ kind: "OPEN_GITHUB" });
+      expect(matchCommand("repo")).toEqual({ kind: "OPEN_GITHUB" });
+      expect(matchCommand("share")).toEqual({ kind: "SHARE" });
+      expect(matchCommand("share link")).toEqual({ kind: "SHARE" });
+      expect(matchCommand("share offerclara")).toEqual({ kind: "SHARE" });
     });
 
     it("matches help and reporting navigation variants", () => {

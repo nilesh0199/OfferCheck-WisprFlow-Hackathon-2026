@@ -156,6 +156,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       : "https://offerclara.vercel.app";
 
   const handleShare = async () => {
+    onClose();
+    const cmdInput = document.querySelector('aside[aria-label="Command bar"] input') as HTMLInputElement | null;
+    cmdInput?.blur();
+
     if (typeof navigator !== "undefined" && navigator.share) {
       try {
         await navigator.share({
@@ -529,6 +533,11 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               href="https://github.com/nilesh0199/OfferCheck-WisprFlow-Hackathon-2026"
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => {
+                onClose();
+                const cmdInput = document.querySelector('aside[aria-label="Command bar"] input') as HTMLInputElement | null;
+                cmdInput?.blur();
+              }}
               style={{ minHeight: `${itemHeight}rem` }}
               className="flex items-center justify-between px-3 rounded-lg text-sm text-[var(--text)] hover:bg-[var(--surface-muted)] transition-colors"
             >

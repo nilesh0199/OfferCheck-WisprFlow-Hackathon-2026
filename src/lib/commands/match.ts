@@ -2,6 +2,8 @@ export type Command =
   | { kind: "OPEN_SIDEBAR" }
   | { kind: "CLOSE_SIDEBAR" }
   | { kind: "SHOW_HELP" }
+  | { kind: "OPEN_GITHUB" }
+  | { kind: "SHARE" }
   | { kind: "NAVIGATE"; target: string; label: string }
   | { kind: "WIZARD_NEXT" }
   | { kind: "WIZARD_BACK" }
@@ -117,6 +119,8 @@ export function matchCommand(
     return { kind: "UNKNOWN", rawText: raw };
   }
 
+  const isCheckPage = context.page === "/check";
+
   // =========================================================================
   // 1. ANYWHERE COMMANDS (Work on every page)
   // =========================================================================
@@ -186,6 +190,32 @@ export function matchCommand(
     return { kind: "SHOW_HELP" };
   }
 
+  // GitHub repository
+  if (
+    cleaned === "github" ||
+    cleaned === "git hub" ||
+    cleaned === "repo" ||
+    cleaned === "repository" ||
+    cleaned === "source code" ||
+    cleaned === "open github" ||
+    cleaned === "view github" ||
+    (words.length <= 3 && /\b(github|repo)\b/.test(cleaned))
+  ) {
+    return { kind: "OPEN_GITHUB" };
+  }
+
+  // Share
+  if (
+    cleaned === "share" ||
+    cleaned === "share it" ||
+    cleaned === "share this" ||
+    cleaned === "share link" ||
+    cleaned === "share offerclara" ||
+    (words.length <= 3 && /\b(share)\b/.test(cleaned))
+  ) {
+    return { kind: "SHARE" };
+  }
+
   // Home
   if (
     cleaned === "home" ||
@@ -215,6 +245,7 @@ export function matchCommand(
     cleaned === "verify an offer" ||
     cleaned === "verify my offer" ||
     cleaned === "verify internship" ||
+    (!isCheckPage && (cleaned === "offer" || cleaned === "offers")) ||
     (words.length <= 4 &&
       /\b(check|verify)\b/.test(cleaned) &&
       /\b(offer|internship|job|letter)\b/.test(cleaned))
@@ -347,7 +378,6 @@ export function matchCommand(
   // =========================================================================
   // 2. CHECK PAGE ONLY COMMANDS
   // =========================================================================
-  const isCheckPage = context.page === "/check";
 
   // Stepper relative: Next
   if (
@@ -392,10 +422,10 @@ export function matchCommand(
   if (
     cleaned === "step 1" ||
     cleaned === "step one" ||
-    cleaned === "offer" ||
     cleaned === "offer step" ||
     cleaned === "offer text" ||
-    cleaned === "first step"
+    cleaned === "first step" ||
+    (isCheckPage && (cleaned === "offer" || cleaned === "offers"))
   ) {
     if (!isCheckPage) {
       return { kind: "WRONG_CONTEXT", hint: "That command works on the check page." };

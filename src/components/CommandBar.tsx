@@ -8,6 +8,7 @@ import React, {
 } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { matchCommand, Command } from "@/lib/commands/match";
+import { APP_NAME, HERO_HEADLINE } from "@/lib/config";
 import { useOfferSession } from "./SessionProvider";
 import { WizardStep } from "@/lib/combined-text";
 
@@ -121,6 +122,55 @@ export function CommandBar() {
 
         case "SHOW_HELP": {
           helpDialogRef.current?.showModal();
+          break;
+        }
+
+        case "OPEN_GITHUB": {
+          window.dispatchEvent(
+            new CustomEvent("toggle-sidebar", { detail: { open: false } })
+          );
+          inputRef.current?.blur();
+          setIsFocused(false);
+          window.open(
+            "https://github.com/nilesh0199/OfferCheck-WisprFlow-Hackathon-2026",
+            "_blank",
+            "noopener,noreferrer"
+          );
+          break;
+        }
+
+        case "SHARE": {
+          window.dispatchEvent(
+            new CustomEvent("toggle-sidebar", { detail: { open: false } })
+          );
+          inputRef.current?.blur();
+          setIsFocused(false);
+
+          const shareTitle = `${APP_NAME} — ${HERO_HEADLINE}`;
+          const shareText = `${HERO_HEADLINE} Check job and internship offers before you pay or share documents with ${APP_NAME}.`;
+          const shareUrl =
+            typeof window !== "undefined"
+              ? window.location.origin
+              : "https://offerclara.vercel.app";
+
+          if (typeof navigator !== "undefined" && navigator.share) {
+            try {
+              await navigator.share({
+                title: shareTitle,
+                text: shareText,
+                url: shareUrl,
+              });
+            } catch {
+              // Share dismissed
+            }
+          } else if (typeof navigator !== "undefined" && navigator.clipboard) {
+            try {
+              await navigator.clipboard.writeText(`${shareTitle}\n${shareText}\n${shareUrl}`);
+              showAnnouncement("Link copied to clipboard", 4000);
+            } catch {
+              // fallback
+            }
+          }
           break;
         }
 
@@ -283,7 +333,7 @@ export function CommandBar() {
         }
 
         setPendingCommand(match);
-        let timeLeft = 2;
+        let timeLeft = 1;
         setCountdown(timeLeft);
 
         countdownIntervalRef.current = setInterval(() => {
@@ -316,14 +366,26 @@ export function CommandBar() {
     ]
   );
 
-  // Keyboard navigation: Escape cancels, "/" or Cmd+K / Ctrl+K focuses input
+  // Keyboard navigation: Any key cancels pending countdown (Enter runs immediately), Escape blurs, "/" or Cmd+K focuses
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // If a command is pending/counting down, pressing any key cancels (Enter executes immediately)
+      if (pendingCommand) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          clearCountdown();
+          executeCommand(pendingCommand);
+          return;
+        }
+        e.preventDefault();
+        handleCancel();
+        return;
+      }
+
       if (e.key === "Escape") {
-        if (pendingCommand) {
-          handleCancel();
-        } else if (document.activeElement === inputRef.current) {
+        if (document.activeElement === inputRef.current) {
           inputRef.current?.blur();
+          setIsFocused(false);
         }
         return;
       }
@@ -348,7 +410,7 @@ export function CommandBar() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [pendingCommand, handleCancel]);
+  }, [pendingCommand, handleCancel, clearCountdown, executeCommand]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -368,6 +430,10 @@ export function CommandBar() {
         return "Close sidebar";
       case "SHOW_HELP":
         return "What can I say";
+      case "OPEN_GITHUB":
+        return "GitHub repository";
+      case "SHARE":
+        return "Share OfferClara";
       case "NAVIGATE":
         return cmd.label;
       case "WIZARD_NEXT":
@@ -415,15 +481,20 @@ export function CommandBar() {
           <div
             role="status"
             aria-live="polite"
-            className="pointer-events-auto mb-2 flex items-center justify-between text-xs font-medium text-[var(--text)] bg-[var(--surface)] border border-[var(--border)] rounded-xl px-3.5 py-2 shadow-xs"
+            className="pointer-events-auto mb-2 flex items-center justify-between text-xs font-medium text-[var(--text)] bg-[var(--surface)] border border-[var(--border)] rounded-xl px-3.5 py-2 shadow-xs gap-2"
           >
-            <span>
-              Running {getCommandDisplayLabel(pendingCommand)} in {countdown}...
-            </span>
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+              <span className="font-semibold text-[var(--text)]">
+                Running {getCommandDisplayLabel(pendingCommand)}...
+              </span>
+              <span className="text-[11px] text-[var(--text-muted)] font-normal">
+                (press any key to cancel)
+              </span>
+            </div>
             <button
               type="button"
               onClick={handleCancel}
-              className="text-xs font-semibold text-[var(--color-primary)] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded px-1.5 py-0.5 min-h-[32px] inline-flex items-center"
+              className="text-xs font-semibold text-[var(--color-primary)] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded px-1.5 py-0.5 min-h-[32px] inline-flex items-center shrink-0 cursor-pointer"
             >
               Cancel
             </button>
@@ -508,6 +579,18 @@ export function CommandBar() {
             }}
             onChange={(e) => handleInputChange(e.target.value)}
             onKeyDown={(e) => {
+              if (pendingCommand) {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  clearCountdown();
+                  executeCommand(pendingCommand);
+                  return;
+                }
+                e.preventDefault();
+                handleCancel();
+                return;
+              }
+
               if (e.key === "Enter") {
                 e.preventDefault();
                 if (pendingCommand) {

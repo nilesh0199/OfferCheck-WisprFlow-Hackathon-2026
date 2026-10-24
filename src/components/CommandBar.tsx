@@ -236,7 +236,7 @@ export function CommandBar() {
     ]
   );
 
-  // Keyboard navigation: Escape cancels, Enter runs immediately
+  // Keyboard navigation: Escape cancels, "/" or Cmd+K / Ctrl+K focuses input
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -245,6 +245,24 @@ export function CommandBar() {
         } else if (document.activeElement === inputRef.current) {
           inputRef.current?.blur();
         }
+        return;
+      }
+
+      // Check if user is typing in an editable field
+      const target = e.target as HTMLElement | null;
+      const isEditable =
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.tagName === "SELECT" ||
+          target.isContentEditable);
+
+      if (isEditable) return;
+
+      if (e.key === "/" || ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k")) {
+        e.preventDefault();
+        inputRef.current?.focus();
+        inputRef.current?.select();
       }
     };
 
@@ -307,7 +325,7 @@ export function CommandBar() {
       {/* Docked Command Bar Container */}
       <aside
         aria-label="Command bar"
-        className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-full max-w-[min(640px,92vw)] px-3 sm:px-0 pointer-events-none pb-[calc(env(safe-area-inset-bottom,0px))] print:hidden"
+        className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-full max-w-[min(480px,94vw)] px-3 sm:px-0 pointer-events-none pb-[calc(env(safe-area-inset-bottom,0px))] print:hidden"
       >
         {/* Status Line: Countdown or Announcement */}
         {pendingCommand && countdown !== null && (
@@ -340,7 +358,7 @@ export function CommandBar() {
         )}
 
         {/* Input Bar */}
-        <div className="pointer-events-auto rounded-xl border border-[var(--border)] bg-[var(--surface)] p-1.5 shadow-md flex items-center gap-2">
+        <div className="pointer-events-auto rounded-xl border border-[var(--border)] bg-[var(--surface)] p-1.5 shadow-md flex items-center gap-1.5 sm:gap-2">
           <input
             ref={inputRef}
             type="text"
@@ -368,15 +386,24 @@ export function CommandBar() {
                 }
               }
             }}
-            placeholder="Dictate a command"
-            className="flex-1 bg-transparent text-xs sm:text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none min-h-[44px] px-3 rounded-lg"
+            placeholder="Dictate a command..."
+            className="flex-1 min-w-0 bg-transparent text-xs sm:text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none min-h-[44px] px-2.5 sm:px-3 rounded-lg"
             aria-label="Dictate a command"
           />
 
           <button
             type="button"
+            onClick={() => inputRef.current?.focus()}
+            title="Press / anywhere to focus the command box"
+            className="hidden sm:inline-flex items-center gap-1 text-[11px] text-[var(--text-muted)] hover:text-[var(--text)] bg-[var(--surface-muted)]/70 hover:bg-[var(--surface-muted)] border border-[var(--border)] rounded-md px-2 py-1 shrink-0 font-medium select-none cursor-pointer transition-colors"
+          >
+            Press <kbd className="font-mono font-semibold text-[var(--text)] text-[10px] bg-[var(--surface)] px-1 py-0.5 rounded border border-[var(--border)]">/</kbd> to start
+          </button>
+
+          <button
+            type="button"
             onClick={() => helpDialogRef.current?.showModal()}
-            className={`shrink-0 px-3 py-2 text-xs font-medium rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px] transition-colors border ${
+            className={`shrink-0 px-2.5 sm:px-3 py-2 text-xs font-medium rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px] transition-colors border ${
               highlightHelp
                 ? "border-[var(--color-primary)] ring-2 ring-[var(--focus-ring)] text-[var(--color-primary)] font-semibold"
                 : "border-transparent"

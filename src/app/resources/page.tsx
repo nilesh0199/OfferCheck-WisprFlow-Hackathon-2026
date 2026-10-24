@@ -67,7 +67,7 @@ export default function ResourcesPage() {
               description="Educational guide for students and job seekers detailing red flags in employment communications."
               aspectRatio="16:9"
               language="English"
-              duration="3 min"
+              duration="12 min"
             />
           </section>
 

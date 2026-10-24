@@ -59,6 +59,9 @@ export function cleanSpokenInput(raw: string): string {
   let cleaned = raw
     .toLowerCase()
     .replace(/[,;:.!?]+/g, " ")
+    .replace(/\bside\s+bar\b/g, "sidebar")
+    .replace(/\bmenu\s+bar\b/g, "menu")
+    .replace(/\bhome\s+page\b/g, "homepage")
     .replace(/\s+/g, " ")
     .trim();
 
@@ -105,31 +108,52 @@ export function matchCommand(
     return { kind: "UNKNOWN", rawText: raw };
   }
 
+  // Reject long dictated paragraphs (> 6 words) from triggering commands
+  const words = cleaned.split(" ").filter(Boolean);
+  if (words.length > 6) {
+    return { kind: "UNKNOWN", rawText: raw };
+  }
+
   // =========================================================================
   // 1. ANYWHERE COMMANDS (Work on every page)
   // =========================================================================
 
   // Sidebar controls
   if (
-    cleaned === "open sidebar" ||
-    cleaned === "open menu" ||
-    cleaned === "show sidebar" ||
-    cleaned === "show menu" ||
-    cleaned === "menu" ||
-    cleaned === "sidebar"
-  ) {
-    return { kind: "OPEN_SIDEBAR" };
-  }
-
-  if (
     cleaned === "close sidebar" ||
     cleaned === "close menu" ||
     cleaned === "hide sidebar" ||
     cleaned === "hide menu" ||
     cleaned === "dismiss sidebar" ||
-    cleaned === "dismiss menu"
+    cleaned === "dismiss menu" ||
+    cleaned === "exit sidebar" ||
+    cleaned === "exit menu" ||
+    cleaned === "shut sidebar" ||
+    cleaned === "shut menu" ||
+    (words.length <= 4 &&
+      /\b(close|hide|dismiss|exit|shut)\b/.test(cleaned) &&
+      /\b(sidebar|menu)\b/.test(cleaned))
   ) {
     return { kind: "CLOSE_SIDEBAR" };
+  }
+
+  if (
+    cleaned === "open sidebar" ||
+    cleaned === "open menu" ||
+    cleaned === "show sidebar" ||
+    cleaned === "show menu" ||
+    cleaned === "toggle sidebar" ||
+    cleaned === "toggle menu" ||
+    cleaned === "menu" ||
+    cleaned === "sidebar" ||
+    cleaned === "navigation" ||
+    cleaned === "open navigation" ||
+    (words.length <= 4 &&
+      /\b(open|show|toggle|view)\b/.test(cleaned) &&
+      /\b(sidebar|menu|navigation)\b/.test(cleaned)) ||
+    (words.length <= 2 && /\b(sidebar|menu)\b/.test(cleaned))
+  ) {
+    return { kind: "OPEN_SIDEBAR" };
   }
 
   // Home
@@ -138,7 +162,11 @@ export function matchCommand(
     cleaned === "homepage" ||
     cleaned === "landing" ||
     cleaned === "main" ||
-    cleaned === "welcome"
+    cleaned === "welcome" ||
+    cleaned === "go home" ||
+    cleaned === "go to home" ||
+    cleaned === "back to home" ||
+    cleaned === "take me home"
   ) {
     return { kind: "NAVIGATE", target: "/", label: "Home" };
   }
@@ -149,7 +177,17 @@ export function matchCommand(
     cleaned === "check offer" ||
     cleaned === "check" ||
     cleaned === "start check" ||
-    cleaned === "check tool"
+    cleaned === "check tool" ||
+    cleaned === "go to check" ||
+    cleaned === "check my offer" ||
+    cleaned === "check this offer" ||
+    cleaned === "verify offer" ||
+    cleaned === "verify an offer" ||
+    cleaned === "verify my offer" ||
+    cleaned === "verify internship" ||
+    (words.length <= 4 &&
+      /\b(check|verify)\b/.test(cleaned) &&
+      /\b(offer|internship|job|letter)\b/.test(cleaned))
   ) {
     return { kind: "NAVIGATE", target: "/check", label: "Check an offer" };
   }
@@ -159,7 +197,13 @@ export function matchCommand(
     cleaned === "help and reporting" ||
     cleaned === "reporting" ||
     cleaned === "official resources" ||
-    cleaned === "help"
+    cleaned === "help" ||
+    cleaned === "report" ||
+    cleaned === "report scam" ||
+    cleaned === "report fake offer" ||
+    cleaned === "official portals" ||
+    cleaned === "complaint" ||
+    (words.length <= 4 && /\b(report|reporting|helpline)\b/.test(cleaned))
   ) {
     return { kind: "NAVIGATE", target: "/resources", label: "Help and reporting" };
   }
@@ -176,7 +220,11 @@ export function matchCommand(
     cleaned === "doubt" ||
     cleaned === "doubts" ||
     cleaned === "ask question" ||
-    cleaned === "ask a question"
+    cleaned === "ask a question" ||
+    cleaned === "clear my doubts" ||
+    cleaned === "have a doubt" ||
+    (words.length <= 4 && /\b(doubt|doubts)\b/.test(cleaned)) ||
+    (words.length <= 4 && /\bask\b/.test(cleaned) && /\b(ai|question|clara|doubt)\b/.test(cleaned))
   ) {
     return { kind: "NAVIGATE", target: "/ask", label: "Clear doubt with AI" };
   }
@@ -196,7 +244,9 @@ export function matchCommand(
     cleaned === "who made this" ||
     cleaned === "who made offerclara" ||
     cleaned === "about offerclara" ||
-    cleaned === "about tool"
+    cleaned === "about tool" ||
+    cleaned === "who built this" ||
+    cleaned === "about us"
   ) {
     return { kind: "NAVIGATE", target: "/about", label: "About" };
   }
@@ -212,11 +262,20 @@ export function matchCommand(
   }
 
   // Landing anchor jumps
-  if (cleaned === "how it works") {
+  if (
+    cleaned === "how it works" ||
+    cleaned === "how does it work" ||
+    cleaned === "how this works"
+  ) {
     return { kind: "NAVIGATE", target: "/#how-it-works", label: "How it works" };
   }
 
-  if (cleaned === "what you get") {
+  if (
+    cleaned === "what you get" ||
+    cleaned === "what do i get" ||
+    cleaned === "what i get" ||
+    cleaned === "features"
+  ) {
     return { kind: "NAVIGATE", target: "/#what-you-get", label: "What you get" };
   }
 
@@ -224,7 +283,8 @@ export function matchCommand(
     cleaned === "faq" ||
     cleaned === "faqs" ||
     cleaned === "frequently asked questions" ||
-    cleaned === "questions and answers"
+    cleaned === "questions and answers" ||
+    cleaned === "frequently asked"
   ) {
     return { kind: "NAVIGATE", target: "/#faq", label: "FAQ" };
   }
@@ -235,7 +295,10 @@ export function matchCommand(
     cleaned === "i already paid" ||
     cleaned === "already paid" ||
     cleaned === "i have paid" ||
-    cleaned === "i paid money"
+    cleaned === "i paid money" ||
+    cleaned === "paid money" ||
+    cleaned === "paid fee" ||
+    cleaned === "sent money"
   ) {
     return { kind: "NAVIGATE", target: "/resources#already-paid", label: "If you have already paid" };
   }

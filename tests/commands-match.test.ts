@@ -32,17 +32,24 @@ describe("matchCommand - Navigation-Only Matcher (60+ tests)", () => {
   describe("Anywhere commands", () => {
     it("matches open sidebar variants", () => {
       expect(matchCommand("open sidebar")).toEqual({ kind: "OPEN_SIDEBAR" });
+      expect(matchCommand("open side bar")).toEqual({ kind: "OPEN_SIDEBAR" });
+      expect(matchCommand("side bar")).toEqual({ kind: "OPEN_SIDEBAR" });
       expect(matchCommand("open menu")).toEqual({ kind: "OPEN_SIDEBAR" });
       expect(matchCommand("show sidebar")).toEqual({ kind: "OPEN_SIDEBAR" });
+      expect(matchCommand("show side bar")).toEqual({ kind: "OPEN_SIDEBAR" });
       expect(matchCommand("show menu")).toEqual({ kind: "OPEN_SIDEBAR" });
       expect(matchCommand("please open sidebar")).toEqual({ kind: "OPEN_SIDEBAR" });
+      expect(matchCommand("please open side bar")).toEqual({ kind: "OPEN_SIDEBAR" });
     });
 
     it("matches close sidebar variants", () => {
       expect(matchCommand("close sidebar")).toEqual({ kind: "CLOSE_SIDEBAR" });
+      expect(matchCommand("close side bar")).toEqual({ kind: "CLOSE_SIDEBAR" });
       expect(matchCommand("close menu")).toEqual({ kind: "CLOSE_SIDEBAR" });
       expect(matchCommand("hide sidebar")).toEqual({ kind: "CLOSE_SIDEBAR" });
+      expect(matchCommand("hide side bar")).toEqual({ kind: "CLOSE_SIDEBAR" });
       expect(matchCommand("dismiss sidebar")).toEqual({ kind: "CLOSE_SIDEBAR" });
+      expect(matchCommand("dismiss side bar")).toEqual({ kind: "CLOSE_SIDEBAR" });
     });
 
     it("matches home page navigation variants", () => {

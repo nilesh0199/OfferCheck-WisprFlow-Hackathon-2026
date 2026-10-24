@@ -2,7 +2,7 @@
 
 import React, { useRef, useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { APP_NAME, TAGLINE } from "@/lib/config";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -21,6 +21,35 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     typeof window !== "undefined" ? window.innerHeight : 800
   );
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleHomeClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    onClose();
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) {
+      return;
+    }
+    if (pathname === "/") {
+      e.preventDefault();
+      try {
+        window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+        document.documentElement.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+      } catch {
+        window.scrollTo(0, 0);
+      }
+      if (typeof window !== "undefined" && window.location.hash) {
+        window.history.pushState(null, "", "/");
+      }
+    } else {
+      e.preventDefault();
+      router.push("/");
+      try {
+        window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+        document.documentElement.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      } catch {
+        window.scrollTo(0, 0);
+      }
+    }
+  };
 
   // Track viewport height for zero-scroll sizing
   useEffect(() => {
@@ -138,7 +167,12 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             isCompact ? "p-2.5 px-3" : "p-3.5 px-4"
           }`}
         >
-          <div className="flex items-center gap-2.5">
+          <Link
+            href="/"
+            onClick={handleHomeClick}
+            aria-label="OfferClara, home"
+            className="flex items-center gap-2.5 text-left rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] cursor-pointer"
+          >
             <Logo size={isCompact ? 24 : 28} className="shrink-0" />
             <div>
               <div className="font-bold text-sm sm:text-base tracking-tight text-[var(--text)] leading-tight">
@@ -150,7 +184,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 </div>
               )}
             </div>
-          </div>
+          </Link>
           <button
             type="button"
             onClick={onClose}
@@ -183,7 +217,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             {/* 1. Home */}
             <Link
               href="/"
-              onClick={onClose}
+              onClick={handleHomeClick}
               aria-current={pathname === "/" ? "page" : undefined}
               style={{ minHeight: `${itemHeight}rem` }}
               className={`flex items-center gap-3 px-3 rounded-lg text-sm transition-colors ${

@@ -3,7 +3,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { APP_NAME, TAGLINE } from "@/lib/config";
+import { APP_NAME, TAGLINE, HERO_HEADLINE } from "@/lib/config";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { GitHubIcon, ExternalLinkIcon } from "@/components/Icons";
@@ -58,7 +58,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Sync dialog modal with isOpen state
+  // Sync dialog modal with isOpen state and lock page scrolling
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
@@ -66,17 +66,37 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     if (isOpen) {
       if (!dialog.open) {
         dialog.showModal();
-        document.body.style.overflow = "hidden";
       }
+      document.documentElement.style.overflow = "hidden";
+      document.body.style.overflow = "hidden";
     } else {
       if (dialog.open) {
         dialog.close();
-        document.body.style.overflow = "";
       }
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
     }
 
     return () => {
+      document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  // Prevent wheel and touch dragging from scrolling background page while sidebar is open
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const preventDefault = (e: Event) => {
+      e.preventDefault();
+    };
+
+    window.addEventListener("wheel", preventDefault, { passive: false });
+    window.addEventListener("touchmove", preventDefault, { passive: false });
+
+    return () => {
+      window.removeEventListener("wheel", preventDefault);
+      window.removeEventListener("touchmove", preventDefault);
     };
   }, [isOpen]);
 
@@ -105,8 +125,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     }
   };
 
-  const shareTitle = APP_NAME;
-  const shareText = `${APP_NAME}: ${TAGLINE} Check job and internship offers before you pay or share documents.`;
+  const shareTitle = `${APP_NAME} — ${HERO_HEADLINE}`;
+  const shareText = `${HERO_HEADLINE} Check job and internship offers before you pay or share documents with ${APP_NAME}.`;
   const shareUrl =
     typeof window !== "undefined"
       ? window.location.origin
@@ -128,7 +148,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
     if (typeof navigator !== "undefined" && navigator.clipboard) {
       try {
-        await navigator.clipboard.writeText(shareUrl);
+        await navigator.clipboard.writeText(`${shareTitle}\n${shareText}\n${shareUrl}`);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       } catch {
@@ -155,8 +175,13 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         e.preventDefault();
         onClose();
       }}
+      onClose={() => {
+        if (isOpen) {
+          onClose();
+        }
+      }}
       onClick={handleBackdropClick}
-      className={`fixed inset-y-0 left-0 m-0 h-[100dvh] max-h-none w-[min(320px,calc(100vw-56px))] border-0 border-r border-[var(--border)] bg-[var(--surface)] text-[var(--text)] p-0 shadow-2xl backdrop:bg-[rgba(0,0,0,0.45)] backdrop:backdrop-blur-xs z-50 overflow-hidden select-none transition-transform duration-200 ease-out motion-reduce:transition-none print:hidden ${
+      className={`fixed inset-y-0 left-0 m-0 h-[100dvh] max-h-none w-[min(320px,calc(100vw-56px))] border-0 border-r border-[var(--border)] bg-[var(--surface)] text-[var(--text)] p-0 shadow-2xl backdrop:bg-[rgba(0,0,0,0.45)] backdrop:backdrop-blur-xs z-50 overflow-hidden overscroll-contain select-none transition-transform duration-200 ease-out motion-reduce:transition-none print:hidden ${
         isOpen ? "translate-x-0" : "-translate-x-full"
       }`}
     >

@@ -52,6 +52,15 @@ describe("matchCommand - Navigation-Only Matcher (60+ tests)", () => {
       expect(matchCommand("dismiss side bar")).toEqual({ kind: "CLOSE_SIDEBAR" });
     });
 
+    it("matches what can i say command variants", () => {
+      expect(matchCommand("what can i say")).toEqual({ kind: "SHOW_HELP" });
+      expect(matchCommand("what can i say?")).toEqual({ kind: "SHOW_HELP" });
+      expect(matchCommand("show commands")).toEqual({ kind: "SHOW_HELP" });
+      expect(matchCommand("list commands")).toEqual({ kind: "SHOW_HELP" });
+      expect(matchCommand("voice commands")).toEqual({ kind: "SHOW_HELP" });
+      expect(matchCommand("please tell me what can i say")).toEqual({ kind: "SHOW_HELP" });
+    });
+
     it("matches home page navigation variants", () => {
       expect(matchCommand("home")).toEqual({ kind: "NAVIGATE", target: "/", label: "Home" });
       expect(matchCommand("go to home")).toEqual({ kind: "NAVIGATE", target: "/", label: "Home" });

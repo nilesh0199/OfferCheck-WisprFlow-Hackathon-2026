@@ -1,6 +1,7 @@
 export type Command =
   | { kind: "OPEN_SIDEBAR" }
   | { kind: "CLOSE_SIDEBAR" }
+  | { kind: "SHOW_HELP" }
   | { kind: "NAVIGATE"; target: string; label: string }
   | { kind: "WIZARD_NEXT" }
   | { kind: "WIZARD_BACK" }
@@ -37,6 +38,8 @@ const FILLER_PREFIXES = [
   "go to",
   "show me the",
   "show me",
+  "tell me the",
+  "tell me",
   "open up the",
   "open up",
   "open the",
@@ -154,6 +157,26 @@ export function matchCommand(
     (words.length <= 2 && /\b(sidebar|menu)\b/.test(cleaned))
   ) {
     return { kind: "OPEN_SIDEBAR" };
+  }
+
+  // Help / What can I say dialog
+  if (
+    cleaned === "what can i say" ||
+    cleaned === "what can i do" ||
+    cleaned === "what commands can i say" ||
+    cleaned === "commands" ||
+    cleaned === "show commands" ||
+    cleaned === "list commands" ||
+    cleaned === "help with commands" ||
+    cleaned === "command help" ||
+    cleaned === "voice commands" ||
+    cleaned === "command list" ||
+    (words.length <= 6 &&
+      /\b(what can i say|what can i do|show commands|list commands|voice commands|command help)\b/.test(
+        cleaned
+      ))
+  ) {
+    return { kind: "SHOW_HELP" };
   }
 
   // Home

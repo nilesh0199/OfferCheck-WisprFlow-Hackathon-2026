@@ -5,6 +5,7 @@ import { ValidatedAnalysis } from "@/lib/analysis/schema";
 import { buildReviewSummary } from "@/lib/analysis/summary";
 import { sortConcernsByPriority } from "@/lib/analysis/priorities";
 import { getConcernCategoryLabel } from "@/lib/analysis/labels";
+import { APP_NAME, HERO_HEADLINE } from "@/lib/config";
 import { CopyIcon, CheckIcon, PrinterIcon, ShareIcon } from "./Icons";
 
 interface ResultsActionsBarProps {
@@ -82,8 +83,8 @@ export function ResultsActionsBar({
         : "No upfront fees or severe warning signs identified in the provided text.";
 
     const sharePayload = {
-      title: "OfferClara Internship Review",
-      text: `I just reviewed an internship offer using OfferClara. Here is what to watch out for: ${concernsText} Check yours at /check`,
+      title: `${APP_NAME} — ${HERO_HEADLINE}`,
+      text: `I just reviewed an offer using ${APP_NAME}. ${HERO_HEADLINE} Here is what to watch out for: ${concernsText} Check yours at /check`,
       url: typeof window !== "undefined" ? window.location.origin + "/check" : "/check",
     };
 

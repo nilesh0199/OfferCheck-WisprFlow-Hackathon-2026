@@ -34,6 +34,7 @@ export function CommandBar() {
   const helpDialogRef = useRef<HTMLDialogElement>(null);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const unrecognisedTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const announcementTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Clear countdown interval
   const clearCountdown = useCallback(() => {
@@ -53,14 +54,37 @@ export function CommandBar() {
     }
   }, []);
 
+  // Clear announcement timer
+  const clearAnnouncementTimer = useCallback(() => {
+    if (announcementTimerRef.current) {
+      clearTimeout(announcementTimerRef.current);
+      announcementTimerRef.current = null;
+    }
+  }, []);
+
+  // Show announcement with auto-dismiss (defaults to 5 seconds)
+  const showAnnouncement = useCallback(
+    (msg: string, durationMs: number = 5000) => {
+      clearAnnouncementTimer();
+      setAnnouncement(msg);
+      announcementTimerRef.current = setTimeout(() => {
+        setAnnouncement("");
+      }, durationMs);
+    },
+    [clearAnnouncementTimer]
+  );
+
   const triggerUnrecognised = useCallback(() => {
     clearCountdown();
     clearUnrecognisedTimer();
     setRawInput("");
-    setAnnouncement("That command isn't recognised. Try again, or open the list of commands.");
+    showAnnouncement(
+      "That command isn't recognised. Try again, or open the list of commands.",
+      5000
+    );
     setHighlightHelp(true);
     setTimeout(() => setHighlightHelp(false), 3000);
-  }, [clearCountdown, clearUnrecognisedTimer]);
+  }, [clearCountdown, clearUnrecognisedTimer, showAnnouncement]);
 
   // Execute a recognized navigation command
   const executeCommand = useCallback(
@@ -72,14 +96,21 @@ export function CommandBar() {
 
       switch (cmd.kind) {
         case "OPEN_SIDEBAR": {
-          const dialog = document.getElementById("app-sidebar") as HTMLDialogElement | null;
-          dialog?.showModal();
+          window.dispatchEvent(
+            new CustomEvent("toggle-sidebar", { detail: { open: true } })
+          );
           break;
         }
 
         case "CLOSE_SIDEBAR": {
-          const dialog = document.getElementById("app-sidebar") as HTMLDialogElement | null;
-          dialog?.close();
+          window.dispatchEvent(
+            new CustomEvent("toggle-sidebar", { detail: { open: false } })
+          );
+          break;
+        }
+
+        case "SHOW_HELP": {
+          helpDialogRef.current?.showModal();
           break;
         }
 
@@ -126,8 +157,7 @@ export function CommandBar() {
           if (isReady) {
             await handleAnalyze();
           } else {
-            setAnnouncement("Add your offer first.");
-            setTimeout(() => setAnnouncement(""), 3500);
+            showAnnouncement("Add your offer first.", 5000);
           }
           break;
         }
@@ -159,6 +189,7 @@ export function CommandBar() {
       router,
       setStep,
       setStepSkipped,
+      showAnnouncement,
     ]
   );
 
@@ -166,9 +197,10 @@ export function CommandBar() {
   const handleCancel = useCallback(() => {
     clearCountdown();
     clearUnrecognisedTimer();
+    clearAnnouncementTimer();
     setRawInput("");
     setAnnouncement("");
-  }, [clearCountdown, clearUnrecognisedTimer]);
+  }, [clearCountdown, clearUnrecognisedTimer, clearAnnouncementTimer]);
 
   // Handle typing / dictating in input
   const handleInputChange = useCallback(
@@ -176,6 +208,7 @@ export function CommandBar() {
       setRawInput(val);
       clearCountdown();
       clearUnrecognisedTimer();
+      clearAnnouncementTimer();
       setAnnouncement("");
 
       const trimmed = val.trim();
@@ -198,12 +231,16 @@ export function CommandBar() {
       if (match.kind === "WRONG_CONTEXT") {
         clearCountdown();
         setRawInput("");
-        setAnnouncement(match.hint);
-        setTimeout(() => setAnnouncement(""), 4000);
+        showAnnouncement(match.hint, 5000);
         return;
       }
 
       if (match.kind !== "UNKNOWN") {
+        if (match.kind === "SHOW_HELP") {
+          executeCommand(match);
+          return;
+        }
+
         setPendingCommand(match);
         let timeLeft = 2;
         setCountdown(timeLeft);
@@ -228,6 +265,8 @@ export function CommandBar() {
     [
       clearCountdown,
       clearUnrecognisedTimer,
+      clearAnnouncementTimer,
+      showAnnouncement,
       pathname,
       currentStep,
       analysis,
@@ -275,8 +314,9 @@ export function CommandBar() {
     return () => {
       clearCountdown();
       clearUnrecognisedTimer();
+      clearAnnouncementTimer();
     };
-  }, [clearCountdown, clearUnrecognisedTimer]);
+  }, [clearCountdown, clearUnrecognisedTimer, clearAnnouncementTimer]);
 
   // Label for countdown
   const getCommandDisplayLabel = (cmd: Command): string => {
@@ -285,6 +325,8 @@ export function CommandBar() {
         return "Open sidebar";
       case "CLOSE_SIDEBAR":
         return "Close sidebar";
+      case "SHOW_HELP":
+        return "What can I say";
       case "NAVIGATE":
         return cmd.label;
       case "WIZARD_NEXT":
@@ -351,9 +393,32 @@ export function CommandBar() {
           <div
             role="status"
             aria-live="polite"
-            className="pointer-events-auto mb-2 flex items-center justify-between text-xs font-medium text-[var(--text-muted)] bg-[var(--surface)] border border-[var(--border)] rounded-xl px-3.5 py-2 shadow-xs"
+            className="pointer-events-auto mb-2 flex items-center justify-between text-xs font-medium text-[var(--text-muted)] bg-[var(--surface)] border border-[var(--border)] rounded-xl px-3.5 py-2 shadow-xs gap-2"
           >
-            <span>{announcement}</span>
+            <span className="leading-snug">{announcement}</span>
+            <button
+              type="button"
+              onClick={() => {
+                clearAnnouncementTimer();
+                setAnnouncement("");
+              }}
+              aria-label="Dismiss message"
+              className="text-[var(--text-muted)] hover:text-[var(--text)] p-1 rounded hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-1 focus-visible:ring-[var(--focus-ring)] shrink-0 inline-flex items-center justify-center cursor-pointer transition-colors"
+            >
+              <svg
+                aria-hidden="true"
+                className="w-3.5 h-3.5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
           </div>
         )}
 
@@ -377,7 +442,7 @@ export function CommandBar() {
                   });
                   if (match.kind === "WRONG_CONTEXT") {
                     setRawInput("");
-                    setAnnouncement(match.hint);
+                    showAnnouncement(match.hint, 5000);
                   } else if (match.kind !== "UNKNOWN") {
                     executeCommand(match);
                   } else {

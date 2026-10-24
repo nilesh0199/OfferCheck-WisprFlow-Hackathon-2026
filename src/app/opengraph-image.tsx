@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
-import { APP_NAME, TAGLINE } from "@/lib/config";
+import { APP_NAME, HERO_HEADLINE } from "@/lib/config";
 
-export const alt = `${APP_NAME} — ${TAGLINE}`;
+export const alt = `${APP_NAME} — ${HERO_HEADLINE}`;
 export const size = {
   width: 1200,
   height: 630,
@@ -102,7 +102,7 @@ export default async function Image() {
               color: "#14202E",
             }}
           >
-            {TAGLINE}
+            {HERO_HEADLINE}
           </div>
           <div
             style={{

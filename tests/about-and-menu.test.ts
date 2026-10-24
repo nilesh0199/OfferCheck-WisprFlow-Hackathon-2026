@@ -2,10 +2,10 @@ import { describe, it, expect } from "vitest";
 import * as fs from "node:fs";
 import * as path from "node:path";
 
-describe("/about page and slide-over menu architecture", () => {
+describe("/about page and TopBar/Sidebar architecture", () => {
   const aboutPath = path.resolve(process.cwd(), "src/app/about/page.tsx");
-  const menuPath = path.resolve(process.cwd(), "src/components/MenuSheet.tsx");
-  const topNavPath = path.resolve(process.cwd(), "src/components/TopNav.tsx");
+  const topBarPath = path.resolve(process.cwd(), "src/components/TopBar.tsx");
+  const sidebarPath = path.resolve(process.cwd(), "src/components/Sidebar.tsx");
 
   it("exists as a static server component file for /about", () => {
     expect(fs.existsSync(aboutPath)).toBe(true);
@@ -13,20 +13,28 @@ describe("/about page and slide-over menu architecture", () => {
     expect(content.includes('"use client"')).toBe(false);
   });
 
-  it("includes all required sections in sentence case on /about", () => {
+  it("includes all required sections in exact order on /about (P3)", () => {
     const content = fs.readFileSync(aboutPath, "utf-8");
     const requiredHeadings = [
+      "Why it exists",
       "What it does",
       "What it does not do",
       "Who made it",
-      "Why it exists",
+      "Policies and official reporting",
     ];
 
+    let lastIndex = -1;
     for (const heading of requiredHeadings) {
+      const idx = content.indexOf(heading);
       expect(
-        content.includes(heading),
+        idx,
         `Missing required sentence case section heading: "${heading}"`
-      ).toBe(true);
+      ).toBeGreaterThanOrEqual(0);
+      expect(
+        idx,
+        `Section "${heading}" appears out of required order on /about`
+      ).toBeGreaterThan(lastIndex);
+      lastIndex = idx;
     }
   });
 
@@ -40,55 +48,67 @@ describe("/about page and slide-over menu architecture", () => {
     expect(content).toContain('target="_blank"');
   });
 
-  it("links to /privacy and /resources from /about", () => {
+  it("links to /privacy and /resources (Help and reporting) from /about", () => {
     const content = fs.readFileSync(aboutPath, "utf-8");
     expect(content.includes('href="/privacy"')).toBe(true);
     expect(content.includes('href="/resources"')).toBe(true);
+    expect(content).toContain("Help, reporting and official resources");
   });
 
-  it("enforces calm non-verdict boundaries on /about", () => {
+  it("enforces calm non-verdict boundaries on /about and avoids scam/scammer/fraud in new copy", () => {
     const content = fs.readFileSync(aboutPath, "utf-8");
     const bannedVerdicts = /\b(verified safe|definitely a scam|categorically fraud|guaranteed legit)\b/i;
     expect(content).not.toMatch(bannedVerdicts);
   });
 
-  it("MenuSheet uses HTML5 dialog with accessible buttons and tap targets", () => {
-    expect(fs.existsSync(menuPath)).toBe(true);
-    const content = fs.readFileSync(menuPath, "utf-8");
+  it("TopBar renders a single shared navy header bar with toggle, logo, nav links and CTA", () => {
+    expect(fs.existsSync(topBarPath)).toBe(true);
+    const content = fs.readFileSync(topBarPath, "utf-8");
+    expect(content).toContain("bg-[var(--header-bg)]");
+    expect(content).toContain("text-[var(--header-text)]");
+    expect(content).toContain("text-[var(--header-nav-text)]");
+    expect(content).toContain('aria-controls="app-sidebar"');
+    expect(content).toContain('aria-label="OfferClara, home"');
+    expect(content).toContain('href="/check"');
+    expect(content).toContain('href="/resources"');
+    expect(content).toContain("Help and reporting");
+  });
 
-    // Dialog element
-    expect(content).toContain("<dialog");
+  it("Sidebar uses HTML5 dialog with zero-scroll flex layout and no WhatsApp link", () => {
+    expect(fs.existsSync(sidebarPath)).toBe(true);
+    const content = fs.readFileSync(sidebarPath, "utf-8");
+
+    expect(content).toContain('<dialog');
+    expect(content).toContain('id="app-sidebar"');
     expect(content).toContain("showModal()");
-    expect(content).toContain("aria-label=\"Open menu\"");
-    expect(content).toContain("aria-label=\"Close menu\"");
+    expect(content).toContain('aria-label="Close sidebar"');
+    expect(content).toContain("overflow-hidden");
+
+    // Links to /ask in Part 2 now that /ask is live
+    expect(content).toContain('href="/ask"');
+    expect(content).toContain("Clear doubt with AI");
+
+    // No WhatsApp sharing
+    expect(content).not.toContain("api.whatsapp.com/send");
+    expect(content).not.toContain("Share via WhatsApp");
+    expect(content).not.toContain("Share on WhatsApp");
 
     // Essential navigation destinations
     expect(content).toContain('href="/check"');
-    expect(content).toContain('href="/ask"');
     expect(content).toContain('href="/resources"');
+    expect(content).toContain("Help and reporting");
     expect(content).toContain('href="/#how-it-works"');
     expect(content).toContain('href="/#what-you-get"');
     expect(content).toContain('href="/#faq"');
     expect(content).toContain('href="/privacy"');
     expect(content).toContain('href="/about"');
-    expect(content).toContain("api.whatsapp.com/send");
     expect(content).toContain("<ThemeToggle");
-
-    // Tap target minimum 44px
-    expect(content).toContain("min-h-[44px]");
   });
 
-  it("TopNav provides a canvas-coloured slim row without brand colour bar", () => {
-    expect(fs.existsSync(topNavPath)).toBe(true);
-    const content = fs.readFileSync(topNavPath, "utf-8");
-    expect(content).toContain("bg-[var(--bg)]");
-    expect(content).not.toContain("bg-[var(--header-bg)]");
-  });
-
-  it("ensures old Header.tsx and LandingNav.tsx are removed", () => {
-    const headerPath = path.resolve(process.cwd(), "src/components/Header.tsx");
-    const landingNavPath = path.resolve(process.cwd(), "src/components/landing/LandingNav.tsx");
-    expect(fs.existsSync(headerPath)).toBe(false);
-    expect(fs.existsSync(landingNavPath)).toBe(false);
+  it("ensures old TopNav.tsx and MenuSheet.tsx are removed", () => {
+    const topNavPath = path.resolve(process.cwd(), "src/components/TopNav.tsx");
+    const menuSheetPath = path.resolve(process.cwd(), "src/components/MenuSheet.tsx");
+    expect(fs.existsSync(topNavPath)).toBe(false);
+    expect(fs.existsSync(menuSheetPath)).toBe(false);
   });
 });

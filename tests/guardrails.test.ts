@@ -63,6 +63,21 @@ describe("detectOverclaiming guardrails", () => {
     ).toBe(true);
   });
 
+  it("flags normative claims containing 'standard', 'typical', 'normal', or 'usual'", () => {
+    expect(
+      detectOverclaiming("This is not standard practice for hiring.").flagged
+    ).toBe(true);
+    expect(
+      detectOverclaiming("A typical internship does not ask for fees.").flagged
+    ).toBe(true);
+    expect(
+      detectOverclaiming("This is normal for startup offers.").flagged
+    ).toBe(true);
+    expect(
+      detectOverclaiming("This departs from usual employment terms.").flagged
+    ).toBe(true);
+  });
+
   it("does NOT flag hedged or objective observations (no false positives)", () => {
     expect(
       detectOverclaiming("The company website may not be verified yet.").flagged

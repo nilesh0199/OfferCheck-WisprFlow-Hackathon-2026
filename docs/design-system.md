@@ -45,153 +45,54 @@ All color tokens are declared in ONE isolated, swappable block per theme in `src
 | `--color-tint-obs-border` | `#e5c85c` | `#5a4a1a` | Observation card 3px left border | Evidence marker ONLY |
 | `--color-tint-obs-text` | `#593e00` | `#fde896` | Observation marker text | 9.2:1 (L), 12.9:1 (D) vs obs-bg |
 
-### 2.2 Semantic Tool Page Hierarchy
+---
 
-1. **Header:** Navy (`--color-header-bg`) across both themes with brand wordmark in white, navigation links in `--color-header-nav-text`, primary button "Check an offer", segmented theme toggle with white focus rings, and no persistent outline on the logo.
-2. **Review Summary Card:** Summary header row uses subtle info tint (`--tint-info-bg`), sentence-case headings, and count chips in white/tinted surface with primary text and borders.
-3. **Observations (Findings):** Surface background with subtle observation tint (`--color-tint-obs-bg`) and 3px left border (`--color-tint-obs-border`).
-4. **Missing Details:** Table `thead` uses info tint (`--tint-info-bg`) with sans-serif font; count chip uses primary text on info tint.
-5. **Questions to Ask:** Questions cards use action tint (`--tint-action-bg`, `--tint-action-border`); count chip uses primary text on action tint.
-6. **"Check these yourself" Card:** Surface background with 3px primary top border (`border-t-[3px] border-t-[var(--color-primary)]`) and action tint numbered step circles.
-7. **Company Research Card:** Surface background with 3px primary top border; when research is recommended, card uses action tint background. Rotating SVG chevron on guidance disclosure.
-8. **Official Resources Card:** Surface background with primary-colored action links.
-9. **Limits Section:** Surface-alt background (`--color-surface-alt`) to visually reinforce boundary conditions.
-10. **"On this page" Right Rail:** Active section item is styled with action tint background (`--tint-action-bg`), primary text (`--color-primary`), and a 3px primary left border (`border-l-[3px] border-l-[var(--color-primary)]`).
+## 3. Persistent Navigation & Layout Architecture
 
-### 2.3 Ready-to-Swap Palettes
-Alternative palettes (Palette B "Petrol" and Palette C "Cobalt with Light Header") are documented with complete token tables and copy-paste swap instructions in `docs/design-brief.md`.
+### 3.1 One Top Bar Across Every Page (`TopBar.tsx`)
+Mounted once in `src/app/layout.tsx` to ensure absolute layout parity across `/`, `/check`, `/resources`, `/privacy`, `/about`, 404, and error states:
+- **Left Region:** 44px square ghost button on the navy bar controlling `<dialog id="app-sidebar">`, followed by a 16px gap, and a single clickable link to `/` containing the unified logo mark and wordmark.
+- **Right Region ($\ge 1100$px):** Desktop navigation links (Home, How it works, What you get, Privacy, FAQ, Help and reporting), external GitHub link, theme toggle, and primary "Check an offer" button.
+- **Mobile Region (< 1100px):** Navigation links collapse into the sidebar. Keeps the sidebar toggle button, brand link, compact theme toggle, and primary check button (labelled "Check" under 480px) with zero horizontal overflow at 360px.
+
+### 3.2 Accessible Slide-Over Sidebar (`Sidebar.tsx`)
+Native HTML5 `<dialog id="app-sidebar">` rendered at the root layout level with zero-scroll responsive height scaling:
+- **Fixed Zero-Scroll Sizing:** Fits 100dvh without vertical scrolling by dynamically sizing navigation items between 2.75rem and 2.25rem via `itemHeightRem` based on viewport height. Below 560px, the decorative tagline and divider collapse to ensure all links remain on screen.
+- **Items Order:** Home, Check an offer (primary highlighted button), Help and reporting, divider, How it works, What you get, FAQ, Privacy, About, GitHub (external), Share (Web Share API with safe fallback), and bottom theme toggle.
+- **Zero Third-Party Branding:** Completely clean of vendor tracking, analytics, or external platform badges.
+
+### 3.3 Check Intake & Findings Layout (`/check`)
+- **Pre-Review Wizard:** 5 distinct numbered steps with a header row displaying step progress and a ghost button labelled `"Clear and start over"` visible as soon as text, files, or answers are entered.
+- **Shared Confirmation Dialog (`ClearReviewDialog.tsx`):** Accessible `<dialog id="clear-review-dialog">` with title `"Start a new review?"`, cancel button with default focus, conditional `"Save as PDF first"` button, and neutral dark confirmation button `"Clear and start over"`.
+- **Post-Review 3-Zone Workspace:**
+  - **Left Rail (~240px, Sticky on desktop):** `ResultsNav.tsx` displaying on-page section navigation (Overview, Observations, Missing details, Questions & checks, Company research, Resources, Your text).
+  - **Centre Fluid Column:** Findings cards, verification questions, and `ResultsActionsBar.tsx` (Save as PDF with dynamic title `OfferClara review YYYY-MM-DD`, Copy summary, Share, Start new review).
+  - **Right Rail (~360px, Sticky on $\ge 1536$px):** `YourOfferWorkspace.tsx` highlighted document viewer.
 
 ---
 
-## 3. Typographic Architecture
+## 4. Docked Command Box (`CommandBar.tsx`)
 
-Fonts are loaded at build time via `next/font/google` in `src/app/layout.tsx`:
-- **Primary UI & Body:** `IBM Plex Sans` (400, 500, 600) — technical clarity, neutral grotesque grotesque characteristics, high legibility.
-- **Data, Lines, & Quotes:** `IBM Plex Mono` (400, 500) — mechanical precision, tabular alignment. **Restricted strictly** to offer document text, verbatim quotes, line numbers, telephone/portal codes, and character counters. All UI labels, table headers, badges, and eyebrows use the sans face.
-- **Editorial Headlines:** `Newsreader` (400, 600) — warm, authoritative editorial display serif reserved for landing page hero titles.
-
-### 3.1 Typographic Metrics & Scale
-The typography system uses a responsive root clamp in `src/app/globals.css` and a strictly rem-based scale across all components:
-- **Root Font Size Clamp:**
-  ```css
-  html {
-    font-size: clamp(16px, calc(12px + 0.3125vw), 18px);
-  }
-  body {
-    font-size: 1rem;
-  }
-  ```
-- **Scale Tokens:**
-  - **`text-xs`**: `0.875rem` (14px at 16px root), line-height 1.5 (secondary labels, metadata, count chips, captions $\ge 0.875$rem)
-  - **`text-sm`**: `0.9375rem` (15px at 16px root), line-height 1.55 (table text, secondary card body)
-  - **`text-base`**: `1rem` (16px at 16px root), line-height 1.6 (buttons, top bar / nav links, primary body text)
-  - **Landing Body**: `1.0625rem` (`text-[1.0625rem]`, 17px at 16px root), line-height 1.6
-  - **Landing Lead**: `1.1875rem` – `1.25rem` (`sm:text-[1.1875rem]`), line-height 1.5
-- **Absolute Floor**: **0.875rem (14px at 16px root) minimum anywhere in the interface.** Zero instances of sub-0.875rem classes (`text-2xs`, `text-3xs`) or raw px font sizes anywhere under `src/` (with explicit exception for the root html clamp in `globals.css` and print `11pt`). An automated test in `tests/token-audit.test.ts` scans all source files under `src/` on every build to guarantee this floor.
-- **Prose Constraints**: Prose paragraphs and observation interpretations are strictly constrained to `max-w-[70ch]` for comfortable reading eye-travel.
+OfferClara includes a hands-free, voice-ready navigation box docked at the bottom of the viewport:
+- **Layout:** One docked input (`min(640px, 92vw)` desktop; 44px bar on mobile) with placeholder `"Dictate a command"` and button `"What can I say?"`.
+- **Navigation-Only Scope:** Strictly restricted to site and wizard navigation. Contains no answer-setting commands, no theme toggles, and no "Add to offer text" flows.
+- **Countdown Execution:** Recognised commands display a status line above the bar: `"Running <label> in 2... Cancel"` (with cancel button, Escape to cancel, Enter to run immediately).
+- **Graceful Rejection:** Unrecognised input or long paragraphs (>80 chars) are cleared immediately, announcing via `aria-live="polite"`: `"That command isn't recognised. Try again, or open the list of commands."` and highlighting the `"What can I say?"` button.
+- **Page Context Awareness:** Check-page commands uttered on other routes prompt: `"That command works on the check page."`
+- **Zero Microphone Permissions:** Works with Wispr Flow or OS dictation tools typing directly into the input. No Web Speech API or microphone permissions required.
 
 ---
 
-## 4. Layout Architecture & Section Alignment
+## 5. Normative Employment Wording Prohibition
 
-### 4.1 Global Responsive Container Primitive
-Every page and major section is wrapped in `src/components/layout/Container.tsx`:
-$$\text{width} = \min(100\% - 2 \times \text{gutter}, 2000\text{px}) \quad \text{where} \quad \text{gutter} = \text{clamp}(16\text{px}, 2.5\text{vw}, 48\text{px})$$
-
-### 4.2 Alignment Rules
-1. **Left-Edge Alignment:** Section titles, descriptions, and headers start at the container's left edge (no arbitrary floating center offsets for left-aligned content).
-2. **Full-Width Grids:** Cards, tables, and step blocks span the full width of the container.
-3. **FAQ Section:** Two-column grid on desktop ($\ge 1024$px) using `items-start` so that expanding one question does not cause the sibling question in the adjacent column to stretch vertically.
-4. **Column Balance:** Hero document card and scroll scene inspection columns maintain balanced visual proportions across viewports.
-5. **Alternating Section Bands:** Landing sections alternate between canvas (`--color-canvas`) and surface (`--color-surface`) backgrounds, with the hero featuring a pale tinted band (`--tint-info-bg/40`).
+To prevent misleading students about employment norms:
+- **System Instruction:** In `src/lib/analysis/prompt.ts`, Rule 5 explicitly instructs the model never to assert what is "standard", "typical", "normal", or "usual" in hiring or employment.
+- **Deterministic Guardrail:** In `src/lib/analysis/guardrails.ts`, `detectOverclaiming` enforces `/\b(standard|typical|normal|usual)\b/i` across all model-written fields (observation, interpretation, note, verification question). Quotes from user-submitted text remain verbatim and exempt.
 
 ---
 
-## 5. Removal of Template Tells
+## 6. Typographic Architecture & Floor Audit
 
-All common AI / template design artifacts have been eliminated:
-1. **No All-Caps Tracked Eyebrows:** Eyebrows are written in clean sentence-case sans without `uppercase` or tracking (`tracking-wider`, `tracking-widest`).
-2. **No Duplicate Numbering:** Steps use single, clear primary-filled number circles (`1`, `2`, `3`) instead of redundant "01" and "Step 1 of 3" combinations.
-3. **No Arrow or Triangle Glyphs:** Text glyphs (`&rarr;`, `→`, `▲`, `▼`) have been replaced with accessible SVG chevrons or clean copy without decorative glyphs.
-4. **Custom Disclosure Chevrons:** All `<details>` / `<summary>` disclosure controls use custom rotating SVG chevrons with `list-none [&::-webkit-details-marker]:hidden` to suppress default browser markers in WebKit/Safari.
-5. **No Dot-Grid Textures:** Removed decorative dot-matrix background patterns (`.paper-pattern`) in favor of clean paper surfaces.
-
-## 4. Layout Architecture
-
-### 4.1 Global Responsive Container Primitive
-Replaces rigid 1152px / `max-w-6xl` wrappers with a fluid full-width container declared in `src/components/layout/Container.tsx`:
-$$\text{width} = \min(100\% - 2 \times \text{gutter}, 2000\text{px}) \quad \text{where} \quad \text{gutter} = \text{clamp}(16\text{px}, 2.5\text{vw}, 48\text{px})$$
-
-Used consistently across all routes: landing page, `/check`, `/resources`, 404, error, and top-level headers/footers.
-
-### 4.2 Tool Page (`/check`) Layout Architecture
-
-1. **Pre-Review State: 5-Step Wizard (`/check`)**
-   - **Step 1: Offer** (`Step1Offer.tsx`): Large verbatim textarea, drag-and-drop file upload (`FileUploadDropzone`), attached files list (`SelectedFileList`), character counter against 12,000 characters, full synthetic wizard samples (A & B), and inline replacement confirmations.
-   - **Step 2: Source** (`Step2Source.tsx`): Communication channel radio selector (Email, LinkedIn, WhatsApp, Telegram, Job Portal, Campus, Other), application status ("Did you apply?"), and optional 200-character context note with sensitive identifier detection.
-   - **Step 3: Conversation** (`Step3Conversation.tsx`): 4,000-character narrative textarea for student accounts of verbal phone calls, interviews, or recruiter assurances (typed or dictated), with sensitive identifier warning.
-   - **Step 4: Money and documents** (`Step4Payment.tsx`): Monetary payment status (Yes, No, Not sure), conditional fee purpose checkboxes (Training, Security deposit, Background check, Laptop, Other), amount input, deadline input, document requests/shares checkboxes, and calming helpline callout.
-   - **Step 5: Review** (`Step5Review.tsx`): Concise structured summaries of steps 1-4 with direct "Edit" shortcuts, combined character counter against 12,000, verbatim AI data notices, embedded company research card, and expandable combined text preview.
-   - **Stepper Navigation** (`WizardStepper.tsx`): 5 distinct numbered steps. Grid on desktop ($\ge 640$px) with visited/skipped/current indicators; horizontally scrollable compact chips on mobile (< 640px).
-
-2. **Post-Review State: Master-Detail Desktop Layout ($\ge 1280$px / `xl`):**
-   - **Left Rail (~240px, Sticky):** `ResultsNav.tsx` on-page section navigation with live `IntersectionObserver` scroll-spy, highlighting the active section and displaying count badges (Overview, Observations, Missing details, Questions & checks, Company research, Advisories & resources, Your text).
-   - **Centre Column (~640-760px, Primary Fluid):**
-     - `ResultsActionsBar.tsx`: Save as PDF (dynamic title `OfferClara Review - [Company] - [Date].pdf`), Copy summary, Share (Web Share API with safe non-leaking excerpt), and Start new review with native `<dialog>` confirmation.
-     - Section 1: Overview card (id `section-summary` / `section-overview`).
-     - Section 2: Observations list (id `section-observations`).
-     - Section 3: Missing details checklist (id `section-missing`).
-     - Section 4: Questions to ask & self-checks (id `section-questions`).
-     - Section 5: Company research card (id `section-research`).
-     - Section 6: Official Institutional Advisories (id `section-advisories`).
-     - Section 7: Verbatim highlighted document viewer (id `section-your-text`).
-   - **Right Rail (~360px, Sticky on $\ge 1536$px / `2xl`):** `YourOfferWorkspace.tsx` live document viewer with line numbers, section markers, interactive yellow quote highlights, and bidirectional scroll linking with observation cards.
-   - **Mobile & Tablet (< 1536px):** Single column layout with expandable "Your text" drawer, responsive action bar, and sticky safe-area mobile navigation.
-
-### 4.3 Static, Fast Landing Page
-- Complete simplification from previous animated prototypes: zero entrance animation, zero magnifying lens canvas, zero scroll-driven sticky scenes, zero timers.
-- Instant 0ms render with zero Cumulative Layout Shift (CLS).
-- Interactive features demonstrated via a crisp, static annotated document card with 3 yellow-highlighted phrases and margin observation badges.
-- Highlights the 5-step wizard, Global Command Bar, side-by-side capabilities comparison, and dual-column FAQ.
-
-### 4.4 Dedicated Privacy Route (`/privacy`)
-- Dedicated static server component at `/privacy` styled with standard layout containers, headers, and footers matching `/resources`.
-- Seven sentence-case sections: "What is sent to other services", "What OfferClara does not store", "What stays in your browser", "Requests and limits", "Uploads", "What OfferClara cannot do", and "Report a problem".
-- Embeds verbatim `AI_DATA_NOTICE` and `AI_FILE_NOTICE`.
-- Includes "Last updated 22 Oct 2026" timestamp and direct issue reporting links.
-- Strictly adheres to calm, verdict-free language.
-
----
-
-## 5. Evidence Linking & Interaction
-
-- **Centre Column $\to$ Right Rail:** Clicking "Show in text" or hovering an observation card in the findings column activates the quote highlight in the right rail document viewer with an amber ring and smoothly scrolls the document rail to reveal that line if not in view.
-- **Right Rail $\to$ Centre Column:** Clicking or pressing Enter on a highlighted quote in the document rail scrolls directly to the corresponding observation card in the centre column and shifts keyboard focus to it.
-- **Accessible Markup:** Linked via semantic IDs (`rail-highlight-${id}` and `concern-card-${id}`), `role="button"`, and visible keyboard focus outlines.
-
----
-
-## 6. Motion & Resilience
-
-- **Static-First Philosophy:** The landing page and review tools avoid decorative autoplay animations. Motion is strictly restricted to user-initiated interactions (smooth scroll, accordion dropdowns, dialog open/close).
-- **Reduced Motion:** Fully conforms to `prefers-reduced-motion: reduce` by disabling smooth scroll and transitions.
-- **Responsive Viewport Resilience:** Zero horizontal overflow across all tested viewports: 360px (Galaxy S8), 390px (iPhone 14), 430px (iPhone 14 Pro Max), 768px (iPad), 1024px, 1280px, 1440px, 1920px.
-
----
-
-## 7. Global Command Bar (Dictate or Type)
-
-- **Purpose:** Enables complete keyboard and voice accessibility without requiring browser microphone permissions or proprietary speech APIs. Works seamlessly with system speech-to-text tools like Wispr Flow.
-- **Placement:** Docked bottom center on desktop, expanding on focus or hover. Keyboard shortcut: `/` or `Ctrl+K` / `Cmd+K`. Dismissable with `Escape`.
-- **Pure Matcher:** `matchCommand` in `src/lib/commands/match.ts` parses over 80 natural language commands, stripping leading/trailing conversational filler words (`please`, `can you`, `could you`, `just`, `now`, `take me to`).
-- **Confirmation Countdown:** Recognized actions display a 2-second visual countdown before executing, with immediate Enter/Click override and an "Add to offer text instead" option.
-- **Dictation Fallback:** Dictated phrases exceeding 80 characters or unrecognised inputs automatically display an "Add to offer text" button.
-
----
-
-## 8. Design Token Audit & Accessibility Rules
-
-- **Zero Default Palette Color Classes:** Automated audit (`tests/token-audit.test.ts`) enforces that no file in `src/` uses hard-coded Tailwind default palette classes (`text-blue-500`, `bg-gray-100`, `bg-black`, etc.).
-- **Zero Raw Hex Colors in JSX:** All colors must reference CSS semantic design tokens.
-- **Font Size Scale Floor:** Root `clamp(16px, calc(12px + 0.3125vw), 18px)` with all typography defined in `rem` (`text-xs` 0.875rem, `text-sm` 0.9375rem, `text-base` 1rem). No token or class below 0.875rem is permitted.
-- **High Contrast:** All token pairs meet or exceed WCAG 2.1 AA contrast requirements across light and dark themes.
+- **Scale Floor:** Strict `0.875rem` (14px at 16px root) floor enforced by `tests/token-audit.test.ts` across all components.
+- **Fonts:** Build-time Google fonts (`IBM Plex Sans`, `IBM Plex Mono`, `Newsreader`) via `next/font/google`.
+- **Print Optimization:** All interactive controls (top bar, sidebar, command bar, wizard steppers, sticky bars, dialogs, results action bar) are tagged with `print:hidden`. Print views export with dynamic title `OfferClara review YYYY-MM-DD`.

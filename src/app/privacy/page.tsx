@@ -2,7 +2,6 @@ import React from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Container } from "@/components/Container";
-import { TopNav } from "@/components/TopNav";
 import { GitHubIcon, ExternalLinkIcon } from "@/components/Icons";
 import { APP_NAME, AI_DATA_NOTICE, AI_FILE_NOTICE } from "@/lib/config";
 
@@ -15,8 +14,6 @@ export const metadata: Metadata = {
 export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col justify-between overflow-x-hidden transition-colors">
-      <TopNav />
-
       {/* Main Content */}
       <main className="flex-1 py-8 sm:py-12 space-y-12">
         <Container className="space-y-10">
@@ -52,13 +49,16 @@ export default function PrivacyPage() {
               </h2>
               <div className="space-y-3 text-sm text-[var(--text-muted)] leading-relaxed">
                 <p>
-                  When you submit text or upload files for review, they are transmitted to Google&apos;s Gemini API on the free tier:
+                  When you submit text for review, it is transmitted to Google&apos;s Gemini API on the free tier or, if unavailable, to Groq. Uploaded files (screenshots and PDFs) are processed only by Google&apos;s Gemini API for transcription; files are never sent to Groq.
                 </p>
                 <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-xs font-mono text-[var(--text)] leading-relaxed">
                   <p>{AI_DATA_NOTICE}</p>
                 </div>
                 <p>
                   If you choose to use the independent company research helper, the generated search prompt contains only confirmed company details (such as organisation name, website, and location) and is copied by you into Perplexity, an external service with its own terms and privacy policy. Raw offer letters are never included in the research prompt.
+                </p>
+                <p>
+                  If you choose to play embedded awareness videos on the Help and reporting page, they are loaded from YouTube&apos;s privacy-enhanced mode (youtube-nocookie.com) only upon your explicit click, which may set operational cookies under Google&apos;s privacy policy.
                 </p>
                 <p>
                   OfferClara is hosted on Vercel, which processes incoming web requests and maintains standard operational infrastructure logs under its own privacy policy.
@@ -266,7 +266,7 @@ export default function PrivacyPage() {
               href="/resources"
               className="hover:text-[var(--text)] underline underline-offset-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1.5 min-h-[44px] inline-flex items-center"
             >
-              Official resources
+              Help and reporting
             </Link>
             <Link
               href="/privacy"

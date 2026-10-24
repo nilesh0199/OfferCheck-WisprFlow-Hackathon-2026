@@ -57,9 +57,15 @@ export class ModelCircuitBreaker {
     modelId: string,
     outcome: string,
     httpStatus?: number,
-    currentTime?: number
+    currentTime?: number,
+    customCooldownMs?: number
   ): void {
     const t = currentTime ?? this.now();
+
+    if (customCooldownMs !== undefined && customCooldownMs > 0) {
+      this.cooldowns.set(modelId, t + customCooldownMs);
+      return;
+    }
 
     if (outcome === "TIMEOUT" || httpStatus === 504) {
       this.cooldowns.set(modelId, t + this.timeoutCooldownMs);

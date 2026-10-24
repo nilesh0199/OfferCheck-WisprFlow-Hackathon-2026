@@ -1,20 +1,21 @@
-import { WizardStep } from "@/lib/combined-text";
-
 export type Command =
-  | { kind: "NAVIGATE_WIZARD"; step: WizardStep }
-  | { kind: "NAVIGATE_ROUTE"; route: "/" | "/check" | "/resources" | "/privacy" }
+  | { kind: "OPEN_SIDEBAR" }
+  | { kind: "CLOSE_SIDEBAR" }
+  | { kind: "NAVIGATE"; target: string; label: string }
+  | { kind: "WIZARD_NEXT" }
+  | { kind: "WIZARD_BACK" }
+  | { kind: "WIZARD_SKIP" }
+  | { kind: "WIZARD_GOTO_STEP"; step: 1 | 2 | 3 | 4 | 5; label: string }
   | { kind: "ANALYSE" }
-  | { kind: "CLEAR" }
-  | { kind: "SAVE_PDF" }
-  | { kind: "COPY_SUMMARY" }
-  | { kind: "TOGGLE_THEME" }
-  | { kind: "SCROLL_SECTION"; sectionId: string }
-  | { kind: "LOAD_SAMPLE"; sampleId: string }
+  | { kind: "JUMP_SECTION"; sectionId: string; label: string }
+  | { kind: "EDIT_ANSWERS" }
+  | { kind: "WRONG_CONTEXT"; hint: string }
   | { kind: "UNKNOWN"; rawText: string };
 
 export interface CommandContext {
-  route?: string;
-  currentStep?: WizardStep;
+  page: string;
+  step?: number;
+  hasReview?: boolean;
 }
 
 const FILLER_PREFIXES = [
@@ -28,37 +29,44 @@ const FILLER_PREFIXES = [
   "hey",
   "just",
   "now",
+  "take me to the",
   "take me to",
+  "navigate to the",
   "navigate to",
-  "switch to",
-  "show me",
+  "go to the",
   "go to",
+  "show me the",
+  "show me",
+  "open up the",
   "open up",
+  "open the",
   "open",
+  "jump to the",
   "jump to",
+  "switch to the",
+  "switch to",
 ];
 
 const FILLER_SUFFIXES = [
   "please",
   "now",
   "for me",
+  "page",
+  "section",
 ];
 
 export function cleanSpokenInput(raw: string): string {
-  // Replace internal commas or punctuation that might separate words (e.g. "Hey, take me to")
   let cleaned = raw
     .toLowerCase()
     .replace(/[,;:.!?]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 
-  // Iteratively strip leading & trailing fillers
   let changed = true;
   while (changed) {
     changed = false;
     for (const prefix of FILLER_PREFIXES) {
       if (cleaned === prefix) {
-        // entire string is just the filler
         return "";
       }
       if (cleaned.startsWith(prefix + " ")) {
@@ -69,7 +77,8 @@ export function cleanSpokenInput(raw: string): string {
     }
     for (const suffix of FILLER_SUFFIXES) {
       if (cleaned === suffix) {
-        return "";
+        // Keep solitary "privacy", "about", etc. Don't erase if it's a command name
+        break;
       }
       if (cleaned.endsWith(" " + suffix)) {
         cleaned = cleaned.slice(0, cleaned.length - suffix.length - 1).trim();
@@ -84,7 +93,7 @@ export function cleanSpokenInput(raw: string): string {
 
 export function matchCommand(
   raw: string,
-  context?: CommandContext
+  context: CommandContext = { page: "/" }
 ): Command {
   const trimmed = raw.trim();
   if (!trimmed) {
@@ -96,7 +105,147 @@ export function matchCommand(
     return { kind: "UNKNOWN", rawText: raw };
   }
 
-  // 1. Wizard relative navigation: Next / Back
+  // =========================================================================
+  // 1. ANYWHERE COMMANDS (Work on every page)
+  // =========================================================================
+
+  // Sidebar controls
+  if (
+    cleaned === "open sidebar" ||
+    cleaned === "open menu" ||
+    cleaned === "show sidebar" ||
+    cleaned === "show menu" ||
+    cleaned === "menu" ||
+    cleaned === "sidebar"
+  ) {
+    return { kind: "OPEN_SIDEBAR" };
+  }
+
+  if (
+    cleaned === "close sidebar" ||
+    cleaned === "close menu" ||
+    cleaned === "hide sidebar" ||
+    cleaned === "hide menu" ||
+    cleaned === "dismiss sidebar" ||
+    cleaned === "dismiss menu"
+  ) {
+    return { kind: "CLOSE_SIDEBAR" };
+  }
+
+  // Home
+  if (
+    cleaned === "home" ||
+    cleaned === "homepage" ||
+    cleaned === "landing" ||
+    cleaned === "main" ||
+    cleaned === "welcome"
+  ) {
+    return { kind: "NAVIGATE", target: "/", label: "Home" };
+  }
+
+  // Check an offer
+  if (
+    cleaned === "check an offer" ||
+    cleaned === "check offer" ||
+    cleaned === "check" ||
+    cleaned === "start check" ||
+    cleaned === "check tool"
+  ) {
+    return { kind: "NAVIGATE", target: "/check", label: "Check an offer" };
+  }
+
+  // Help and reporting / Resources
+  if (
+    cleaned === "help and reporting" ||
+    cleaned === "reporting" ||
+    cleaned === "official resources" ||
+    cleaned === "help"
+  ) {
+    return { kind: "NAVIGATE", target: "/resources", label: "Help and reporting" };
+  }
+
+  // Clear doubt with AI
+  if (
+    cleaned === "ask" ||
+    cleaned === "ask ai" ||
+    cleaned === "clear doubt" ||
+    cleaned === "clear my doubt" ||
+    cleaned === "clear doubts" ||
+    cleaned === "ask a doubt" ||
+    cleaned === "ask doubt" ||
+    cleaned === "doubt" ||
+    cleaned === "doubts" ||
+    cleaned === "ask question" ||
+    cleaned === "ask a question"
+  ) {
+    return { kind: "NAVIGATE", target: "/ask", label: "Clear doubt with AI" };
+  }
+
+  // If user says "resources":
+  // On check page with a review, jumps to Resources section; otherwise navigates to /resources
+  if (cleaned === "resources") {
+    if (context.page === "/check" && context.hasReview) {
+      return { kind: "JUMP_SECTION", sectionId: "section-advisories", label: "Resources" };
+    }
+    return { kind: "NAVIGATE", target: "/resources", label: "Help and reporting" };
+  }
+
+  // About
+  if (
+    cleaned === "about" ||
+    cleaned === "who made this" ||
+    cleaned === "who made offerclara" ||
+    cleaned === "about offerclara" ||
+    cleaned === "about tool"
+  ) {
+    return { kind: "NAVIGATE", target: "/about", label: "About" };
+  }
+
+  // Privacy
+  if (
+    cleaned === "privacy" ||
+    cleaned === "privacy policy" ||
+    cleaned === "data privacy" ||
+    cleaned === "data policy"
+  ) {
+    return { kind: "NAVIGATE", target: "/privacy", label: "Privacy" };
+  }
+
+  // Landing anchor jumps
+  if (cleaned === "how it works") {
+    return { kind: "NAVIGATE", target: "/#how-it-works", label: "How it works" };
+  }
+
+  if (cleaned === "what you get") {
+    return { kind: "NAVIGATE", target: "/#what-you-get", label: "What you get" };
+  }
+
+  if (
+    cleaned === "faq" ||
+    cleaned === "faqs" ||
+    cleaned === "frequently asked questions" ||
+    cleaned === "questions and answers"
+  ) {
+    return { kind: "NAVIGATE", target: "/#faq", label: "FAQ" };
+  }
+
+  // Already paid
+  if (
+    cleaned === "i paid" ||
+    cleaned === "i already paid" ||
+    cleaned === "already paid" ||
+    cleaned === "i have paid" ||
+    cleaned === "i paid money"
+  ) {
+    return { kind: "NAVIGATE", target: "/resources#already-paid", label: "If you have already paid" };
+  }
+
+  // =========================================================================
+  // 2. CHECK PAGE ONLY COMMANDS
+  // =========================================================================
+  const isCheckPage = context.page === "/check";
+
+  // Stepper relative: Next
   if (
     cleaned === "next" ||
     cleaned === "next step" ||
@@ -104,132 +253,117 @@ export function matchCommand(
     cleaned === "continue" ||
     cleaned === "proceed"
   ) {
-    const cur = context?.currentStep ?? 1;
-    const nextStep = Math.min(5, cur + 1) as WizardStep;
-    return { kind: "NAVIGATE_WIZARD", step: nextStep };
+    if (!isCheckPage) {
+      return { kind: "WRONG_CONTEXT", hint: "That command works on the check page." };
+    }
+    return { kind: "WIZARD_NEXT" };
   }
 
+  // Stepper relative: Back
   if (
     cleaned === "back" ||
     cleaned === "previous" ||
     cleaned === "previous step" ||
     cleaned === "go back"
   ) {
-    const cur = context?.currentStep ?? 2;
-    const prevStep = Math.max(1, cur - 1) as WizardStep;
-    return { kind: "NAVIGATE_WIZARD", step: prevStep };
+    if (!isCheckPage) {
+      return { kind: "WRONG_CONTEXT", hint: "That command works on the check page." };
+    }
+    return { kind: "WIZARD_BACK" };
   }
 
-  // 2. Wizard direct step navigation
+  // Stepper relative: Skip
+  if (
+    cleaned === "skip" ||
+    cleaned === "skip step" ||
+    cleaned === "skip this step"
+  ) {
+    if (!isCheckPage) {
+      return { kind: "WRONG_CONTEXT", hint: "That command works on the check page." };
+    }
+    return { kind: "WIZARD_SKIP" };
+  }
+
+  // Step 1: Offer
   if (
     cleaned === "step 1" ||
     cleaned === "step one" ||
     cleaned === "offer" ||
     cleaned === "offer step" ||
     cleaned === "offer text" ||
-    cleaned === "paste offer" ||
     cleaned === "first step"
   ) {
-    return { kind: "NAVIGATE_WIZARD", step: 1 };
+    if (!isCheckPage) {
+      return { kind: "WRONG_CONTEXT", hint: "That command works on the check page." };
+    }
+    return { kind: "WIZARD_GOTO_STEP", step: 1, label: "Offer" };
   }
 
+  // Step 2: Source
   if (
     cleaned === "step 2" ||
     cleaned === "step two" ||
     cleaned === "source" ||
     cleaned === "source step" ||
-    cleaned === "where did it come from" ||
     cleaned === "channel" ||
     cleaned === "second step"
   ) {
-    return { kind: "NAVIGATE_WIZARD", step: 2 };
+    if (!isCheckPage) {
+      return { kind: "WRONG_CONTEXT", hint: "That command works on the check page." };
+    }
+    return { kind: "WIZARD_GOTO_STEP", step: 2, label: "Source" };
   }
 
+  // Step 3: Conversation
   if (
     cleaned === "step 3" ||
     cleaned === "step three" ||
     cleaned === "conversation" ||
     cleaned === "conversation step" ||
     cleaned === "what was said" ||
-    cleaned === "messages" ||
     cleaned === "third step"
   ) {
-    return { kind: "NAVIGATE_WIZARD", step: 3 };
+    if (!isCheckPage) {
+      return { kind: "WRONG_CONTEXT", hint: "That command works on the check page." };
+    }
+    return { kind: "WIZARD_GOTO_STEP", step: 3, label: "Conversation" };
   }
 
+  // Step 4: Money and documents
   if (
     cleaned === "step 4" ||
     cleaned === "step four" ||
+    cleaned === "money and documents" ||
     cleaned === "money" ||
     cleaned === "payment" ||
-    cleaned === "money and documents" ||
+    cleaned === "documents" ||
     cleaned === "fees" ||
     cleaned === "fourth step"
   ) {
-    return { kind: "NAVIGATE_WIZARD", step: 4 };
+    if (!isCheckPage) {
+      return { kind: "WRONG_CONTEXT", hint: "That command works on the check page." };
+    }
+    return { kind: "WIZARD_GOTO_STEP", step: 4, label: "Money and documents" };
   }
 
+  // Step 5: Review
   if (
     cleaned === "step 5" ||
     cleaned === "step five" ||
-    cleaned === "review" ||
     cleaned === "review step" ||
-    cleaned === "summary" ||
     cleaned === "final step" ||
     cleaned === "last step"
   ) {
-    return { kind: "NAVIGATE_WIZARD", step: 5 };
+    if (!isCheckPage) {
+      return { kind: "WRONG_CONTEXT", hint: "That command works on the check page." };
+    }
+    return { kind: "WIZARD_GOTO_STEP", step: 5, label: "Review" };
   }
 
-  // 3. App routes
+  // Action: Analyse
   if (
-    cleaned === "home" ||
-    cleaned === "landing" ||
-    cleaned === "homepage" ||
-    cleaned === "main page" ||
-    cleaned === "welcome page"
-  ) {
-    return { kind: "NAVIGATE_ROUTE", route: "/" };
-  }
-
-  if (
-    cleaned === "check" ||
-    cleaned === "check tool" ||
-    cleaned === "tool" ||
-    cleaned === "tool page" ||
-    cleaned === "check page" ||
-    cleaned === "wizard" ||
-    cleaned === "start check"
-  ) {
-    return { kind: "NAVIGATE_ROUTE", route: "/check" };
-  }
-
-  if (
-    cleaned === "resources" ||
-    cleaned === "helplines" ||
-    cleaned === "support" ||
-    cleaned === "help" ||
-    cleaned === "resources page" ||
-    cleaned === "official resources" ||
-    cleaned === "guides"
-  ) {
-    return { kind: "NAVIGATE_ROUTE", route: "/resources" };
-  }
-
-  if (
-    cleaned === "privacy" ||
-    cleaned === "privacy policy" ||
-    cleaned === "privacy page" ||
-    cleaned === "about data" ||
-    cleaned === "data policy"
-  ) {
-    return { kind: "NAVIGATE_ROUTE", route: "/privacy" };
-  }
-
-  // 4. Primary Actions
-  if (
-    cleaned === "analyze" ||
     cleaned === "analyse" ||
+    cleaned === "analyze" ||
     cleaned === "run review" ||
     cleaned === "review offer" ||
     cleaned === "start review" ||
@@ -238,66 +372,34 @@ export function matchCommand(
     cleaned === "analyse offer" ||
     cleaned === "run analysis"
   ) {
+    if (!isCheckPage) {
+      return { kind: "WRONG_CONTEXT", hint: "That command works on the check page." };
+    }
     return { kind: "ANALYSE" };
   }
 
-  if (
-    cleaned === "clear" ||
-    cleaned === "clear all" ||
-    cleaned === "reset" ||
-    cleaned === "start over" ||
-    cleaned === "clear everything" ||
-    cleaned === "clear session" ||
-    cleaned === "new review"
-  ) {
-    return { kind: "CLEAR" };
+  // Post-review section jumps: Overview
+  if (cleaned === "overview") {
+    if (!isCheckPage) {
+      return { kind: "WRONG_CONTEXT", hint: "That command works on the check page." };
+    }
+    return { kind: "JUMP_SECTION", sectionId: "section-summary", label: "Overview" };
   }
 
-  if (
-    cleaned === "save as pdf" ||
-    cleaned === "save pdf" ||
-    cleaned === "print" ||
-    cleaned === "print pdf" ||
-    cleaned === "print review" ||
-    cleaned === "download pdf" ||
-    cleaned === "export pdf"
-  ) {
-    return { kind: "SAVE_PDF" };
-  }
-
-  if (
-    cleaned === "copy summary" ||
-    cleaned === "copy to clipboard" ||
-    cleaned === "copy text" ||
-    cleaned === "copy review summary" ||
-    cleaned === "copy"
-  ) {
-    return { kind: "COPY_SUMMARY" };
-  }
-
-  if (
-    cleaned === "toggle theme" ||
-    cleaned === "switch theme" ||
-    cleaned === "dark mode" ||
-    cleaned === "light mode" ||
-    cleaned === "turn on dark mode" ||
-    cleaned === "turn on light mode" ||
-    cleaned === "change theme"
-  ) {
-    return { kind: "TOGGLE_THEME" };
-  }
-
-  // 5. Sections on review page
+  // Post-review section jumps: Observations
   if (
     cleaned === "observations" ||
     cleaned === "flags" ||
     cleaned === "concerns" ||
-    cleaned === "show observations" ||
     cleaned === "findings"
   ) {
-    return { kind: "SCROLL_SECTION", sectionId: "observations" };
+    if (!isCheckPage) {
+      return { kind: "WRONG_CONTEXT", hint: "That command works on the check page." };
+    }
+    return { kind: "JUMP_SECTION", sectionId: "section-observations", label: "Observations" };
   }
 
+  // Post-review section jumps: Missing details
   if (
     cleaned === "missing details" ||
     cleaned === "what's missing" ||
@@ -305,9 +407,13 @@ export function matchCommand(
     cleaned === "missing info" ||
     cleaned === "gaps"
   ) {
-    return { kind: "SCROLL_SECTION", sectionId: "missing-details" };
+    if (!isCheckPage) {
+      return { kind: "WRONG_CONTEXT", hint: "That command works on the check page." };
+    }
+    return { kind: "JUMP_SECTION", sectionId: "section-missing", label: "Missing details" };
   }
 
+  // Post-review section jumps: Questions & checks
   if (
     cleaned === "questions" ||
     cleaned === "checks" ||
@@ -315,104 +421,62 @@ export function matchCommand(
     cleaned === "verification questions" ||
     cleaned === "self checks"
   ) {
-    return { kind: "SCROLL_SECTION", sectionId: "questions-checks" };
+    if (!isCheckPage) {
+      return { kind: "WRONG_CONTEXT", hint: "That command works on the check page." };
+    }
+    return { kind: "JUMP_SECTION", sectionId: "section-questions", label: "Questions and checks" };
   }
 
+  // Post-review section jumps: Company research
   if (
     cleaned === "company research" ||
     cleaned === "company check" ||
     cleaned === "research" ||
-    cleaned === "company lookup"
+    cleaned === "research the company"
   ) {
-    return { kind: "SCROLL_SECTION", sectionId: "company-research" };
+    if (!isCheckPage) {
+      return { kind: "WRONG_CONTEXT", hint: "That command works on the check page." };
+    }
+    return { kind: "JUMP_SECTION", sectionId: "section-research", label: "Company research" };
   }
 
+  // Post-review section jumps: Advisories / Resources
   if (
     cleaned === "advisories" ||
-    cleaned === "verified advisories" ||
-    cleaned === "official advisories" ||
-    cleaned === "alerts"
+    cleaned === "official advisories"
   ) {
-    return { kind: "SCROLL_SECTION", sectionId: "advisories" };
+    if (!isCheckPage) {
+      return { kind: "WRONG_CONTEXT", hint: "That command works on the check page." };
+    }
+    return { kind: "JUMP_SECTION", sectionId: "section-advisories", label: "Resources" };
   }
 
+  // Post-review section jumps: Your text / My text
   if (
     cleaned === "your text" ||
+    cleaned === "my text" ||
     cleaned === "original text" ||
-    cleaned === "offer snapshot" ||
-    cleaned === "snapshot text"
+    cleaned === "offer snapshot"
   ) {
-    return { kind: "SCROLL_SECTION", sectionId: "your-text" };
+    if (!isCheckPage) {
+      return { kind: "WRONG_CONTEXT", hint: "That command works on the check page." };
+    }
+    return { kind: "JUMP_SECTION", sectionId: "section-your-text", label: "Your text" };
   }
 
-  // 6. Samples
+  // Post-review: Edit answers
   if (
-    cleaned === "load sample 1" ||
-    cleaned === "sample 1" ||
-    cleaned === "example 1"
+    cleaned === "edit my answers" ||
+    cleaned === "edit answers" ||
+    cleaned === "edit text" ||
+    cleaned === "edit offer"
   ) {
-    return { kind: "LOAD_SAMPLE", sampleId: "example-1-ai-internship" };
+    if (!isCheckPage) {
+      return { kind: "WRONG_CONTEXT", hint: "That command works on the check page." };
+    }
+    return { kind: "EDIT_ANSWERS" };
   }
 
-  if (
-    cleaned === "load sample 2" ||
-    cleaned === "sample 2" ||
-    cleaned === "example 2"
-  ) {
-    return { kind: "LOAD_SAMPLE", sampleId: "example-2-data-entry-deposit" };
-  }
-
-  if (
-    cleaned === "load sample 3" ||
-    cleaned === "sample 3" ||
-    cleaned === "example 3"
-  ) {
-    return { kind: "LOAD_SAMPLE", sampleId: "example-3-overseas-processing-fee" };
-  }
-
-  if (
-    cleaned === "load sample 4" ||
-    cleaned === "sample 4" ||
-    cleaned === "example 4"
-  ) {
-    return { kind: "LOAD_SAMPLE", sampleId: "example-4-legit-startup-internship" };
-  }
-
-  if (
-    cleaned === "load sample 5" ||
-    cleaned === "sample 5" ||
-    cleaned === "example 5" ||
-    cleaned === "try phone call sample" ||
-    cleaned === "phone call sample"
-  ) {
-    return { kind: "LOAD_SAMPLE", sampleId: "example-5-phone-call-account" };
-  }
-
-  if (
-    cleaned === "load sample 6" ||
-    cleaned === "sample 6" ||
-    cleaned === "example 6" ||
-    cleaned === "try helix sample" ||
-    cleaned === "helix sample"
-  ) {
-    return { kind: "LOAD_SAMPLE", sampleId: "example-6-skillcraft-helixbrattice" };
-  }
-
-  if (
-    cleaned === "sample a" ||
-    cleaned === "full sample a" ||
-    cleaned === "try course sample" ||
-    cleaned === "course sample"
-  ) {
-    return { kind: "LOAD_SAMPLE", sampleId: "full-sample-a" };
-  }
-
-  if (
-    cleaned === "sample b" ||
-    cleaned === "full sample b"
-  ) {
-    return { kind: "LOAD_SAMPLE", sampleId: "full-sample-b" };
-  }
-
+  // Any other input is unrecognised
   return { kind: "UNKNOWN", rawText: raw };
 }

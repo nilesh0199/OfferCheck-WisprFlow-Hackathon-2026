@@ -38,7 +38,35 @@ export function WizardContainer({
     setStepSkipped,
     isReady,
     readyReason,
+    offerText,
+    addedFileCount,
+    source,
+    conversation,
+    payment,
+    analysis,
   } = useOfferSession();
+
+  const hasEnteredData = Boolean(
+    offerText.trim().length > 0 ||
+    addedFileCount > 0 ||
+    source.channel !== undefined ||
+    source.applied !== undefined ||
+    source.note?.trim() ||
+    conversation.text?.trim() ||
+    payment.asked !== undefined ||
+    payment.purposes?.length > 0 ||
+    payment.amount?.trim() ||
+    payment.deadline?.trim() ||
+    payment.docsAsked?.length > 0 ||
+    payment.docsShared?.length > 0 ||
+    payment.note?.trim() ||
+    analysis !== null
+  );
+
+  const handleOpenClear = useCallback(() => {
+    const dialog = document.getElementById("clear-review-dialog") as HTMLDialogElement | null;
+    dialog?.showModal();
+  }, []);
 
   const handleNext = useCallback(() => {
     if (currentStep < 5) {
@@ -69,6 +97,8 @@ export function WizardContainer({
         visitedSteps={visitedSteps}
         skippedSteps={skippedSteps}
         onSelectStep={setStep}
+        showClear={hasEnteredData}
+        onClear={handleOpenClear}
       />
 
       {/* 2. Active Step Content */}
@@ -157,7 +187,7 @@ export function WizardContainer({
         <div
           role="region"
           aria-label="Mobile step navigation"
-          className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-[var(--surface)] border-t border-[var(--border)] p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] shadow-lg flex items-center justify-between gap-3"
+          className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-[var(--surface)] border-t border-[var(--border)] p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] shadow-lg flex items-center justify-between gap-3 print:hidden"
         >
           {currentStep > 1 ? (
             <button

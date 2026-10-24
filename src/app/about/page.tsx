@@ -2,7 +2,6 @@ import React from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Container } from "@/components/Container";
-import { TopNav } from "@/components/TopNav";
 import { APP_NAME, TAGLINE } from "@/lib/config";
 import { ExternalLinkIcon, GitHubIcon } from "@/components/Icons";
 
@@ -15,8 +14,6 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col justify-between overflow-x-hidden transition-colors">
-      <TopNav />
-
       {/* Main Content */}
       <main className="flex-1 py-8 sm:py-12 space-y-12">
         <Container className="space-y-10">
@@ -35,7 +32,32 @@ export default function AboutPage() {
           </div>
 
           <div className="space-y-8 max-w-4xl mx-auto text-left">
-            {/* Section 1: What it does */}
+            {/* 1. Why it exists */}
+            <section
+              id="why-it-exists"
+              aria-labelledby="heading-why-it-exists"
+              className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 sm:p-8 space-y-4 shadow-xs"
+            >
+              <h2
+                id="heading-why-it-exists"
+                className="text-lg sm:text-xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]"
+              >
+                Why it exists
+              </h2>
+              <div className="text-xs sm:text-sm text-[var(--text-muted)] space-y-3 leading-relaxed">
+                <p>
+                  Every year, thousands of college students, fresh graduates, and career changers across India and globally encounter deceptive employment practices. Dubious entities exploit candidates&apos; enthusiasm by asking for &quot;refundable training fees&quot;, &quot;laptop courier charges&quot;, &quot;registration deposits&quot;, or sensitive identity documents like Aadhaar cards and bank details.
+                </p>
+                <p>
+                  Candidates often realize the issue only after sending money or sharing confidential papers. Traditional advice often says &quot;just be careful&quot; or &quot;do your research&quot;, which fails to give candidates concrete verification questions or explain why specific clauses are concerning.
+                </p>
+                <p>
+                  OfferClara was created to turn vague anxiety into concrete, actionable steps. Furthermore, through voice-dictated navigation powered by Wispr Flow, users can navigate the review process completely hands-free, creating an accessible, rapid review experience for everyone.
+                </p>
+              </div>
+            </section>
+
+            {/* 2. What it does */}
             <section
               id="what-it-does"
               aria-labelledby="heading-what-it-does"
@@ -56,7 +78,7 @@ export default function AboutPage() {
                     <strong className="text-[var(--text)]">Multi-step structured intake:</strong> An accessible 5-step wizard guides candidates through offer text, communication channel, sender details, interview history, and deposit requests.
                   </li>
                   <li>
-                    <strong className="text-[var(--text)]">Dual-AI analysis on free-tier infrastructure:</strong> Evaluates offer context using Google Gemini models with automatic model fallback, circuit breaker safeguards, and secondary provider support.
+                    <strong className="text-[var(--text)]">Dual-AI analysis on free-tier infrastructure:</strong> Evaluates offer context using Google Gemini models with automatic model fallback and circuit breaker safeguards.
                   </li>
                   <li>
                     <strong className="text-[var(--text)]">Six check dimensions:</strong> Assesses deposit requests, urgency tactics, sender credibility, role clarity, interview rigor, and document safety.
@@ -74,7 +96,7 @@ export default function AboutPage() {
               </div>
             </section>
 
-            {/* Section 2: What it does not do */}
+            {/* 3. What it does not do */}
             <section
               id="what-it-does-not-do"
               aria-labelledby="heading-what-it-does-not-do"
@@ -95,7 +117,7 @@ export default function AboutPage() {
                     <strong className="text-[var(--text)]">No safety scores or percentage meters:</strong> We do not output an artificial probability or trust score that could mislead you into letting your guard down.
                   </li>
                   <li>
-                    <strong className="text-[var(--text)]">No verdict badges:</strong> OfferClara never labels an offer &quot;legit&quot;, &quot;verified&quot;, &quot;safe&quot;, or &quot;scam&quot;. It highlights factual patterns and arms you with questions.
+                    <strong className="text-[var(--text)]">No verdict badges:</strong> OfferClara never labels an offer &quot;legit&quot;, &quot;verified&quot;, &quot;safe&quot;, or a scam. It highlights factual patterns and arms you with questions.
                   </li>
                   <li>
                     <strong className="text-[var(--text)]">Does not contact employers:</strong> OfferClara does not email, call, or message companies or recruitment personnel on your behalf.
@@ -104,13 +126,13 @@ export default function AboutPage() {
                     <strong className="text-[var(--text)]">Does not verify sender identity:</strong> Text and file uploads are analyzed as untrusted input. OfferClara cannot confirm whether a sender is genuinely who they claim to be or if an email domain has been spoofed.
                   </li>
                   <li>
-                    <strong className="text-[var(--text)]">Not legal or employment counsel:</strong> The review provides informational observations based on publicly known recruitment fraud patterns and does not substitute for qualified legal advice.
+                    <strong className="text-[var(--text)]">Not legal or employment counsel:</strong> The review provides informational observations based on publicly known recruitment concerns and does not substitute for qualified legal advice.
                   </li>
                 </ul>
               </div>
             </section>
 
-            {/* Section 3: Who made it */}
+            {/* 4. Who made it */}
             <section
               id="who-made-it"
               aria-labelledby="heading-who-made-it"
@@ -153,32 +175,7 @@ export default function AboutPage() {
               </div>
             </section>
 
-            {/* Section 4: Why it exists */}
-            <section
-              id="why-it-exists"
-              aria-labelledby="heading-why-it-exists"
-              className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 sm:p-8 space-y-4 shadow-xs"
-            >
-              <h2
-                id="heading-why-it-exists"
-                className="text-lg sm:text-xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]"
-              >
-                Why it exists
-              </h2>
-              <div className="text-xs sm:text-sm text-[var(--text-muted)] space-y-3 leading-relaxed">
-                <p>
-                  Every year, thousands of college students, fresh graduates, and career changers across India and globally fall victim to deceptive recruitment scams. Fraudulent operators exploit candidates&apos; enthusiasm by asking for &quot;refundable training fees&quot;, &quot;laptop courier charges&quot;, &quot;registration fees&quot;, or sensitive identity documents like Aadhaar cards and bank details.
-                </p>
-                <p>
-                  Victims frequently realize the deceit only after sending money or sharing confidential papers. Traditional advice often says &quot;just be careful&quot; or &quot;do your research&quot;, which fails to give candidates concrete verification questions or explain why specific clauses are concerning.
-                </p>
-                <p>
-                  OfferClara was created to turn vague anxiety into concrete, actionable steps. Furthermore, through voice-dictated navigation powered by Wispr Flow, users can dictate commands and questions completely hands-free, creating an accessible, rapid review experience for everyone.
-                </p>
-              </div>
-            </section>
-
-            {/* Section 5: Responsible use links */}
+            {/* 5. Policies and official reporting */}
             <section
               id="related-resources"
               aria-labelledby="heading-resources"
@@ -204,7 +201,7 @@ export default function AboutPage() {
                   href="/resources"
                   className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] text-xs font-medium hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px] transition-colors"
                 >
-                  Official resources and helplines
+                  Help, reporting and official resources
                 </Link>
               </div>
             </section>
@@ -232,7 +229,7 @@ export default function AboutPage() {
               href="/resources"
               className="hover:text-[var(--text)] underline underline-offset-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1.5 min-h-[44px] inline-flex items-center"
             >
-              Official resources
+              Help and reporting
             </Link>
             <Link
               href="/privacy"

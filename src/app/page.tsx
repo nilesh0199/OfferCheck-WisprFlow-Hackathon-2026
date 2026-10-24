@@ -1,7 +1,6 @@
 import React from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { TopNav } from "@/components/TopNav";
 import { StaticAnnotatedCard } from "@/components/landing/StaticAnnotatedCard";
 import { WizardOverviewSection } from "@/components/landing/WizardOverviewSection";
 import { CommandBarPreviewSection } from "@/components/landing/CommandBarPreviewSection";
@@ -22,29 +21,18 @@ export const metadata: Metadata = {
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col justify-between transition-colors">
-      <TopNav />
-
       <main className="flex-1">
         {/* Asymmetric Hero Section */}
-        <section className="pt-8 pb-16 sm:pt-14 sm:pb-24 border-b border-[var(--border)] bg-[var(--tint-info-bg)]/40 transition-colors">
-          <Container className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
+        <section className="pt-6 pb-12 sm:pt-10 sm:pb-16 border-b border-[var(--border)] bg-[var(--tint-info-bg)]/40 transition-colors">
+          <Container className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
             {/* Left Column: Asymmetric Typography, Actions & Trust Bar */}
-            <div className="lg:col-span-6 space-y-6 text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-medium bg-[var(--surface)] text-[var(--color-primary)] border border-[var(--border)] shadow-2xs">
-                <span className="w-2 h-2 rounded-full bg-[var(--accent-highlighter)]" />
-                <span>Offer Due Diligence for Students & Job Seekers</span>
-              </div>
-
+            <div className="lg:col-span-6 space-y-5 text-left">
               <h1 className="text-3xl sm:text-5xl lg:text-5xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]">
-                Review an internship or job offer before you pay or share documents
+                Understand the offer. Know what to verify.
               </h1>
 
-              <p className="text-[1.0625rem] sm:text-[1.1875rem] text-[var(--text-muted)] max-w-xl leading-relaxed">
-                Paste an offer letter, describe a call, or attach screenshots. OfferCheck highlights requested fees, urgent deadlines, and missing details — with direct quotes from your text.
-              </p>
-
               {/* Primary & Secondary CTAs */}
-              <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
+              <div className="pt-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
                 <Link
                   href="/check"
                   className="inline-flex items-center justify-center rounded-xl bg-[var(--color-primary)] text-[var(--color-primary-contrast)] px-6 py-3 text-base font-semibold shadow-xs hover:bg-[var(--color-primary-hover)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px]"
@@ -59,12 +47,15 @@ export default function LandingPage() {
                 </Link>
               </div>
 
-              {/* Trust Bar */}
-              <div className="pt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[var(--text-muted)] font-mono">
-                <span>• No sign-up</span>
-                <span>• Nothing stored on our servers</span>
-                <span>• Typed or dictated</span>
-                <span>• Free-tier AI with fallback</span>
+              {/* Trust Strip in Sans Font */}
+              <div className="pt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--text-muted)] font-sans">
+                <span>No sign-up</span>
+                <span aria-hidden="true">•</span>
+                <span>We do not store your offer text</span>
+                <span aria-hidden="true">•</span>
+                <span>Type or dictate</span>
+                <span aria-hidden="true">•</span>
+                <span>Free-tier AI with fallback</span>
               </div>
             </div>
 

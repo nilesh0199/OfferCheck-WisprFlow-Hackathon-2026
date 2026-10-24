@@ -5,24 +5,11 @@ import React, {
   useRef,
   useEffect,
   useCallback,
-  useMemo,
 } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { matchCommand, Command } from "@/lib/commands/match";
 import { useOfferSession } from "./SessionProvider";
 import { WizardStep } from "@/lib/combined-text";
-import { SYNTHETIC_EXAMPLES } from "@/data/examples";
-import { FULL_WIZARD_SAMPLES } from "@/data/wizard-samples";
-import { buildReviewSummary } from "@/lib/analysis/summary";
-import { THEME_STORAGE_KEY } from "@/lib/theme";
-
-const STEP_LABELS: Record<WizardStep, string> = {
-  1: "Offer",
-  2: "Source",
-  3: "Conversation",
-  4: "Money and documents",
-  5: "Review",
-};
 
 export function CommandBar() {
   const router = useRouter();
@@ -31,352 +18,277 @@ export function CommandBar() {
   const {
     currentStep,
     setStep,
-    offerText,
-    setOfferText,
-    setSourceNote,
-    source,
-    setConversationText,
-    conversation,
-    setPaymentNote,
-    payment,
-    loadWizardSample,
+    setStepSkipped,
+    isReady,
     handleAnalyze,
-    handleClear,
     analysis,
-    analyzedSnapshotText,
   } = useOfferSession();
 
   const [rawInput, setRawInput] = useState("");
-  const [isFocused, setIsFocused] = useState(false);
   const [announcement, setAnnouncement] = useState("");
   const [countdown, setCountdown] = useState<number | null>(null);
-  const [confirmClear, setConfirmClear] = useState(false);
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [pendingCommand, setPendingCommand] = useState<Command | null>(null);
+  const [highlightHelp, setHighlightHelp] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const helpDialogRef = useRef<HTMLDialogElement>(null);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const unrecognisedTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Derive recognized command
-  const recognizedCommand = useMemo<Command>(() => {
-    if (!rawInput.trim()) return { kind: "UNKNOWN", rawText: "" };
-    return matchCommand(rawInput, {
-      route: pathname,
-      currentStep,
-    });
-  }, [rawInput, pathname, currentStep]);
-
-  const clearTimer = useCallback(() => {
+  // Clear countdown interval
+  const clearCountdown = useCallback(() => {
     if (countdownIntervalRef.current) {
       clearInterval(countdownIntervalRef.current);
       countdownIntervalRef.current = null;
     }
     setCountdown(null);
+    setPendingCommand(null);
   }, []);
 
-  // Keyboard shortcut listener: / or Ctrl+K / Cmd+K to focus, Esc to blur
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't intercept if focus is inside an editable element (unless it's Esc or Ctrl+K)
-      const target = e.target as HTMLElement | null;
-      const isInput =
-        target &&
-        (target.tagName === "INPUT" ||
-          target.tagName === "TEXTAREA" ||
-          target.isContentEditable);
+  // Clear unrecognised timer
+  const clearUnrecognisedTimer = useCallback(() => {
+    if (unrecognisedTimerRef.current) {
+      clearTimeout(unrecognisedTimerRef.current);
+      unrecognisedTimerRef.current = null;
+    }
+  }, []);
 
-      if (e.key === "Escape") {
-        if (inputRef.current && document.activeElement === inputRef.current) {
-          inputRef.current.blur();
-          setIsFocused(false);
-          clearTimer();
-          setConfirmClear(false);
-        }
-        return;
-      }
+  const triggerUnrecognised = useCallback(() => {
+    clearCountdown();
+    clearUnrecognisedTimer();
+    setRawInput("");
+    setAnnouncement("That command isn't recognised. Try again, or open the list of commands.");
+    setHighlightHelp(true);
+    setTimeout(() => setHighlightHelp(false), 3000);
+  }, [clearCountdown, clearUnrecognisedTimer]);
 
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        inputRef.current?.focus();
-        setIsFocused(true);
-        setIsMobileOpen(true);
-        return;
-      }
-
-      if (e.key === "/" && !isInput) {
-        e.preventDefault();
-        inputRef.current?.focus();
-        setIsFocused(true);
-        setIsMobileOpen(true);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [clearTimer]);
-
-  // Execute a command
+  // Execute a recognized navigation command
   const executeCommand = useCallback(
     async (cmd: Command) => {
-      clearTimer();
-      setConfirmClear(false);
+      clearCountdown();
+      clearUnrecognisedTimer();
       setRawInput("");
       inputRef.current?.blur();
-      setIsFocused(false);
 
       switch (cmd.kind) {
-        case "NAVIGATE_WIZARD": {
-          if (pathname !== "/check") {
-            router.push("/check");
-          }
-          setStep(cmd.step);
-          setAnnouncement(`Navigated to Step ${cmd.step}: ${STEP_LABELS[cmd.step]}`);
+        case "OPEN_SIDEBAR": {
+          const dialog = document.getElementById("app-sidebar") as HTMLDialogElement | null;
+          dialog?.showModal();
           break;
         }
 
-        case "NAVIGATE_ROUTE": {
-          router.push(cmd.route);
-          setAnnouncement(`Navigated to ${cmd.route}`);
+        case "CLOSE_SIDEBAR": {
+          const dialog = document.getElementById("app-sidebar") as HTMLDialogElement | null;
+          dialog?.close();
+          break;
+        }
+
+        case "NAVIGATE": {
+          router.push(cmd.target);
+          if (cmd.target.includes("#")) {
+            const hash = cmd.target.split("#")[1];
+            const el = document.getElementById(hash);
+            if (el) {
+              el.scrollIntoView({ behavior: "smooth" });
+            }
+          }
+          break;
+        }
+
+        case "WIZARD_NEXT": {
+          if (currentStep < 5) {
+            setStep((currentStep + 1) as WizardStep);
+          }
+          break;
+        }
+
+        case "WIZARD_BACK": {
+          if (currentStep > 1) {
+            setStep((currentStep - 1) as WizardStep);
+          }
+          break;
+        }
+
+        case "WIZARD_SKIP": {
+          setStepSkipped(currentStep, true);
+          if (currentStep < 5) {
+            setStep((currentStep + 1) as WizardStep);
+          }
+          break;
+        }
+
+        case "WIZARD_GOTO_STEP": {
+          setStep(cmd.step);
           break;
         }
 
         case "ANALYSE": {
-          if (pathname !== "/check") {
-            router.push("/check");
-          }
-          setAnnouncement("Starting analysis...");
-          await handleAnalyze();
-          break;
-        }
-
-        case "CLEAR": {
-          handleClear();
-          setAnnouncement("Cleared session");
-          break;
-        }
-
-        case "SAVE_PDF": {
-          setAnnouncement("Opening print document");
-          if (typeof window !== "undefined") {
-            window.print();
-          }
-          break;
-        }
-
-        case "COPY_SUMMARY": {
-          if (analysis) {
-            const summary = buildReviewSummary(analysis, analyzedSnapshotText);
-            if (navigator?.clipboard) {
-              await navigator.clipboard.writeText(summary);
-              setAnnouncement("Review summary copied to clipboard");
-            }
+          if (isReady) {
+            await handleAnalyze();
           } else {
-            setAnnouncement("No review summary available to copy");
+            setAnnouncement("Add your offer first.");
+            setTimeout(() => setAnnouncement(""), 3500);
           }
           break;
         }
 
-        case "TOGGLE_THEME": {
-          if (typeof window !== "undefined") {
-            const current = document.documentElement.getAttribute("data-theme") || "light";
-            const next = current === "dark" ? "light" : "dark";
-            document.documentElement.setAttribute("data-theme", next);
-            localStorage.setItem(THEME_STORAGE_KEY, next);
-            const metaTheme = document.querySelector('meta[name="theme-color"]');
-            if (metaTheme) {
-              metaTheme.setAttribute("content", next === "dark" ? "#0a111a" : "#10263f");
-            }
-            window.dispatchEvent(new Event("storage"));
-            setAnnouncement(`Switched to ${next} theme`);
-          }
-          break;
-        }
-
-        case "SCROLL_SECTION": {
-          const el =
-            document.getElementById(cmd.sectionId) ||
-            document.getElementById(`section-${cmd.sectionId}`);
+        case "JUMP_SECTION": {
+          const el = document.getElementById(cmd.sectionId);
           if (el) {
             el.scrollIntoView({ behavior: "smooth" });
-            setAnnouncement(`Scrolled to ${cmd.sectionId}`);
-          } else if (pathname !== "/check") {
-            router.push(`/check#${cmd.sectionId}`);
-            setAnnouncement(`Navigating to ${cmd.sectionId}`);
           }
           break;
         }
 
-        case "LOAD_SAMPLE": {
-          const fullSample = FULL_WIZARD_SAMPLES.find((s) => s.id === cmd.sampleId);
-          if (fullSample) {
-            loadWizardSample(fullSample);
-            setAnnouncement(`Loaded ${fullSample.title}`);
-            if (pathname !== "/check") {
-              router.push("/check");
-            }
-            setStep(5);
-            break;
-          }
-
-          const single = SYNTHETIC_EXAMPLES.find((s) => s.id === cmd.sampleId);
-          if (single) {
-            setOfferText(single.text);
-            setAnnouncement(`Loaded ${single.title}`);
-            if (pathname !== "/check") {
-              router.push("/check");
-            }
-            setStep(1);
-            break;
-          }
+        case "EDIT_ANSWERS": {
+          const editBtn = document.querySelector('button[aria-label="Edit your offer text"]') as HTMLButtonElement | null;
+          editBtn?.click();
           break;
         }
 
-        case "UNKNOWN":
         default:
           break;
       }
     },
     [
-      clearTimer,
-      pathname,
+      clearCountdown,
+      clearUnrecognisedTimer,
+      currentStep,
+      handleAnalyze,
+      isReady,
       router,
       setStep,
-      handleAnalyze,
-      handleClear,
-      analysis,
-      analyzedSnapshotText,
-      loadWizardSample,
-      setOfferText,
+      setStepSkipped,
     ]
   );
 
-  // Add dictated text to the relevant wizard step or offer text
-  const handleAddToOfferText = useCallback(() => {
-    const textToAdd = rawInput.trim();
-    if (!textToAdd) return;
-
-    clearTimer();
+  // User canceled the pending command
+  const handleCancel = useCallback(() => {
+    clearCountdown();
+    clearUnrecognisedTimer();
     setRawInput("");
-    inputRef.current?.blur();
-    setIsFocused(false);
+    setAnnouncement("");
+  }, [clearCountdown, clearUnrecognisedTimer]);
 
-    if (pathname !== "/check") {
-      router.push("/check");
-    }
-
-    if (currentStep === 1) {
-      setOfferText(offerText ? `${offerText}\n\n${textToAdd}` : textToAdd);
-      setAnnouncement("Added text to Step 1 Offer");
-    } else if (currentStep === 2) {
-      setSourceNote(source.note ? `${source.note} ${textToAdd}` : textToAdd);
-      setAnnouncement("Added note to Step 2 Source");
-    } else if (currentStep === 3) {
-      setConversationText(
-        conversation.text ? `${conversation.text}\n\n${textToAdd}` : textToAdd
-      );
-      setAnnouncement("Added text to Step 3 Conversation");
-    } else if (currentStep === 4) {
-      setPaymentNote(payment.note ? `${payment.note} ${textToAdd}` : textToAdd);
-      setAnnouncement("Added note to Step 4 Money and documents");
-    } else {
-      setOfferText(offerText ? `${offerText}\n\n${textToAdd}` : textToAdd);
-      setAnnouncement("Added text to Step 1 Offer");
-    }
-  }, [
-    rawInput,
-    clearTimer,
-    pathname,
-    router,
-    currentStep,
-    offerText,
-    setOfferText,
-    source.note,
-    setSourceNote,
-    conversation.text,
-    setConversationText,
-    payment.note,
-    setPaymentNote,
-  ]);
-
-  // Handle input change and start countdown for recognized commands
+  // Handle typing / dictating in input
   const handleInputChange = useCallback(
     (val: string) => {
       setRawInput(val);
-      clearTimer();
+      clearCountdown();
+      clearUnrecognisedTimer();
+      setAnnouncement("");
 
       const trimmed = val.trim();
-      if (!trimmed || trimmed.length > 80) {
-        setConfirmClear(false);
+      if (!trimmed) {
         return;
       }
 
-      const cmd = matchCommand(val, {
-        route: pathname,
-        currentStep,
+      // If user dictated or pasted long text (> 80 chars), it is unrecognised
+      if (val.length > 80) {
+        triggerUnrecognised();
+        return;
+      }
+
+      const match = matchCommand(val, {
+        page: pathname,
+        step: currentStep,
+        hasReview: Boolean(analysis),
       });
 
-      if (cmd.kind === "CLEAR") {
-        setConfirmClear(true);
+      if (match.kind === "WRONG_CONTEXT") {
+        clearCountdown();
+        setRawInput("");
+        setAnnouncement(match.hint);
+        setTimeout(() => setAnnouncement(""), 4000);
         return;
       }
 
-      setConfirmClear(false);
-      if (cmd.kind !== "UNKNOWN") {
+      if (match.kind !== "UNKNOWN") {
+        setPendingCommand(match);
         let timeLeft = 2;
         setCountdown(timeLeft);
 
         countdownIntervalRef.current = setInterval(() => {
           timeLeft -= 1;
           if (timeLeft <= 0) {
-            clearTimer();
-            executeCommand(cmd);
+            clearCountdown();
+            executeCommand(match);
           } else {
             setCountdown(timeLeft);
           }
         }, 1000);
+        return;
       }
+
+      // If text is not recognized, set a timer to clear after 2.5s of no further typing
+      unrecognisedTimerRef.current = setTimeout(() => {
+        triggerUnrecognised();
+      }, 2500);
     },
-    [clearTimer, executeCommand, pathname, currentStep]
+    [
+      clearCountdown,
+      clearUnrecognisedTimer,
+      pathname,
+      currentStep,
+      analysis,
+      triggerUnrecognised,
+      executeCommand,
+    ]
   );
 
-  // Cleanup timer on unmount
+  // Keyboard navigation: Escape cancels, Enter runs immediately
   useEffect(() => {
-    return () => {
-      if (countdownIntervalRef.current) {
-        clearInterval(countdownIntervalRef.current);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (pendingCommand) {
+          handleCancel();
+        } else if (document.activeElement === inputRef.current) {
+          inputRef.current?.blur();
+        }
       }
     };
-  }, []);
 
-  // Human-readable command label
-  const getCommandLabel = (cmd: Command): string => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [pendingCommand, handleCancel]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      clearCountdown();
+      clearUnrecognisedTimer();
+    };
+  }, [clearCountdown, clearUnrecognisedTimer]);
+
+  // Label for countdown
+  const getCommandDisplayLabel = (cmd: Command): string => {
     switch (cmd.kind) {
-      case "NAVIGATE_WIZARD":
-        return `Jump to Step ${cmd.step}: ${STEP_LABELS[cmd.step]}`;
-      case "NAVIGATE_ROUTE":
-        return `Go to ${cmd.route === "/" ? "Home" : cmd.route}`;
+      case "OPEN_SIDEBAR":
+        return "Open sidebar";
+      case "CLOSE_SIDEBAR":
+        return "Close sidebar";
+      case "NAVIGATE":
+        return cmd.label;
+      case "WIZARD_NEXT":
+        return "Next step";
+      case "WIZARD_BACK":
+        return "Previous step";
+      case "WIZARD_SKIP":
+        return "Skip step";
+      case "WIZARD_GOTO_STEP":
+        return `Step ${cmd.step}: ${cmd.label}`;
       case "ANALYSE":
-        return "Analyze offer";
-      case "CLEAR":
-        return "Clear everything";
-      case "SAVE_PDF":
-        return "Save as PDF";
-      case "COPY_SUMMARY":
-        return "Copy summary to clipboard";
-      case "TOGGLE_THEME":
-        return "Switch theme";
-      case "SCROLL_SECTION":
-        return `Jump to ${cmd.sectionId}`;
-      case "LOAD_SAMPLE":
-        return `Load sample (${cmd.sampleId})`;
+        return "Analyse offer";
+      case "JUMP_SECTION":
+        return cmd.label;
+      case "EDIT_ANSWERS":
+        return "Edit answers";
       default:
-        return "";
+        return "command";
     }
   };
 
-  const hasInput = rawInput.trim().length > 0;
-  const isMatch = recognizedCommand.kind !== "UNKNOWN";
-  const isLongInput = rawInput.length > 80;
-
+  // Hidden on 404, error, and print
   if (pathname === "/_not-found" || pathname === "/not-found") {
     return null;
   }
@@ -392,167 +304,148 @@ export function CommandBar() {
         {announcement}
       </div>
 
-      {/* Desktop and Mobile Responsive Command Bar Container */}
-      <div
-        role="search"
-        aria-label="Voice or typed command"
-        className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-full max-w-xl px-4 pointer-events-none pb-[calc(env(safe-area-inset-bottom,0px))]"
+      {/* Docked Command Bar Container */}
+      <aside
+        aria-label="Command bar"
+        className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-full max-w-[min(640px,92vw)] px-3 sm:px-0 pointer-events-none pb-[calc(env(safe-area-inset-bottom,0px))] print:hidden"
       >
-        <div
-          className={`pointer-events-auto rounded-2xl border border-[var(--border)] bg-[var(--surface)]/95 backdrop-blur-md shadow-lg transition-all duration-200 ${
-            isFocused || hasInput || isMobileOpen ? "ring-2 ring-[var(--focus-ring)] p-3" : "p-1.5 opacity-90 hover:opacity-100"
-          }`}
-        >
-          {/* Main Input Row */}
-          <div className="flex items-center gap-2">
-            <span
-              className="pl-2 text-xs text-[var(--text-muted)] font-mono select-none"
-              aria-hidden="true"
-            >
-              ⌘
+        {/* Status Line: Countdown or Announcement */}
+        {pendingCommand && countdown !== null && (
+          <div
+            role="status"
+            aria-live="polite"
+            className="pointer-events-auto mb-2 flex items-center justify-between text-xs font-medium text-[var(--text)] bg-[var(--surface)] border border-[var(--border)] rounded-xl px-3.5 py-2 shadow-xs"
+          >
+            <span>
+              Running {getCommandDisplayLabel(pendingCommand)} in {countdown}...
             </span>
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="text-xs font-semibold text-[var(--color-primary)] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded px-1.5 py-0.5 min-h-[32px] inline-flex items-center"
+            >
+              Cancel
+            </button>
+          </div>
+        )}
 
-            <input
-              ref={inputRef}
-              type="text"
-              value={rawInput}
-              onChange={(e) => handleInputChange(e.target.value)}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => {
-                if (!hasInput) {
-                  setIsFocused(false);
-                  setIsMobileOpen(false);
-                }
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  if (confirmClear) {
-                    executeCommand({ kind: "CLEAR" });
-                  } else if (isMatch) {
-                    executeCommand(recognizedCommand);
-                  } else if (hasInput) {
-                    handleAddToOfferText();
+        {!pendingCommand && announcement && (
+          <div
+            role="status"
+            aria-live="polite"
+            className="pointer-events-auto mb-2 flex items-center justify-between text-xs font-medium text-[var(--text-muted)] bg-[var(--surface)] border border-[var(--border)] rounded-xl px-3.5 py-2 shadow-xs"
+          >
+            <span>{announcement}</span>
+          </div>
+        )}
+
+        {/* Input Bar */}
+        <div className="pointer-events-auto rounded-xl border border-[var(--border)] bg-[var(--surface)] p-1.5 shadow-md flex items-center gap-2">
+          <input
+            ref={inputRef}
+            type="text"
+            value={rawInput}
+            onChange={(e) => handleInputChange(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                if (pendingCommand) {
+                  executeCommand(pendingCommand);
+                } else if (rawInput.trim()) {
+                  const match = matchCommand(rawInput, {
+                    page: pathname,
+                    step: currentStep,
+                    hasReview: Boolean(analysis),
+                  });
+                  if (match.kind === "WRONG_CONTEXT") {
+                    setRawInput("");
+                    setAnnouncement(match.hint);
+                  } else if (match.kind !== "UNKNOWN") {
+                    executeCommand(match);
+                  } else {
+                    triggerUnrecognised();
                   }
                 }
-              }}
-              placeholder="Dictate or type a command... (or press /)"
-              className="flex-1 bg-transparent text-xs sm:text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none min-h-[40px] px-1"
-              aria-label="Command input"
-            />
+              }
+            }}
+            placeholder="Dictate a command"
+            className="flex-1 bg-transparent text-xs sm:text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none min-h-[44px] px-3 rounded-lg"
+            aria-label="Dictate a command"
+          />
 
-            {/* Clear input button if typed */}
-            {hasInput && (
-              <button
-                type="button"
-                onClick={() => {
-                  setRawInput("");
-                  clearTimer();
-                  setConfirmClear(false);
-                  inputRef.current?.focus();
-                }}
-                className="px-2 py-1 text-xs text-[var(--text-muted)] hover:text-[var(--text)] rounded focus:outline-none focus-visible:ring-1 focus-visible:ring-[var(--focus-ring)] min-h-[44px] inline-flex items-center"
-                aria-label="Clear command text"
-              >
-                Clear
-              </button>
-            )}
+          <button
+            type="button"
+            onClick={() => helpDialogRef.current?.showModal()}
+            className={`shrink-0 px-3 py-2 text-xs font-medium rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px] transition-colors border ${
+              highlightHelp
+                ? "border-[var(--color-primary)] ring-2 ring-[var(--focus-ring)] text-[var(--color-primary)] font-semibold"
+                : "border-transparent"
+            }`}
+          >
+            What can I say?
+          </button>
+        </div>
+      </aside>
 
-            {/* Keyboard shortcut hint */}
-            {!hasInput && (
-              <span
-                className="hidden sm:inline-flex items-center gap-1 text-[0.75rem] font-mono text-[var(--text-muted)] px-2 py-0.5 rounded border border-[var(--border)] bg-[var(--surface-muted)] select-none mr-1"
-                aria-hidden="true"
-              >
-                <span>/</span>
-                <span>or</span>
-                <span>Ctrl+K</span>
-              </span>
-            )}
+      {/* Accessible Help Panel Dialog */}
+      <dialog
+        ref={helpDialogRef}
+        id="command-help-dialog"
+        className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xl backdrop:bg-[rgba(0,0,0,0.4)] max-w-lg w-full text-[var(--text)] space-y-4 print:hidden"
+        onCancel={() => helpDialogRef.current?.close()}
+      >
+        <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
+          <h2 className="text-base font-semibold text-[var(--text)]">
+            What can I say?
+          </h2>
+          <button
+            type="button"
+            onClick={() => helpDialogRef.current?.close()}
+            className="text-xs text-[var(--text-muted)] hover:text-[var(--text)] px-2 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px] inline-flex items-center"
+            autoFocus
+          >
+            Close
+          </button>
+        </div>
+
+        <div className="space-y-4 text-xs sm:text-sm text-[var(--text-muted)] max-h-[60vh] overflow-y-auto custom-scrollbar pr-1">
+          <div>
+            <h3 className="font-semibold text-[var(--text)] mb-1">
+              Anywhere
+            </h3>
+            <ul className="list-disc pl-5 space-y-1">
+              <li>&ldquo;open sidebar&rdquo;, &ldquo;close sidebar&rdquo;</li>
+              <li>&ldquo;home&rdquo;</li>
+              <li>&ldquo;check an offer&rdquo;</li>
+              <li>&ldquo;clear doubt&rdquo; / &ldquo;ask a doubt&rdquo;</li>
+              <li>&ldquo;help and reporting&rdquo;</li>
+              <li>&ldquo;about&rdquo;</li>
+              <li>&ldquo;privacy&rdquo;</li>
+              <li>&ldquo;how it works&rdquo;</li>
+              <li>&ldquo;what you get&rdquo;</li>
+              <li>&ldquo;faq&rdquo;</li>
+              <li>&ldquo;i paid&rdquo; / &ldquo;i already paid&rdquo;</li>
+            </ul>
           </div>
 
-          {/* Destructive Clear Confirmation Banner */}
-          {confirmClear && (
-            <div
-              role="alert"
-              className="mt-2 pt-2 border-t border-[var(--border)] flex flex-wrap items-center justify-between gap-2 text-xs"
-            >
-              <span className="font-semibold text-[var(--text)]">
-                Clear everything? This will reset your review.
-              </span>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => executeCommand({ kind: "CLEAR" })}
-                  className="px-3 py-1.5 rounded-lg bg-[var(--color-primary)] text-[var(--color-primary-contrast)] font-semibold hover:bg-[var(--color-primary-hover)] min-h-[36px]"
-                >
-                  Yes, clear
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setConfirmClear(false);
-                    clearTimer();
-                    setRawInput("");
-                  }}
-                  className="px-3 py-1.5 rounded-lg border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)] min-h-[36px]"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          )}
+          <div>
+            <h3 className="font-semibold text-[var(--text)] mb-1">
+              On check page
+            </h3>
+            <ul className="list-disc pl-5 space-y-1">
+              <li>&ldquo;next&rdquo;, &ldquo;back&rdquo;, &ldquo;skip&rdquo;</li>
+              <li>&ldquo;step 1&rdquo; to &ldquo;step 5&rdquo; (or &ldquo;offer&rdquo;, &ldquo;source&rdquo;, &ldquo;conversation&rdquo;, &ldquo;money and documents&rdquo;, &ldquo;review&rdquo;)</li>
+              <li>&ldquo;analyse&rdquo; (runs review when offer is added)</li>
+              <li>&ldquo;overview&rdquo;, &ldquo;observations&rdquo;, &ldquo;missing details&rdquo;, &ldquo;questions&rdquo;, &ldquo;company research&rdquo;, &ldquo;resources&rdquo;, &ldquo;my text&rdquo;</li>
+              <li>&ldquo;edit my answers&rdquo;</li>
+            </ul>
+          </div>
 
-          {/* Action Countdown / Recognition Bar */}
-          {!confirmClear && isMatch && !isLongInput && (
-            <div className="mt-2 pt-2 border-t border-[var(--border)] flex flex-wrap items-center justify-between gap-2 text-xs">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-[var(--text)]">
-                  {getCommandLabel(recognizedCommand)}
-                </span>
-                {countdown !== null && (
-                  <span className="text-[var(--text-muted)] font-mono">
-                    (in {countdown}s...)
-                  </span>
-                )}
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => executeCommand(recognizedCommand)}
-                  className="px-3 py-1.5 rounded-lg bg-[var(--color-primary)] text-[var(--color-primary-contrast)] font-medium hover:bg-[var(--color-primary-hover)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[36px]"
-                >
-                  Run now
-                </button>
-                <button
-                  type="button"
-                  onClick={handleAddToOfferText}
-                  className="px-2.5 py-1.5 rounded-lg border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)] focus:outline-none focus-visible:ring-1 focus-visible:ring-[var(--focus-ring)] min-h-[36px]"
-                >
-                  Add to offer text instead
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Dictated Offer Text Option (> 80 chars or UNKNOWN) */}
-          {!confirmClear && hasInput && (!isMatch || isLongInput) && (
-            <div className="mt-2 pt-2 border-t border-[var(--border)] flex flex-wrap items-center justify-between gap-2 text-xs">
-              <span className="text-[var(--text-muted)] truncate max-w-[280px]">
-                &quot;{rawInput}&quot;
-              </span>
-              <button
-                type="button"
-                onClick={handleAddToOfferText}
-                className="px-3 py-1.5 rounded-lg bg-[var(--color-primary)] text-[var(--color-primary-contrast)] font-semibold hover:bg-[var(--color-primary-hover)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[36px]"
-              >
-                Add to offer text (Step {currentStep})
-              </button>
-            </div>
-          )}
+          <p className="pt-2 text-xs border-t border-[var(--border)] leading-relaxed text-[var(--text-subtle)]">
+            No microphone permission is needed. Use Wispr Flow or any dictation tool to type for you. To enter your offer or your question, click that text box and dictate there.
+          </p>
         </div>
-      </div>
+      </dialog>
     </>
   );
 }

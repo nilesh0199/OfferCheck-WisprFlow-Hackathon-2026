@@ -222,7 +222,7 @@ describe("validateAnalysis", () => {
         {
           id: "c-longer",
           category: "sensitive_information_request",
-          observation: "Desk requests standard documents as soon as possible.",
+          observation: "Desk requests onboarding documents as soon as possible.",
           interpretation: "Requests for documents with short deadlines should be verified.",
           quote:
             "send over your standard documents for verification as soon as possible.",
@@ -487,7 +487,7 @@ describe("validateAnalysis", () => {
             id: "c-ex4-docs",
             category: "sensitive_information_request",
             observation:
-              "The text asks the applicant to send standard documents for verification without defining which documents are required.",
+              "The text asks the applicant to send verification documents without defining which documents are required.",
             interpretation:
               "Submitting personal documents before clarifying their nature and purpose warrants caution.",
             quote: "requires you to send over your standard documents for verification",

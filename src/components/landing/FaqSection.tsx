@@ -72,7 +72,7 @@ export function FaqSection() {
   return (
     <section
       id="faq"
-      className="py-16 sm:py-24 border-t border-[var(--border)] bg-[var(--color-canvas)] transition-colors"
+      className="scroll-mt-16 sm:scroll-mt-20 py-16 sm:py-24 border-t border-[var(--border)] bg-[var(--color-canvas)] transition-colors"
     >
       <Container className="space-y-12">
         <div className="space-y-3 text-left">

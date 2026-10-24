@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { TopNav } from "@/components/TopNav";
 import { Container } from "@/components/Container";
 import { WizardContainer } from "@/components/wizard/WizardContainer";
 import { AnalysisResults } from "@/components/AnalysisResults";
@@ -11,6 +10,7 @@ import { AboutTool } from "@/components/AboutTool";
 import { YourOfferWorkspace } from "@/components/YourOfferWorkspace";
 import { ResultsNav, ResultsNavItem } from "@/components/ResultsNav";
 import { ResultsActionsBar } from "@/components/ResultsActionsBar";
+import { ClearReviewDialog } from "@/components/ClearReviewDialog";
 import { SpinnerIcon } from "@/components/Icons";
 import { useOfferSession } from "@/components/SessionProvider";
 import { FULL_WIZARD_SAMPLES } from "@/data/wizard-samples";
@@ -61,28 +61,34 @@ export function CheckClient() {
       { id: "section-missing", label: "Missing details", badge: analysis.missingInfo.length },
       { id: "section-questions", label: "Questions & checks", badge: analysis.verificationQuestions.length },
       { id: "section-research", label: "Company research" },
-      { id: "section-advisories", label: "Advisories & resources", badge: 3 },
+      { id: "section-advisories", label: "Resources", badge: 3 },
       { id: "section-your-text", label: "Your text" },
     ];
   }, [analysis]);
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col justify-between transition-colors">
-      <TopNav />
+      <ClearReviewDialog
+        analysis={analysis}
+        onClearSession={() => {
+          setIsEditingOffer(false);
+          handleClear();
+        }}
+      />
 
       {/* Page Title & Intro */}
       <header className="w-full">
-        <Container className="pt-4 sm:pt-6 pb-2 text-left space-y-2">
+        <Container className="py-4 sm:py-6 text-left space-y-2">
           <h1 className="text-2xl sm:text-3xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]">
             Check an offer
           </h1>
           <p className="text-xs sm:text-sm text-[var(--text-muted)] max-w-2xl leading-relaxed">
-            Paste an offer letter, describe a call, or attach screenshots and PDFs for quote-linked observations and specific verification questions.
+            Paste an offer letter, describe a call, or attach screenshots. OfferClara highlights requested fees, urgent deadlines and missing details, with direct quotes from your text.
           </p>
         </Container>
       </header>
 
-      <Container as="main" className="py-6 sm:py-8 pb-24 sm:pb-8 space-y-8 flex-1">
+      <Container as="main" className="py-4 sm:py-6 pb-24 sm:pb-8 space-y-8 flex-1">
         {/* ========================================================
             PRE-REVIEW STATE (Initial Visit / Before Analysis)
            ======================================================== */}
@@ -300,7 +306,7 @@ export function CheckClient() {
       </Container>
 
       {/* Footer */}
-      <footer className="w-full border-t border-[var(--border)] bg-[var(--surface)] py-6 mt-12 transition-colors">
+      <footer className="w-full border-t border-[var(--border)] bg-[var(--surface)] py-6 mt-12 transition-colors print:hidden">
         <Container className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs text-[var(--text-muted)]">
           <div className="space-y-1">
             <p>

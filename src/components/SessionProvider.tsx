@@ -6,6 +6,7 @@ import React, {
   useReducer,
   useRef,
   useEffect,
+  useState,
   useCallback,
   useMemo,
 } from "react";
@@ -35,6 +36,7 @@ import { ValidatedAnalysis } from "@/lib/analysis/schema";
 import { MIN_INPUT_CHARS } from "@/lib/config";
 import { compressFileForUpload, TranscribedItem } from "@/lib/upload";
 import { buildCombinedText, isReadyToAnalyse } from "@/lib/combined-text";
+import { AskThreadMessage, AskReviewContext } from "@/lib/ask/schema";
 
 const CLIENT_TIMEOUT_MS = 65000; // 65-second client-side timeout cap
 
@@ -111,6 +113,13 @@ export interface OfferSessionContextValue {
   handleTranscribe: () => Promise<void>;
   handleCancelTranscribe: () => void;
   dismissTranscriptBanner: () => void;
+
+  // Clear doubt AI thread:
+  askThread: AskThreadMessage[];
+  askLoading: boolean;
+  askError: { code: string; message: string } | null;
+  sendAskQuestion: (question: string, reviewContext?: AskReviewContext) => Promise<void>;
+  clearAskThread: () => void;
 }
 
 const OfferSessionContext = createContext<OfferSessionContextValue | null>(null);
@@ -128,6 +137,11 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const transcribeAbortControllerRef = useRef<AbortController | null>(null);
   const transcribeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const transcribeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Clear doubt AI state
+  const [askThread, setAskThread] = useState<AskThreadMessage[]>([]);
+  const [askLoading, setAskLoading] = useState(false);
+  const [askError, setAskError] = useState<{ code: string; message: string } | null>(null);
 
   // Keep a ref of selectedFiles so we can revoke object URLs on unmount without re-triggering effect
   const selectedFilesRef = useRef(state.selectedFiles);
@@ -414,9 +428,88 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: "CLEAR_SESSION" });
   }, [state.status, state.transcribeStatus]);
 
+  const clearAskThread = useCallback(() => {
+    setAskThread([]);
+    setAskLoading(false);
+    setAskError(null);
+  }, []);
+
   const handleClearAll = useCallback(() => {
     handleClear();
-  }, [handleClear]);
+    clearAskThread();
+  }, [handleClear, clearAskThread]);
+
+  const sendAskQuestion = useCallback(
+    async (question: string, reviewContext?: AskReviewContext) => {
+      const trimmed = question.trim();
+      if (!trimmed) return;
+
+      const userTurnCount = askThread.filter((m) => m.role === "user").length;
+      if (userTurnCount >= 6) {
+        setAskError({
+          code: "LIMIT_REACHED",
+          message:
+            "Thread limit reached (6 questions). Please clear the thread to start a new inquiry.",
+        });
+        return;
+      }
+
+      const userMessage: AskThreadMessage = {
+        id: `user-${Date.now()}`,
+        role: "user",
+        content: trimmed,
+        createdAt: Date.now(),
+      };
+
+      const updatedThread = [...askThread, userMessage];
+      setAskThread(updatedThread);
+      setAskLoading(true);
+      setAskError(null);
+
+      try {
+        const payload = {
+          messages: updatedThread.map((m) => ({
+            role: m.role,
+            content: m.role === "user" ? m.content : (m.data?.summary || m.content),
+          })),
+          reviewContext,
+        };
+
+        const res = await fetch("/api/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await res.json();
+        if (res.ok && data.ok && data.data) {
+          const assistantMessage: AskThreadMessage = {
+            id: `assistant-${Date.now()}`,
+            role: "assistant",
+            content: data.data.summary,
+            data: data.data,
+            createdAt: Date.now(),
+          };
+          setAskThread([...updatedThread, assistantMessage]);
+        } else {
+          const code = data?.error?.code || "UPSTREAM_ERROR";
+          const message =
+            data?.error?.message ||
+            "Unable to clear doubt right now. Please try again or check the official resources.";
+          setAskError({ code, message });
+        }
+      } catch {
+        setAskError({
+          code: "NETWORK_ERROR",
+          message:
+            "A network error occurred while communicating with the server. Please check your connection.",
+        });
+      } finally {
+        setAskLoading(false);
+      }
+    },
+    [askThread]
+  );
 
   const handleCancel = useCallback(() => {
     if (abortControllerRef.current) {
@@ -714,6 +807,13 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       handleTranscribe,
       handleCancelTranscribe,
       dismissTranscriptBanner,
+
+      // Clear doubt AI thread:
+      askThread,
+      askLoading,
+      askError,
+      sendAskQuestion,
+      clearAskThread,
     }),
     [
       state.currentStep,
@@ -772,6 +872,11 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       handleTranscribe,
       handleCancelTranscribe,
       dismissTranscriptBanner,
+      askThread,
+      askLoading,
+      askError,
+      sendAskQuestion,
+      clearAskThread,
     ]
   );
 

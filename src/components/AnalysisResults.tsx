@@ -1,6 +1,5 @@
 import React, { useRef, useState, useEffect, useMemo } from "react";
 import { ValidatedAnalysis } from "@/lib/analysis/schema";
-import { buildReviewSummary } from "@/lib/analysis/summary";
 import { sentenceCase } from "@/lib/analysis/sentence-case";
 import { sortConcernsByPriority } from "@/lib/analysis/priorities";
 import { getResearchNudge } from "@/lib/research/nudge";
@@ -13,7 +12,6 @@ import { OfficialAdvisoriesSection } from "./OfficialAdvisoriesSection";
 import { LimitsSection } from "./LimitsSection";
 import { HighlightedTextViewer } from "./HighlightedTextViewer";
 import { selectAdvisories } from "@/data/advisories";
-import { CopyIcon, CheckIcon } from "./Icons";
 
 interface AnalysisResultsProps {
   analysis: ValidatedAnalysis;
@@ -33,9 +31,6 @@ export function AnalysisResults({
   const activeConcernId = externalActiveConcernId ?? internalActiveConcernId;
 
   const [isViewerOpen, setIsViewerOpen] = useState(false);
-  const [copiedSummary, setCopiedSummary] = useState(false);
-  const [showClipboardFallback, setShowClipboardFallback] = useState(false);
-  const [liveAnnouncement, setLiveAnnouncement] = useState("");
 
   // Sort concerns stably by specified category priority before display
   const sortedConcerns = useMemo(
@@ -72,105 +67,23 @@ export function AnalysisResults({
     }, 50);
   };
 
-  const handleCopySummary = async () => {
-    const summaryText = buildReviewSummary(analysis, analyzedSnapshotText);
-    try {
-      await navigator.clipboard.writeText(summaryText);
-      setCopiedSummary(true);
-      setShowClipboardFallback(false);
-      setLiveAnnouncement("Review summary copied to clipboard");
-      setTimeout(() => {
-        setCopiedSummary(false);
-        setLiveAnnouncement("");
-      }, 2000);
-    } catch {
-      setShowClipboardFallback(true);
-    }
-  };
-
   const isRecommended = nudge.level === "recommended";
 
   return (
     <div className="space-y-6 pt-1">
-      {/* Live announcement region for copy status */}
-      <div className="sr-only" aria-live="polite" role="status">
-        {liveAnnouncement}
-      </div>
-
       {/* Results Header and Focus Target */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[var(--border)] pb-4">
-        <div>
-          <h2
-            ref={resultsHeadingRef}
-            tabIndex={-1}
-            className="text-lg sm:text-xl font-bold tracking-tight text-[var(--text)] outline-none focus:outline-none"
-          >
-            Offer review results
-          </h2>
-          <p className="mt-0.5 text-xs text-[var(--text-muted)]">
-            This is a review of the text provided. It is not a safety assessment.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="inline-flex items-center justify-center gap-1.5 rounded-xs border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-medium text-[var(--text)] shadow-2xs hover:bg-[var(--surface-muted)] active:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[34px] shrink-0 no-print"
-            aria-label="Export review to PDF"
-          >
-            <span>Export review (PDF)</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleCopySummary}
-            className="inline-flex items-center justify-center gap-1.5 rounded-xs border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-medium text-[var(--text)] shadow-2xs hover:bg-[var(--surface-muted)] active:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[34px] shrink-0 no-print"
-            aria-label="Copy review summary to clipboard"
-          >
-            {copiedSummary ? (
-              <>
-                <CheckIcon className="w-3.5 h-3.5 text-[var(--color-primary)]" />
-                <span>Copied</span>
-              </>
-            ) : (
-              <>
-                <CopyIcon className="w-3.5 h-3.5 text-[var(--text-muted)]" />
-                <span>Copy review summary</span>
-              </>
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* Clipboard Fallback Area if navigator.clipboard fails */}
-      {showClipboardFallback && (
-        <div
-          role="region"
-          aria-label="Manual copy review summary area"
-          className="rounded border border-[var(--border)] bg-[var(--surface-muted)] p-3.5 space-y-2"
+      <div className="border-b border-[var(--border)] pb-4">
+        <h2
+          ref={resultsHeadingRef}
+          tabIndex={-1}
+          className="text-lg sm:text-xl font-bold tracking-tight text-[var(--text)] outline-none focus:outline-none"
         >
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-[var(--text)]">
-              Select and copy the review summary below:
-            </p>
-            <button
-              type="button"
-              onClick={() => setShowClipboardFallback(false)}
-              className="text-xs text-[var(--text-muted)] hover:text-[var(--text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded p-1"
-            >
-              Close
-            </button>
-          </div>
-          <textarea
-            readOnly
-            rows={5}
-            value={buildReviewSummary(analysis, analyzedSnapshotText)}
-            onFocus={(e) => e.target.select()}
-            className="w-full rounded-xs border border-[var(--border)] bg-[var(--surface)] p-2 font-mono text-xs text-[var(--text)] custom-scrollbar"
-          />
-        </div>
-      )}
+          Offer review results
+        </h2>
+        <p className="mt-0.5 text-xs text-[var(--text-muted)]">
+          This is a review of the text provided. It is not a safety assessment.
+        </p>
+      </div>
 
       {/* Summary Card with Neutral Count Chips */}
       <div

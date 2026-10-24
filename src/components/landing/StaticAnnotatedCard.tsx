@@ -76,9 +76,6 @@ export function StaticAnnotatedCard() {
           </div>
         </div>
 
-        <div className="pt-2 text-[0.75rem] font-mono text-[var(--text-muted)] text-right">
-          Static preview • 0 ms render • No animation
-        </div>
       </div>
     </div>
   );

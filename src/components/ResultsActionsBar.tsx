@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { ValidatedAnalysis } from "@/lib/analysis/schema";
 import { buildReviewSummary } from "@/lib/analysis/summary";
 import { sortConcernsByPriority } from "@/lib/analysis/priorities";
@@ -12,7 +12,7 @@ interface ResultsActionsBarProps {
   analyzedSnapshotText: string;
   sourceNote?: string;
   conversationText?: string;
-  onClearSession: () => void;
+  onClearSession?: () => void;
 }
 
 export function ResultsActionsBar({
@@ -20,10 +20,7 @@ export function ResultsActionsBar({
   analyzedSnapshotText,
   sourceNote,
   conversationText,
-  onClearSession,
 }: ResultsActionsBarProps) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
-
   const [copiedSummary, setCopiedSummary] = useState(false);
   const [copiedShare, setCopiedShare] = useState(false);
   const [liveAnnouncement, setLiveAnnouncement] = useState("");
@@ -33,9 +30,8 @@ export function ResultsActionsBar({
     if (typeof window === "undefined") return;
 
     const originalTitle = document.title;
-    const company = analysis.entities?.companyName || "Offer";
     const dateStr = new Date().toISOString().split("T")[0];
-    const newTitle = `OfferClara Review - ${company} - ${dateStr}.pdf`;
+    const newTitle = `OfferClara review ${dateStr}`;
 
     document.title = newTitle;
 
@@ -51,7 +47,7 @@ export function ResultsActionsBar({
     setTimeout(() => {
       document.title = originalTitle;
     }, 2000);
-  }, [analysis.entities?.companyName]);
+  }, []);
 
   // Copy plain text review summary
   const handleCopySummary = async () => {
@@ -116,16 +112,8 @@ export function ResultsActionsBar({
   };
 
   const openClearModal = () => {
-    dialogRef.current?.showModal();
-  };
-
-  const closeClearModal = () => {
-    dialogRef.current?.close();
-  };
-
-  const handleConfirmClear = () => {
-    closeClearModal();
-    onClearSession();
+    const dialog = document.getElementById("clear-review-dialog") as HTMLDialogElement | null;
+    dialog?.showModal();
   };
 
   return (
@@ -136,7 +124,7 @@ export function ResultsActionsBar({
       </div>
 
       {/* Action Buttons Row */}
-      <div className="flex flex-wrap items-center gap-2 no-print">
+      <div className="flex flex-wrap items-center gap-2 no-print print:hidden">
         <button
           type="button"
           onClick={handlePrint}
@@ -190,50 +178,9 @@ export function ResultsActionsBar({
           onClick={openClearModal}
           className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-xs sm:text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px] transition-colors"
         >
-          Start new review
+          Clear and start over
         </button>
       </div>
-
-      {/* Native Confirmation Dialog */}
-      <dialog
-        ref={dialogRef}
-        className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xl backdrop:bg-[rgba(0,0,0,0.4)] max-w-md w-full text-[var(--text)] space-y-4"
-        onCancel={closeClearModal}
-      >
-        <div className="space-y-2">
-          <h3 className="text-base font-semibold text-[var(--text)]">
-            Clear this review?
-          </h3>
-          <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">
-            Any text or answers you entered will be cleared from this browser tab&apos;s memory.
-          </p>
-        </div>
-
-        <div className="pt-2 flex flex-col sm:flex-row items-center justify-end gap-2.5">
-          <button
-            type="button"
-            onClick={closeClearModal}
-            className="w-full sm:w-auto px-4 py-2 rounded-xl border border-[var(--border)] text-xs sm:text-sm font-medium text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px]"
-            autoFocus
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handlePrint}
-            className="w-full sm:w-auto px-4 py-2 rounded-xl border border-[var(--border)] text-xs sm:text-sm font-medium text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px]"
-          >
-            Save as PDF first
-          </button>
-          <button
-            type="button"
-            onClick={handleConfirmClear}
-            className="w-full sm:w-auto px-4 py-2 rounded-xl bg-[var(--color-primary)] text-[var(--color-primary-contrast)] text-xs sm:text-sm font-semibold hover:bg-[var(--color-primary-hover)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px]"
-          >
-            Clear and start over
-          </button>
-        </div>
-      </dialog>
     </>
   );
 }

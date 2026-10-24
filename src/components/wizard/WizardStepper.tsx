@@ -8,6 +8,8 @@ interface WizardStepperProps {
   visitedSteps: Record<number, boolean>;
   skippedSteps: Record<number, boolean>;
   onSelectStep: (step: WizardStep) => void;
+  showClear?: boolean;
+  onClear?: () => void;
 }
 
 const STEPS: { step: WizardStep; label: string; optional?: boolean }[] = [
@@ -23,6 +25,8 @@ export function WizardStepper({
   visitedSteps,
   skippedSteps,
   onSelectStep,
+  showClear = false,
+  onClear,
 }: WizardStepperProps) {
   const currentStepObj = STEPS.find((s) => s.step === currentStep) || STEPS[0];
 
@@ -30,15 +34,24 @@ export function WizardStepper({
     <nav aria-label="Review steps" className="w-full">
       {/* Mobile compact header (< 768px): "Step X of 5: Name" + horizontally scrollable chip track */}
       <div className="md:hidden space-y-2">
-        <div className="flex items-center justify-between text-xs text-[var(--text-muted)] font-mono">
-          <span>
+        <div className="flex items-center justify-between text-xs text-[var(--text-muted)] min-h-[44px]">
+          <span className="font-mono">
             Step {currentStep} of {STEPS.length}:{" "}
             <strong className="text-[var(--text)] font-sans">{currentStepObj.label}</strong>
+            {currentStepObj.optional && !showClear && (
+              <span className="text-[0.875rem] text-[var(--text-muted)] font-sans ml-1">
+                (optional)
+              </span>
+            )}
           </span>
-          {currentStepObj.optional && (
-            <span className="text-[0.875rem] text-[var(--text-muted)] font-sans">
-              (optional)
-            </span>
+          {showClear && (
+            <button
+              type="button"
+              onClick={onClear}
+              className="text-xs font-medium text-[var(--text-muted)] hover:text-[var(--text)] px-2.5 py-1 rounded-lg hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px] inline-flex items-center"
+            >
+              Clear and start over
+            </button>
           )}
         </div>
 
@@ -84,6 +97,25 @@ export function WizardStepper({
       </div>
 
       {/* Desktop stepper (>= 768px): Ordered list of 5 steps */}
+      <div className="hidden md:flex items-center justify-between text-xs text-[var(--text-muted)] mb-2">
+        <span className="font-mono">
+          Step {currentStep} of {STEPS.length}:{" "}
+          <strong className="text-[var(--text)] font-sans">{currentStepObj.label}</strong>
+          {currentStepObj.optional && (
+            <span className="font-sans ml-1 text-[var(--text-muted)]">(optional)</span>
+          )}
+        </span>
+        {showClear && (
+          <button
+            type="button"
+            onClick={onClear}
+            className="text-xs font-medium text-[var(--text-muted)] hover:text-[var(--text)] px-2.5 py-1 rounded-lg hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px] inline-flex items-center"
+          >
+            Clear and start over
+          </button>
+        )}
+      </div>
+
       <ol className="hidden md:grid md:grid-cols-5 gap-2 w-full">
         {STEPS.map((s) => {
           const isCurrent = s.step === currentStep;

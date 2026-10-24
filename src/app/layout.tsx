@@ -5,6 +5,7 @@ import { APP_NAME } from "@/lib/config";
 import { THEME_INLINE_SCRIPT } from "@/lib/theme";
 import { SessionProvider } from "@/components/SessionProvider";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { TopBar } from "@/components/TopBar";
 import { CommandBar } from "@/components/CommandBar";
 
 const newsreader = Newsreader({
@@ -85,6 +86,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col font-sans bg-[var(--bg)] text-[var(--text)] transition-colors">
         <SessionProvider>
           <ScrollToTop />
+          <TopBar />
           {children}
           <CommandBar />
         </SessionProvider>

@@ -264,4 +264,45 @@ describe("Resources page structure and post-payment steps", () => {
       ).toBe(true);
     }
   });
+
+  it("verifies click-to-load video embeds and questionnaire architecture on /resources (Milestone Q3)", async () => {
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+
+    const resourcesPagePath = path.resolve(process.cwd(), "src/app/resources/page.tsx");
+    const afterPaymentCardPath = path.resolve(
+      process.cwd(),
+      "src/components/resources/AfterPaymentCard.tsx"
+    );
+    const clickToLoadVideoPath = path.resolve(
+      process.cwd(),
+      "src/components/resources/ClickToLoadVideo.tsx"
+    );
+
+    expect(fs.existsSync(resourcesPagePath)).toBe(true);
+    expect(fs.existsSync(afterPaymentCardPath)).toBe(true);
+    expect(fs.existsSync(clickToLoadVideoPath)).toBe(true);
+
+    const resourcesContent = fs.readFileSync(resourcesPagePath, "utf-8");
+    const afterPaymentContent = fs.readFileSync(afterPaymentCardPath, "utf-8");
+    const videoContent = fs.readFileSync(clickToLoadVideoPath, "utf-8");
+
+    // Video IDs
+    expect(resourcesContent).toContain("Kr-B8sAE6ek");
+    expect(afterPaymentContent).toContain("3S47zE8cWCI");
+
+    // Privacy-respecting youtube-nocookie embed
+    expect(videoContent).toContain("https://www.youtube-nocookie.com/embed/");
+    expect(videoContent).toContain("loading=\"lazy\"");
+    expect(videoContent).toContain("referrerPolicy=\"strict-origin-when-cross-origin\"");
+
+    // ID already-paid exists
+    expect(afterPaymentContent).toContain('id="already-paid"');
+
+    // Questionnaire questions present
+    expect(afterPaymentContent).toContain("What did they tell you that you were getting?");
+    expect(afterPaymentContent).toContain("What exactly did you pay for?");
+    expect(afterPaymentContent).toContain("Did they promise an internship, stipend or job after the course?");
+    expect(afterPaymentContent).toContain("What documents did you share?");
+  });
 });

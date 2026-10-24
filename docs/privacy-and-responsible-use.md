@@ -1,7 +1,7 @@
 # Privacy and Responsible Use Policy
 
 > **OfferClara** — *"Understand the offer. Know what to verify. Make every offer clear."*  
-> Document Version: Phase 10 (Theme System, Console Density, Balanced Workspace & Research Nudge) — October 2026
+> Document Version: Part 2 (Groq Fallback, Clear Doubt with AI, Video Embeds & Safety Checklist) — October 2026
 
 OfferClara is built with a strict privacy-first, evidence-first design to assist students and first-time job seekers in evaluating internship and job offers safely. This document transparently explains data flows, storage practices, rate limiting, system boundaries, and how to report issues.
 
@@ -9,34 +9,42 @@ OfferClara is built with a strict privacy-first, evidence-first design to assist
 
 ## 1. What Data is Sent and Where
 
-- **Destination of Offer Text:**  
-  When a user submits text for review, the text is transmitted via HTTPS to Google's Gemini API (using the Interactions API with the model fallback chain: `gemini-3.8-flash`, `gemini-3.6-flash`, and `gemini-3.5-flash-lite`).
-- **Destination of Uploaded Files (Phase 8 & 9c):**  
-  When a user uploads screenshots (PNG, JPEG, WebP) or PDF documents, the files are transmitted over HTTPS to `/api/transcribe` and sent to Gemini's multimodal Interactions API for text transcription.
+- **Destination of Offer Text (Reviews):**  
+  When a user submits text for offer analysis, the text is transmitted via HTTPS to Google's Gemini API (using the Interactions API with the model fallback chain: `gemini-3.8-flash`, `gemini-3.6-flash`, and `gemini-3.5-flash-lite`).
+- **Groq as Second AI Provider (Fallback for Reviews):**  
+  If all Gemini models fail or encounter rate limits, and `GROQ_API_KEY` is configured, OfferClara may fall back to sending the text to Groq's chat completions API (`https://api.groq.com/openai/v1/chat/completions`) using model `openai/gpt-oss-120b` on its free tier.
+- **Data Policy for Groq:**  
+  Groq processes submitted text under its commercial terms. According to Groq's official privacy and security statements, customer data submitted through the API is not used to train models by default.
+- **Files are Never Sent to Groq:**  
+  File extraction (`/api/transcribe`) is exclusively performed by Gemini's multimodal API. Uploaded images and PDF files are NEVER sent to Groq under any circumstances. Groq only ever receives plain text extracted after user confirmation.
+- **Destination of Uploaded Files:**  
+  When a user uploads screenshots (PNG, JPEG, WebP) or PDF documents, the files are transmitted over HTTPS to `/api/transcribe` and processed in memory by Google Gemini.
 - **Zero File Name Transmission:**  
-  Original file names are never extracted, saved, or sent to Google's Gemini API, nor are they recorded in server logs. Extracted text appended to the editor uses strictly generic numbering markers (such as `---- Text from Screenshot 1 ----` or `---- Text from PDF 1 ----`).
+  Original file names are never extracted, saved, or sent to Google or Groq, nor are they recorded in server logs. Extracted text appended to the editor uses strictly generic numbering markers (such as `---- Text from Screenshot 1 ----` or `---- Text from PDF 1 ----`).
 - **Free-Tier Data Terms:**  
-  OfferClara runs on Google's Gemini API free tier. According to Google's published API terms, data submitted to the free-tier Gemini API may be retained and used by Google to train, tune, and improve its models and products.
-- **Pre-Paste and Pre-Upload Redaction Notices:**  
-  Because of the free-tier data terms, OfferClara displays persistent advisories:
+  OfferClara operates on free-tier API services. Content submitted to Google's Gemini API free tier may be reviewed by human reviewers and used by Google to train and tune products.
+- **Clear Doubt with AI (`/ask`):**  
+  Questions submitted in the `/ask` route are sent over HTTPS to Groq first (for low-latency answers) and fall back to the Gemini chain if Groq is unavailable. If the optional "Use my current review as context" toggle is enabled, only high-level observation categories and topics are included. Raw offer text, uploaded files, and transcripts are NEVER shared with the doubt inquiry.
+- **External Video Guides and YouTube Embeds:**  
+  Video guides on the Help and reporting page (`/resources`) use a click-to-load architecture. No video script, player, or network request to YouTube is initiated until the user clicks the play button. Once activated, videos load from `https://www.youtube-nocookie.com/embed/<id>`. OfferClara sets no cookies. If a user clicks to play an embedded video, YouTube loads and may set its own cookies.
+- **Pre-Paste and Pre-Upload Redaction Advisories:**  
+  Because of upstream free-tier data terms, OfferClara displays persistent advisories:
   - Above the text input field (`AI_DATA_NOTICE`), advising users to redact personal identifiable information (names, email addresses, phone numbers, home addresses, government IDs, bank details, passwords, and OTPs) prior to pasting.
   - Above the file upload dropzone (`AI_FILE_NOTICE`), reminding users that anything visible in an image or PDF is sent to Gemini, advising them to crop or cover personal details first, or paste text directly.
-- **Mandatory Review, Redaction & Undo Workflow:**  
-  Transcribed text is appended below any existing text in the editor for the candidate to review, redact, and edit (or revert with a one-click Undo). The analysis pipeline never runs directly on uploaded files; it executes strictly on the candidate-confirmed text.
 
 ---
 
 ## 2. What Data is NOT Stored
 
 OfferClara operates statelessly with zero persistence for offers or user identities:
-- **No Databases or Accounts:**  
+- **No Databases or User Accounts:**  
   The application maintains no database, user accounts, authentication tokens, tracking cookies, or server-side persistent storage.
 - **In-Memory Offer Processing & Single Storage Exception:**  
-  All user-submitted offer text, wizard answers (across all 5 steps), uploaded files, and analysis results are held strictly in the active browser tab's volatile memory (`SessionProvider`) and are completely cleared when the tab is closed, refreshed, or cleared via the "Clear and start over" action. The only item saved in browser storage (`localStorage`) is the user's explicit theme preference (`"offercheck-theme"`: `"light"`, `"dark"`, or `"system"`). No text, filenames, wizard responses, or analysis outputs are ever placed in local storage or cookies.
+  All user-submitted offer text, wizard answers, uploaded files, doubt inquiry turns (up to 6 turns), and analysis results are held strictly in the active browser tab's volatile memory (`SessionProvider`) and are completely cleared when the tab is closed, refreshed, or cleared via the "Clear and start over" action. The only item saved in browser storage (`localStorage`) is the user's explicit theme preference (`"offercheck-theme"`: `"light"`, `"dark"`, or `"system"`). No text, filenames, questionnaire responses, or analysis outputs are ever placed in local storage or cookies.
 - **Zero In-Browser Speech APIs or Microphone Access:**  
   OfferClara never requests browser microphone permissions, never listens to audio, and never calls proprietary speech-to-text APIs. Voice input is supported solely through the Global Command Bar by accepting text from OS dictation, accessibility tools, or external software like Wispr Flow running entirely outside the browser.
 - **Client-Side Sensitive Identifier Warning:**  
-  Steps 2, 3, and 4 run client-side regex detection (`detectSensitiveIdentifiers`) for Indian identity documents, payment addresses, and financial coordinates (Aadhaar, PAN, bank account numbers, IFSC codes, UPI IDs, and passports), alerting the user before text is sent to upstream models.
+  The input wizard runs client-side regex detection (`detectSensitiveIdentifiers`) for Indian identity documents, payment addresses, and financial coordinates (Aadhaar, PAN, bank account numbers, IFSC codes, UPI IDs, and passports), alerting the user before text is sent to upstream models.
 - **No Server-Side File Storage:**  
   Uploaded files are never saved to server disk, temporary directories, or cloud object stores (S3, GCS, Blob). Files exist in memory only during the active request and are discarded immediately.
 - **No Third-Party Analytics:**  
@@ -54,11 +62,13 @@ OfferClara operates statelessly with zero persistence for offers or user identit
 
 ## 3. In-Memory Rate Limiting and Hashed Client Keys
 
-To protect free-tier API quotas and ensure fair availability during public evaluation:
-- **Analysis Sliding Window Limits:**  
+To protect free-tier API quotas and ensure fair availability:
+- **Analysis Sliding Window Limits (`/api/analyze`):**  
   Each client is limited to a default maximum of **8 analyses per 15-minute window** and **30 analyses per 24-hour day**.
-- **Transcription Sliding Window Limits:**  
+- **Transcription Sliding Window Limits (`/api/transcribe`):**  
   Each client is limited to a default maximum of **6 file transcriptions per 15-minute window** and **20 file transcriptions per 24-hour day**, tracked in an isolated namespace.
+- **Doubt Inquiry Sliding Window Limits (`/api/ask`):**  
+  Each client is limited to a default maximum of **10 questions per 15-minute window** and **40 questions per 24-hour day**, tracked in an isolated namespace.
 - **Cryptographic Key Hashing:**  
   Client identifiers are derived from the first IP entry in the `x-forwarded-for` header (falling back to `x-real-ip`, or `"local"`).
 - **Salted SHA-256:**  
@@ -78,7 +88,7 @@ To maintain absolute ethical integrity and avoid misleading users:
 - **NOT a Company Authentication Service:**  
   It cannot verify whether a recruiter legitimately represents the named enterprise or whether an organisation is legally incorporated.
 - **NOT Legal Advice:**  
-  All observations and suggested questions are informational prompts for student and job seeker self-advocacy, not legal counsel.
+  All observations, post-payment checklists, and suggested questions are informational prompts for student self-advocacy, not legal counsel.
 - **NOT a Safety Guarantee:**  
   The absence of identified concerns ("No concerns identified") reflects only the specific text reviewed and does not mean the offer or sender is safe or legitimate.
 
@@ -97,9 +107,9 @@ To maintain absolute ethical integrity and avoid misleading users:
 - **Concurrency Guard:**  
   Server instances enforce an in-memory limit of at most 4 concurrent model calls in flight, returning HTTP 503 (`BUSY`) when capacity is saturated.
 - **Model Circuit Breaker:**  
-  Models experiencing timeouts (5-minute cooldown), rate limits (15-minute cooldown), or 5xx server errors (1-minute cooldown) are temporarily skipped. If all models are on cooldown, the breaker falls back to trying all models normally so the service never fails closed.
+  Models experiencing timeouts (5-minute cooldown), rate limits (dynamic `retry-after` header or 15-minute cooldown), or 5xx server errors (1-minute cooldown) are temporarily skipped. If all models are on cooldown, the breaker falls back to trying all models normally so the service never fails closed.
 - **Cancellation:**  
-  Per-attempt timeouts pass an `AbortSignal` directly to `@google/genai` to cancel active HTTP network connections when deadlines expire.
+  Per-attempt timeouts pass an `AbortSignal` directly to the fetch or SDK clients to cancel active HTTP network connections when deadlines expire.
 - **Security Headers:**  
   Configured with `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `X-Frame-Options: DENY`, and restrictive `Permissions-Policy`.
 

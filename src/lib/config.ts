@@ -95,8 +95,28 @@ export function getTranscribeRateLimitPerDay(): number {
   return DEFAULT_TRANSCRIBE_RATE_LIMIT_PER_DAY;
 }
 
+/** Separate rate limiting defaults for clear doubt AI helper */
+export const DEFAULT_ASK_RATE_LIMIT_PER_WINDOW = 10; // 10 doubts per 15 minutes
+export const DEFAULT_ASK_RATE_LIMIT_PER_DAY = 40; // 40 doubts per 24 hours
+
+export function getAskRateLimitPerWindow(): number {
+  if (process.env.ASK_LIMIT_PER_WINDOW) {
+    const parsed = parseInt(process.env.ASK_LIMIT_PER_WINDOW, 10);
+    if (!isNaN(parsed) && parsed > 0) return parsed;
+  }
+  return DEFAULT_ASK_RATE_LIMIT_PER_WINDOW;
+}
+
+export function getAskRateLimitPerDay(): number {
+  if (process.env.ASK_LIMIT_PER_DAY) {
+    const parsed = parseInt(process.env.ASK_LIMIT_PER_DAY, 10);
+    if (!isNaN(parsed) && parsed > 0) return parsed;
+  }
+  return DEFAULT_ASK_RATE_LIMIT_PER_DAY;
+}
+
 export const AI_FILE_NOTICE =
   "Files you upload are sent to Google's Gemini API to read the text in them. OfferClara uses Google's free tier, where Google states that submitted content may be used to improve its products. Anything visible in an image or PDF is sent too, so crop or cover personal details first, or paste the text instead. OfferClara does not store your files.";
 
 export const AI_DATA_NOTICE =
-  "The text you submit is sent to Google's Gemini API for analysis. OfferClara uses Google's free tier, where Google states that submitted content may be used to improve its products. Do not submit anything you would not want processed this way.";
+  "The text you submit is sent to Google's Gemini API and, if unavailable, may instead be sent to Groq, both on free tiers. Google states content may improve products; Groq processes text under its own terms without using customer inputs to train models by default. Do not submit anything you would not want processed this way.";

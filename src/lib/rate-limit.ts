@@ -7,6 +7,8 @@ import {
   getRateLimitPerDay,
   getTranscribeRateLimitPerWindow,
   getTranscribeRateLimitPerDay,
+  getAskRateLimitPerWindow,
+  getAskRateLimitPerDay,
 } from "./config";
 
 /** Per-process random salt so client hashes change on each server boot and cannot be precomputed. */
@@ -204,4 +206,10 @@ export const defaultRateLimiter = new RateLimiter();
 export const defaultTranscribeRateLimiter = new RateLimiter({
   limitPerWindow: getTranscribeRateLimitPerWindow(),
   limitPerDay: getTranscribeRateLimitPerDay(),
+});
+
+/** Default singleton instance used by the clear doubt AI route handler */
+export const defaultAskRateLimiter = new RateLimiter({
+  limitPerWindow: getAskRateLimitPerWindow(),
+  limitPerDay: getAskRateLimitPerDay(),
 });

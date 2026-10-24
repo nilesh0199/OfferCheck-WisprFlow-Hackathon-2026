@@ -61,6 +61,12 @@ const FORBIDDEN_PATTERNS: readonly GuardrailPattern[] = [
     description:
       "Numerical probability phrasing (e.g. 'probability of 85%')",
   },
+  {
+    name: "normative_employment_claims",
+    regex: /\b(standard|typical|normal|usual)\b/i,
+    description:
+      "Normative claims asserting what is standard, typical, normal, or usual in hiring or employment",
+  },
 ];
 
 /**

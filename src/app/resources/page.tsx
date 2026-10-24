@@ -2,26 +2,24 @@ import React from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Container } from "@/components/Container";
-import { TopNav } from "@/components/TopNav";
 import { ResourceCard } from "@/components/ResourceCard";
 import { GitHubIcon, ExternalLinkIcon } from "@/components/Icons";
 import { VERIFICATION_RESOURCES } from "@/data/verification-resources";
-import { POST_PAYMENT_STEPS } from "@/data/post-payment-steps";
 import { BackToReviewBanner } from "@/components/BackToReviewBanner";
 import { OfficialAdvisoriesSection } from "@/components/OfficialAdvisoriesSection";
+import { AfterPaymentCard } from "@/components/resources/AfterPaymentCard";
+import { ClickToLoadVideo } from "@/components/resources/ClickToLoadVideo";
 import { APP_NAME } from "@/lib/config";
 
 export const metadata: Metadata = {
-  title: `Official resources and reporting links — ${APP_NAME}`,
+  title: `Help, reporting and official resources — ${APP_NAME}`,
   description:
-    "Official verification portals, official reporting helplines, and actionable guidance for students and first-time job seekers in India.",
+    "What to do if you have paid or shared documents, how to report it, and official resources for checking an offer.",
 };
 
 export default function ResourcesPage() {
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col justify-between overflow-x-hidden transition-colors">
-      <TopNav />
-
       {/* Active Review Navigation Banner (if session exists) */}
       <BackToReviewBanner />
 
@@ -35,51 +33,45 @@ export default function ResourcesPage() {
               <span>Official portals and reporting channels</span>
             </div>
             <h1 className="text-2xl sm:text-4xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]">
-              Official resources and reporting links
+              Help, reporting and official resources
             </h1>
             <p className="text-sm sm:text-base text-[var(--text-muted)] leading-relaxed">
               OfferClara evaluates text only; it does not vouch for companies, verify job offers, or confirm identities. If you need to verify an opportunity or report suspicious demands, use the official resources below.
             </p>
           </div>
 
-          {/* Section 1: If you have already paid or shared documents */}
+          {/* Section 1: If you have already paid or shared documents (Expandable card with video & questionnaire) */}
+          <AfterPaymentCard />
+
+          {/* Section 2: Awareness video */}
           <section
-            id="reporting-steps"
-            aria-labelledby="reporting-steps-heading"
-            className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 sm:p-8 space-y-6 shadow-xs"
+            id="video-guides"
+            aria-labelledby="video-guides-heading"
+            className="space-y-4"
           >
             <div className="space-y-1.5">
               <h2
-                id="reporting-steps-heading"
+                id="video-guides-heading"
                 className="text-lg sm:text-xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]"
               >
-                If you have already paid or shared documents
+                Official student awareness video
               </h2>
               <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">
-                Take these four steps calmly if you have transferred funds or shared documents.
+                Watch this official overview on how to identify irregular internship recruiting demands.
               </p>
             </div>
 
-            <ol className="space-y-4 list-none p-0 m-0">
-              {POST_PAYMENT_STEPS.map((item) => (
-                <li
-                  key={item.step}
-                  className="flex items-start gap-4 p-4 rounded-xl border border-[var(--border-muted)] bg-[var(--bg)]/50"
-                >
-                  <span className="flex items-center justify-center w-7 h-7 rounded-full bg-[var(--surface-muted)] text-[var(--text)] font-mono text-xs font-bold border border-[var(--border)] shrink-0 mt-0.5">
-                    {item.step}
-                  </span>
-                  <div className="text-left">
-                    <p className="text-xs sm:text-sm text-[var(--text)] leading-relaxed">
-                      {item.text}
-                    </p>
-                  </div>
-                </li>
-              ))}
-            </ol>
+            <ClickToLoadVideo
+              videoId="Kr-B8sAE6ek"
+              title="Official student internship awareness video"
+              description="Educational guide for students and job seekers detailing red flags in employment communications."
+              aspectRatio="16:9"
+              language="English"
+              duration="3 min"
+            />
           </section>
 
-          {/* Section 2: All 4 official resources */}
+          {/* Section 3: All 4 official resources */}
           <section
             id="official-portals"
             aria-labelledby="official-portals-heading"
@@ -93,7 +85,7 @@ export default function ResourcesPage() {
                 Official verification and reporting portals
               </h2>
               <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">
-                All contacts and portals are static and verified directly against official government websites. OfferCheck uses zero external network calls.
+                All contacts and portals are static and verified directly against official government websites. OfferClara uses zero external network calls.
               </p>
             </div>
 
@@ -120,7 +112,7 @@ export default function ResourcesPage() {
           <div className="space-y-1 text-center sm:text-left">
             <p className="font-medium text-[var(--text)]">OfferClara</p>
             <p>
-              Links checked as of 20 October 2026. OfferClara does not endorse or vouch for external parties.
+              Links checked as of 23 October 2026. OfferClara does not endorse or vouch for external parties.
             </p>
           </div>
 
@@ -136,6 +128,12 @@ export default function ResourcesPage() {
               className="hover:text-[var(--text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1.5 min-h-[44px] inline-flex items-center"
             >
               Check an offer
+            </Link>
+            <Link
+              href="/ask"
+              className="hover:text-[var(--text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1.5 min-h-[44px] inline-flex items-center"
+            >
+              Clear doubt
             </Link>
             <Link
               href="/privacy"

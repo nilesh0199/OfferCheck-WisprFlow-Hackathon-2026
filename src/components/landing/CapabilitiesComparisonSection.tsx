@@ -64,7 +64,7 @@ export function CapabilitiesComparisonSection() {
     <section
       id="what-you-get"
       aria-label="What OfferClara does and does not do"
-      className="py-16 sm:py-24 border-b border-[var(--border)] bg-[var(--surface)] transition-colors"
+      className="scroll-mt-16 sm:scroll-mt-20 py-16 sm:py-24 border-b border-[var(--border)] bg-[var(--surface)] transition-colors"
     >
       <Container className="space-y-12">
         <div className="max-w-2xl space-y-3">

@@ -26,10 +26,16 @@ export function LandingFooter() {
             Check an offer
           </Link>
           <Link
+            href="/ask"
+            className="hover:text-[var(--text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1.5 min-h-[44px] inline-flex items-center"
+          >
+            Clear doubt
+          </Link>
+          <Link
             href="/resources"
             className="hover:text-[var(--text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1.5 min-h-[44px] inline-flex items-center"
           >
-            Resources
+            Help and reporting
           </Link>
           <Link
             href="/privacy"

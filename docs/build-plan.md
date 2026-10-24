@@ -274,3 +274,45 @@ This phased build plan outlines the implementation roadmap for OfferClara, an in
   - 5th synthetic sample added (`example-5-phone-call-account`) featuring fictional company `KiteSpindle Business Services`; `SampleCards` renders all 5 samples.
   - Privacy policy updated on `/privacy` and in `docs/privacy-and-responsible-use.md` confirming original file names are never sent to Google or logged.
   - Offline Vitest test suites, TypeScript typecheck, ESLint, and Next.js Turbopack production build pass cleanly.
+
+---
+
+## Phase 15: Milestones M0–M8 Submission Overhaul
+- **Status:** Complete
+- **Goal:** Implement the 5-step intake wizard, 3-column master-detail results workspace, Global Command Bar, verified institutional advisories, static landing page overhaul, product rename to OfferClara, and official branding.
+- **Acceptance Criteria:**
+  - 5-step wizard (`WizardContainer`, `WizardStepper`, `Step1Offer` through `Step5Review`) on `/check` with synthetic samples A and B.
+  - Master-detail workspace with `ResultsNav`, fluid `AnalysisResults`, and `YourOfferWorkspace` with bi-directional quote linking.
+  - Institutional advisories pure matcher (`advisories.ts`, `selectAdvisories`, `OfficialAdvisoriesSection.tsx`) matching verified notices from IIT Bhubaneswar, St. Xavier's College Jaipur, and Careers360 / IIT Roorkee report.
+  - Static fast landing page overhaul with `StaticAnnotatedCard`, `WizardOverviewSection`, `CommandBarPreviewSection`, and `CapabilitiesComparisonSection`.
+  - Renamed product from OfferCheck to OfferClara across UI, metadata, constants, and logs; official logo component created.
+
+---
+
+## Phase 16: Milestones P0–P9 Navigation, Layout & Command Box Refactoring
+- **Status:** Complete
+- **Goal:** Unify global top bar navigation across all routes, implement a zero-scroll responsive slide-over sidebar, calibrate page copy, refine the check intake header with a shared clear review confirmation dialog, restrict the command bar to a voice-ready navigation box, prohibit normative employment wording in prompt and guardrails, and enforce strict link and print safety.
+- **Acceptance Criteria:**
+  - **P0 State Check:** Verified baseline test suite, located prior header in git history, identified duplicate buttons and hero copy.
+  - **P1 One Top Bar Across Every Page:** Mounted `TopBar.tsx` in `src/app/layout.tsx` across all routes (`/`, `/check`, `/resources`, `/privacy`, `/about`, 404, error) with 44px sidebar toggle button, 16px gap, unified logo + wordmark link to `/`, responsive desktop nav ($\ge 1100$px), compact theme toggle and primary check button below 1100px.
+  - **P2 Zero-Scroll Sidebar:** Built native HTML5 `<dialog id="app-sidebar">` in `Sidebar.tsx` with dynamic item height scaling (`itemHeightRem`) fitting 100dvh without vertical scrolling, clean of external vendor badges.
+  - **P3 About Page Section Order:** Ordered sections to "Why it exists", "What it does", "What it does not do", "Who made it", and "Policies and official reporting" with verified Nilesh Thipe attribution and LinkedIn/GitHub links.
+  - **P4 Help and Reporting Renaming:** Renamed resources tab and headings to "Help and reporting", added `#already-paid` anchor with scroll margin for emergency steps.
+  - **P5 Home Page Copy Refinement:** Hero headline updated to "Understand the offer. Know what to verify.", removed duplicate paragraphs and eyebrow badges, shifted hero up.
+  - **P6 Check Page Intake & Shared Clear Dialog:** Set h1 to "Check an offer", exact description without em dashes, shortened rail label to "Resources", added ghost button "Clear and start over" in wizard header row, extracted reusable `<ClearReviewDialog>` with `<dialog id="clear-review-dialog">`, and removed duplicate export buttons from `AnalysisResults.tsx`.
+  - **P7 Navigation-Only Command Box:** Refactored `matchCommand.ts` and `CommandBar.tsx` to navigation-only scope (`open/close sidebar`, `home`, `check an offer`, `help and reporting`, `about`, `privacy`, `how it works`, `what you get`, `faq`, `i paid`, `next`, `back`, `skip`, steps 1–5, `analyse`, section jumps), 2-second visual countdown with Escape cancel and Enter immediate execution, immediate clearing on unrecognised input with polite announcement, wrong-context detection, and "What can I say?" accessible help dialog. Removed answer-setting commands and "Add to offer text" flow.
+  - **P8 Link Safety, Print Styles & Normative Wording Prohibition:** Added system instruction and deterministic guardrail rejecting normative employment claims containing `standard`, `typical`, `normal`, `usual` in model-written fields; added dynamic document title `OfferClara review YYYY-MM-DD` and `print:hidden` across interactive controls; automated internal href test scanning every internal link against routes and element IDs.
+  - **P9 Documentation & Verification:** All 439 unit tests passing across 46 test files in Vitest; ESLint clean (0 errors, 0 warnings); TypeScript typecheck clean (0 errors); Next.js production build succeeded.
+
+---
+
+## Phase 17: Milestones Q0–Q5 AI Providers, Doubt Inquiry & Help/Reporting Overhaul
+- **Status:** Complete
+- **Goal:** Integrate Groq as a second text AI provider on free tier, build the "Clear doubt with AI" route (`/ask`) with tab-memory thread and strict guardrails, upgrade `/resources` with click-to-load YouTube video embeds, post-payment questionnaire, and deterministic checklist generator, enforce responsive phone usability, and update documentation.
+- **Acceptance Criteria:**
+  - **Q0 State Check:** Baseline verified clean, documented missing `/ask`, Groq integration, video embeds, and questionnaire.
+  - **Q1 Groq as Second AI Provider:** Implemented plain `fetch` client in `src/lib/ai/groq.ts` targeting model `openai/gpt-oss-120b` (low reasoning effort, max output tokens, hidden reasoning). Integrated into `runModelFallbackChain` in `src/lib/analysis/gemini.ts` as fallback after Gemini models, reserving 12 s of shared 55 s deadline, with token guard (>7,000 skipped), circuit breaker prefixed `groq:openai/gpt-oss-120b`, dynamic 429 `retry-after` cooldown, and one retry on malformed JSON. Verified that files are never sent to Groq. Updated `AI_DATA_NOTICE`, `/privacy`, `.env.example`, and `README.md`. 12 unit tests in `tests/groq.test.ts` and live test in `tests-live/groq.live.test.ts`.
+  - **Q2 Clear Doubt with AI (`/ask`):** Built interactive `/ask` route and `AskClient.tsx` featuring labelled textarea "Your question" (1,500-char counter, Ctrl/Cmd+Enter support, dictation-friendly), 4 clickable example chips, optional high-level context toggle (never sends raw text or files), up to 6 turns kept in tab memory (`SessionProvider`), calm error recovery with fallback facts, and fixed closing disclaimers. Route `/api/ask` (body cap 32 KB, separate rate limits 10/15m and 40/day) prioritizes Groq first, falling back to Gemini chain and deterministic offline fallback. Zod schema in `src/lib/ask/schema.ts`, system prompt with verbatim official facts and Hindi/English mirroring in `src/lib/ask/prompt.ts`, and guardrails dropping banned verdict words in `src/lib/ask/guardrails.ts`. Wired into `TopBar.tsx`, `Sidebar.tsx`, `LandingFooter.tsx`, `CommandBar.tsx`, `match.ts`, and `docs/voice-commands.md`. Tested in `tests/ask.test.ts`.
+  - **Q3 Help and Reporting Page Overhaul (`/resources`):** Rebuilt `/resources` with click-to-load video cards using `youtube-nocookie.com` (Video 1 `Kr-B8sAE6ek` in 16:9, Video 2 `3S47zE8cWCI` in 9:16 vertical short) with third-party cookie disclosures and external fallback links. Prominent `#already-paid` card with hash-based auto-expansion, 4 initial protective steps, and interactive 4-question questionnaire (Q1-Q4) with mutual exclusivity. Deterministic pure checklist generator `buildAfterPaymentChecklist` in `src/lib/resources/after-payment.ts` outputting non-empty groups in priority order with confirmed official sources (RBI, UIDAI, NPCI) and zero banned words. Copy checklist button with `aria-live` announcement. Tested in `tests/after-payment.test.ts` and `tests/resources.test.ts`.
+  - **Q4 Quality & Documentation Pass:** Phone checklist verified at 360, 390, 430 px without horizontal scroll. Updated `docs/privacy-and-responsible-use.md`, `docs/project-spec.md`, `docs/build-plan.md`, `docs/test-plan.md`, `docs/dev-log.md`, and `README.md`.
+  - **Q5 Live Check & Final Verification:** 477 offline tests passing across 49 test files in Vitest; ESLint clean (0 errors, 0 warnings); TypeScript typecheck clean (0 errors); Next.js production build succeeded with 14 static and dynamic routes.

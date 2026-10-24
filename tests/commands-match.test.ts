@@ -5,213 +5,237 @@ describe("cleanSpokenInput helper", () => {
   it("strips trailing punctuation and lowercases", () => {
     expect(cleanSpokenInput("  ANALYSE NOW!??  ")).toBe("analyse");
     expect(cleanSpokenInput("Step 3.")).toBe("step 3");
+    expect(cleanSpokenInput("Check an offer, please!")).toBe("check an offer");
   });
 
-  it("strips single and chained filler prefixes", () => {
+  it("strips leading filler prefixes", () => {
     expect(cleanSpokenInput("please go to step 2")).toBe("step 2");
-    expect(cleanSpokenInput("can you please open resources?")).toBe("resources");
+    expect(cleanSpokenInput("can you please open help and reporting?")).toBe("help and reporting");
     expect(cleanSpokenInput("hey take me to privacy!")).toBe("privacy");
-    expect(cleanSpokenInput("could you please switch to dark mode?")).toBe("dark mode");
-    expect(cleanSpokenInput("would you show me observations")).toBe("observations");
+    expect(cleanSpokenInput("could you please show me observations")).toBe("observations");
+    expect(cleanSpokenInput("would you please open sidebar")).toBe("sidebar");
+    expect(cleanSpokenInput("just jump to what you get")).toBe("what you get");
   });
 
-  it("handles purely filler input gracefully", () => {
+  it("handles empty or purely filler input gracefully", () => {
     expect(cleanSpokenInput("please")).toBe("");
     expect(cleanSpokenInput("hey")).toBe("");
     expect(cleanSpokenInput("can you please")).toBe("");
+    expect(cleanSpokenInput("   ")).toBe("");
   });
 });
 
-describe("matchCommand - 80+ test cases", () => {
-  // --- Group 1: Direct Wizard Step Navigation (15 tests) ---
-  it("matches step 1 correctly across variants", () => {
-    expect(matchCommand("step 1")).toEqual({ kind: "NAVIGATE_WIZARD", step: 1 });
-    expect(matchCommand("STEP ONE")).toEqual({ kind: "NAVIGATE_WIZARD", step: 1 });
-    expect(matchCommand("offer")).toEqual({ kind: "NAVIGATE_WIZARD", step: 1 });
-    expect(matchCommand("offer step")).toEqual({ kind: "NAVIGATE_WIZARD", step: 1 });
-    expect(matchCommand("first step")).toEqual({ kind: "NAVIGATE_WIZARD", step: 1 });
-  });
-
-  it("matches step 2 correctly across variants", () => {
-    expect(matchCommand("step 2")).toEqual({ kind: "NAVIGATE_WIZARD", step: 2 });
-    expect(matchCommand("please go to step 2")).toEqual({ kind: "NAVIGATE_WIZARD", step: 2 });
-    expect(matchCommand("where did it come from?")).toEqual({ kind: "NAVIGATE_WIZARD", step: 2 });
-    expect(matchCommand("source")).toEqual({ kind: "NAVIGATE_WIZARD", step: 2 });
-    expect(matchCommand("source step")).toEqual({ kind: "NAVIGATE_WIZARD", step: 2 });
-    expect(matchCommand("second step")).toEqual({ kind: "NAVIGATE_WIZARD", step: 2 });
-  });
-
-  it("matches step 3 correctly across variants", () => {
-    expect(matchCommand("step 3")).toEqual({ kind: "NAVIGATE_WIZARD", step: 3 });
-    expect(matchCommand("step three")).toEqual({ kind: "NAVIGATE_WIZARD", step: 3 });
-    expect(matchCommand("conversation")).toEqual({ kind: "NAVIGATE_WIZARD", step: 3 });
-    expect(matchCommand("what was said?")).toEqual({ kind: "NAVIGATE_WIZARD", step: 3 });
-    expect(matchCommand("messages")).toEqual({ kind: "NAVIGATE_WIZARD", step: 3 });
-    expect(matchCommand("third step")).toEqual({ kind: "NAVIGATE_WIZARD", step: 3 });
-  });
-
-  it("matches step 4 correctly across variants", () => {
-    expect(matchCommand("step 4")).toEqual({ kind: "NAVIGATE_WIZARD", step: 4 });
-    expect(matchCommand("step four")).toEqual({ kind: "NAVIGATE_WIZARD", step: 4 });
-    expect(matchCommand("money")).toEqual({ kind: "NAVIGATE_WIZARD", step: 4 });
-    expect(matchCommand("payment")).toEqual({ kind: "NAVIGATE_WIZARD", step: 4 });
-    expect(matchCommand("money and documents")).toEqual({ kind: "NAVIGATE_WIZARD", step: 4 });
-    expect(matchCommand("fees")).toEqual({ kind: "NAVIGATE_WIZARD", step: 4 });
-    expect(matchCommand("fourth step")).toEqual({ kind: "NAVIGATE_WIZARD", step: 4 });
-  });
-
-  it("matches step 5 correctly across variants", () => {
-    expect(matchCommand("step 5")).toEqual({ kind: "NAVIGATE_WIZARD", step: 5 });
-    expect(matchCommand("step five")).toEqual({ kind: "NAVIGATE_WIZARD", step: 5 });
-    expect(matchCommand("review")).toEqual({ kind: "NAVIGATE_WIZARD", step: 5 });
-    expect(matchCommand("review step")).toEqual({ kind: "NAVIGATE_WIZARD", step: 5 });
-    expect(matchCommand("summary")).toEqual({ kind: "NAVIGATE_WIZARD", step: 5 });
-    expect(matchCommand("final step")).toEqual({ kind: "NAVIGATE_WIZARD", step: 5 });
-    expect(matchCommand("last step")).toEqual({ kind: "NAVIGATE_WIZARD", step: 5 });
-  });
-
-  // --- Group 2: Relative Step Navigation (8 tests) ---
-  it("navigates next and back with context awareness", () => {
-    expect(matchCommand("next", { currentStep: 1 })).toEqual({ kind: "NAVIGATE_WIZARD", step: 2 });
-    expect(matchCommand("next step", { currentStep: 3 })).toEqual({ kind: "NAVIGATE_WIZARD", step: 4 });
-    expect(matchCommand("continue", { currentStep: 4 })).toEqual({ kind: "NAVIGATE_WIZARD", step: 5 });
-    expect(matchCommand("proceed", { currentStep: 5 })).toEqual({ kind: "NAVIGATE_WIZARD", step: 5 });
-    expect(matchCommand("back", { currentStep: 5 })).toEqual({ kind: "NAVIGATE_WIZARD", step: 4 });
-    expect(matchCommand("previous step", { currentStep: 2 })).toEqual({ kind: "NAVIGATE_WIZARD", step: 1 });
-    expect(matchCommand("go back", { currentStep: 1 })).toEqual({ kind: "NAVIGATE_WIZARD", step: 1 });
-    expect(matchCommand("next")).toEqual({ kind: "NAVIGATE_WIZARD", step: 2 }); // default when context missing
-  });
-
-  // --- Group 3: Route Navigation (12 tests) ---
-  it("navigates to application routes", () => {
-    expect(matchCommand("home")).toEqual({ kind: "NAVIGATE_ROUTE", route: "/" });
-    expect(matchCommand("landing")).toEqual({ kind: "NAVIGATE_ROUTE", route: "/" });
-    expect(matchCommand("homepage")).toEqual({ kind: "NAVIGATE_ROUTE", route: "/" });
-    expect(matchCommand("take me to main page")).toEqual({ kind: "NAVIGATE_ROUTE", route: "/" });
-
-    expect(matchCommand("check")).toEqual({ kind: "NAVIGATE_ROUTE", route: "/check" });
-    expect(matchCommand("tool")).toEqual({ kind: "NAVIGATE_ROUTE", route: "/check" });
-    expect(matchCommand("check tool")).toEqual({ kind: "NAVIGATE_ROUTE", route: "/check" });
-    expect(matchCommand("go to check page")).toEqual({ kind: "NAVIGATE_ROUTE", route: "/check" });
-
-    expect(matchCommand("resources")).toEqual({ kind: "NAVIGATE_ROUTE", route: "/resources" });
-    expect(matchCommand("helplines")).toEqual({ kind: "NAVIGATE_ROUTE", route: "/resources" });
-    expect(matchCommand("support")).toEqual({ kind: "NAVIGATE_ROUTE", route: "/resources" });
-    expect(matchCommand("privacy")).toEqual({ kind: "NAVIGATE_ROUTE", route: "/privacy" });
-    expect(matchCommand("privacy policy")).toEqual({ kind: "NAVIGATE_ROUTE", route: "/privacy" });
-    expect(matchCommand("data policy")).toEqual({ kind: "NAVIGATE_ROUTE", route: "/privacy" });
-  });
-
-  // --- Group 4: Primary Actions (14 tests) ---
-  it("recognizes analyze action phrases", () => {
-    expect(matchCommand("analyze")).toEqual({ kind: "ANALYSE" });
-    expect(matchCommand("analyse")).toEqual({ kind: "ANALYSE" });
-    expect(matchCommand("run review")).toEqual({ kind: "ANALYSE" });
-    expect(matchCommand("review offer")).toEqual({ kind: "ANALYSE" });
-    expect(matchCommand("start review")).toEqual({ kind: "ANALYSE" });
-    expect(matchCommand("check it")).toEqual({ kind: "ANALYSE" });
-    expect(matchCommand("please analyse offer!")).toEqual({ kind: "ANALYSE" });
-  });
-
-  it("recognizes clear and reset actions", () => {
-    expect(matchCommand("clear")).toEqual({ kind: "CLEAR" });
-    expect(matchCommand("clear all")).toEqual({ kind: "CLEAR" });
-    expect(matchCommand("reset")).toEqual({ kind: "CLEAR" });
-    expect(matchCommand("start over")).toEqual({ kind: "CLEAR" });
-    expect(matchCommand("can you clear everything?")).toEqual({ kind: "CLEAR" });
-  });
-
-  it("recognizes PDF export and clipboard actions", () => {
-    expect(matchCommand("save as pdf")).toEqual({ kind: "SAVE_PDF" });
-    expect(matchCommand("print")).toEqual({ kind: "SAVE_PDF" });
-    expect(matchCommand("download pdf")).toEqual({ kind: "SAVE_PDF" });
-    expect(matchCommand("copy summary")).toEqual({ kind: "COPY_SUMMARY" });
-    expect(matchCommand("copy to clipboard")).toEqual({ kind: "COPY_SUMMARY" });
-  });
-
-  // --- Group 5: Theme Toggling (6 tests) ---
-  it("recognizes theme toggles", () => {
-    expect(matchCommand("toggle theme")).toEqual({ kind: "TOGGLE_THEME" });
-    expect(matchCommand("switch theme")).toEqual({ kind: "TOGGLE_THEME" });
-    expect(matchCommand("dark mode")).toEqual({ kind: "TOGGLE_THEME" });
-    expect(matchCommand("light mode")).toEqual({ kind: "TOGGLE_THEME" });
-    expect(matchCommand("turn on dark mode")).toEqual({ kind: "TOGGLE_THEME" });
-    expect(matchCommand("turn on light mode")).toEqual({ kind: "TOGGLE_THEME" });
-  });
-
-  // --- Group 6: Section Scrolling (12 tests) ---
-  it("recognizes review sections", () => {
-    expect(matchCommand("observations")).toEqual({ kind: "SCROLL_SECTION", sectionId: "observations" });
-    expect(matchCommand("flags")).toEqual({ kind: "SCROLL_SECTION", sectionId: "observations" });
-    expect(matchCommand("concerns")).toEqual({ kind: "SCROLL_SECTION", sectionId: "observations" });
-
-    expect(matchCommand("missing details")).toEqual({ kind: "SCROLL_SECTION", sectionId: "missing-details" });
-    expect(matchCommand("what's missing")).toEqual({ kind: "SCROLL_SECTION", sectionId: "missing-details" });
-    expect(matchCommand("whats missing")).toEqual({ kind: "SCROLL_SECTION", sectionId: "missing-details" });
-
-    expect(matchCommand("questions")).toEqual({ kind: "SCROLL_SECTION", sectionId: "questions-checks" });
-    expect(matchCommand("checks")).toEqual({ kind: "SCROLL_SECTION", sectionId: "questions-checks" });
-    expect(matchCommand("questions and checks")).toEqual({ kind: "SCROLL_SECTION", sectionId: "questions-checks" });
-
-    expect(matchCommand("company research")).toEqual({ kind: "SCROLL_SECTION", sectionId: "company-research" });
-    expect(matchCommand("company check")).toEqual({ kind: "SCROLL_SECTION", sectionId: "company-research" });
-
-    expect(matchCommand("advisories")).toEqual({ kind: "SCROLL_SECTION", sectionId: "advisories" });
-    expect(matchCommand("your text")).toEqual({ kind: "SCROLL_SECTION", sectionId: "your-text" });
-  });
-
-  // --- Group 7: Sample Loading (12 tests) ---
-  it("recognizes sample loading commands", () => {
-    expect(matchCommand("sample 1")).toEqual({ kind: "LOAD_SAMPLE", sampleId: "example-1-ai-internship" });
-    expect(matchCommand("load sample 1")).toEqual({ kind: "LOAD_SAMPLE", sampleId: "example-1-ai-internship" });
-    expect(matchCommand("sample 2")).toEqual({ kind: "LOAD_SAMPLE", sampleId: "example-2-data-entry-deposit" });
-    expect(matchCommand("sample 3")).toEqual({ kind: "LOAD_SAMPLE", sampleId: "example-3-overseas-processing-fee" });
-    expect(matchCommand("sample 4")).toEqual({ kind: "LOAD_SAMPLE", sampleId: "example-4-legit-startup-internship" });
-    expect(matchCommand("sample 5")).toEqual({ kind: "LOAD_SAMPLE", sampleId: "example-5-phone-call-account" });
-    expect(matchCommand("try phone call sample")).toEqual({ kind: "LOAD_SAMPLE", sampleId: "example-5-phone-call-account" });
-    expect(matchCommand("sample 6")).toEqual({ kind: "LOAD_SAMPLE", sampleId: "example-6-skillcraft-helixbrattice" });
-    expect(matchCommand("try helix sample")).toEqual({ kind: "LOAD_SAMPLE", sampleId: "example-6-skillcraft-helixbrattice" });
-    expect(matchCommand("sample a")).toEqual({ kind: "LOAD_SAMPLE", sampleId: "full-sample-a" });
-    expect(matchCommand("try course sample")).toEqual({ kind: "LOAD_SAMPLE", sampleId: "full-sample-a" });
-    expect(matchCommand("sample b")).toEqual({ kind: "LOAD_SAMPLE", sampleId: "full-sample-b" });
-  });
-
-  // --- Group 8: Spoken Filler Variations & Punctuation (10 tests) ---
-  it("handles complex spoken sentences and punctuation gracefully", () => {
-    expect(matchCommand("Could you please show me observations?")).toEqual({
-      kind: "SCROLL_SECTION",
-      sectionId: "observations",
+describe("matchCommand - Navigation-Only Matcher (60+ tests)", () => {
+  // =========================================================================
+  // GROUP 1: Anywhere Commands (20+ tests)
+  // =========================================================================
+  describe("Anywhere commands", () => {
+    it("matches open sidebar variants", () => {
+      expect(matchCommand("open sidebar")).toEqual({ kind: "OPEN_SIDEBAR" });
+      expect(matchCommand("open menu")).toEqual({ kind: "OPEN_SIDEBAR" });
+      expect(matchCommand("show sidebar")).toEqual({ kind: "OPEN_SIDEBAR" });
+      expect(matchCommand("show menu")).toEqual({ kind: "OPEN_SIDEBAR" });
+      expect(matchCommand("please open sidebar")).toEqual({ kind: "OPEN_SIDEBAR" });
     });
-    expect(matchCommand("Can you please run review now!")).toEqual({ kind: "ANALYSE" });
-    expect(matchCommand("Hey, take me to privacy policy")).toEqual({
-      kind: "NAVIGATE_ROUTE",
-      route: "/privacy",
+
+    it("matches close sidebar variants", () => {
+      expect(matchCommand("close sidebar")).toEqual({ kind: "CLOSE_SIDEBAR" });
+      expect(matchCommand("close menu")).toEqual({ kind: "CLOSE_SIDEBAR" });
+      expect(matchCommand("hide sidebar")).toEqual({ kind: "CLOSE_SIDEBAR" });
+      expect(matchCommand("dismiss sidebar")).toEqual({ kind: "CLOSE_SIDEBAR" });
     });
-    expect(matchCommand("Would you please save as pdf?")).toEqual({ kind: "SAVE_PDF" });
-    expect(matchCommand("Just copy summary.")).toEqual({ kind: "COPY_SUMMARY" });
-    expect(matchCommand("Open up official resources")).toEqual({
-      kind: "NAVIGATE_ROUTE",
-      route: "/resources",
+
+    it("matches home page navigation variants", () => {
+      expect(matchCommand("home")).toEqual({ kind: "NAVIGATE", target: "/", label: "Home" });
+      expect(matchCommand("go to home")).toEqual({ kind: "NAVIGATE", target: "/", label: "Home" });
+      expect(matchCommand("homepage")).toEqual({ kind: "NAVIGATE", target: "/", label: "Home" });
+      expect(matchCommand("landing")).toEqual({ kind: "NAVIGATE", target: "/", label: "Home" });
+      expect(matchCommand("welcome")).toEqual({ kind: "NAVIGATE", target: "/", label: "Home" });
     });
-    expect(matchCommand("Jump to step 4...")).toEqual({ kind: "NAVIGATE_WIZARD", step: 4 });
+
+    it("matches check an offer navigation variants", () => {
+      expect(matchCommand("check an offer")).toEqual({ kind: "NAVIGATE", target: "/check", label: "Check an offer" });
+      expect(matchCommand("check offer")).toEqual({ kind: "NAVIGATE", target: "/check", label: "Check an offer" });
+      expect(matchCommand("check")).toEqual({ kind: "NAVIGATE", target: "/check", label: "Check an offer" });
+      expect(matchCommand("start check")).toEqual({ kind: "NAVIGATE", target: "/check", label: "Check an offer" });
+      expect(matchCommand("check tool")).toEqual({ kind: "NAVIGATE", target: "/check", label: "Check an offer" });
+      expect(matchCommand("please check an offer")).toEqual({ kind: "NAVIGATE", target: "/check", label: "Check an offer" });
+    });
+
+    it("matches help and reporting navigation variants", () => {
+      expect(matchCommand("help and reporting")).toEqual({ kind: "NAVIGATE", target: "/resources", label: "Help and reporting" });
+      expect(matchCommand("help")).toEqual({ kind: "NAVIGATE", target: "/resources", label: "Help and reporting" });
+      expect(matchCommand("reporting")).toEqual({ kind: "NAVIGATE", target: "/resources", label: "Help and reporting" });
+      expect(matchCommand("official resources")).toEqual({ kind: "NAVIGATE", target: "/resources", label: "Help and reporting" });
+      expect(matchCommand("resources", { page: "/" })).toEqual({ kind: "NAVIGATE", target: "/resources", label: "Help and reporting" });
+    });
+
+    it("matches about and privacy page navigation", () => {
+      expect(matchCommand("about")).toEqual({ kind: "NAVIGATE", target: "/about", label: "About" });
+      expect(matchCommand("who made this")).toEqual({ kind: "NAVIGATE", target: "/about", label: "About" });
+      expect(matchCommand("about offerclara")).toEqual({ kind: "NAVIGATE", target: "/about", label: "About" });
+      expect(matchCommand("privacy")).toEqual({ kind: "NAVIGATE", target: "/privacy", label: "Privacy" });
+      expect(matchCommand("privacy policy")).toEqual({ kind: "NAVIGATE", target: "/privacy", label: "Privacy" });
+      expect(matchCommand("data privacy")).toEqual({ kind: "NAVIGATE", target: "/privacy", label: "Privacy" });
+    });
+
+    it("matches clear doubt navigation variants", () => {
+      expect(matchCommand("ask")).toEqual({ kind: "NAVIGATE", target: "/ask", label: "Clear doubt with AI" });
+      expect(matchCommand("ask a doubt")).toEqual({ kind: "NAVIGATE", target: "/ask", label: "Clear doubt with AI" });
+      expect(matchCommand("clear doubt")).toEqual({ kind: "NAVIGATE", target: "/ask", label: "Clear doubt with AI" });
+      expect(matchCommand("clear my doubt")).toEqual({ kind: "NAVIGATE", target: "/ask", label: "Clear doubt with AI" });
+      expect(matchCommand("ask ai")).toEqual({ kind: "NAVIGATE", target: "/ask", label: "Clear doubt with AI" });
+    });
+
+    it("matches landing section anchor targets", () => {
+      expect(matchCommand("how it works")).toEqual({ kind: "NAVIGATE", target: "/#how-it-works", label: "How it works" });
+      expect(matchCommand("what you get")).toEqual({ kind: "NAVIGATE", target: "/#what-you-get", label: "What you get" });
+      expect(matchCommand("faq")).toEqual({ kind: "NAVIGATE", target: "/#faq", label: "FAQ" });
+      expect(matchCommand("frequently asked questions")).toEqual({ kind: "NAVIGATE", target: "/#faq", label: "FAQ" });
+      expect(matchCommand("questions and answers")).toEqual({ kind: "NAVIGATE", target: "/#faq", label: "FAQ" });
+    });
+
+    it("matches already paid emergency navigation", () => {
+      expect(matchCommand("i paid")).toEqual({ kind: "NAVIGATE", target: "/resources#already-paid", label: "If you have already paid" });
+      expect(matchCommand("i already paid")).toEqual({ kind: "NAVIGATE", target: "/resources#already-paid", label: "If you have already paid" });
+      expect(matchCommand("already paid")).toEqual({ kind: "NAVIGATE", target: "/resources#already-paid", label: "If you have already paid" });
+      expect(matchCommand("i have paid")).toEqual({ kind: "NAVIGATE", target: "/resources#already-paid", label: "If you have already paid" });
+      expect(matchCommand("i paid money")).toEqual({ kind: "NAVIGATE", target: "/resources#already-paid", label: "If you have already paid" });
+    });
   });
 
-  // --- Group 9: Unknown / Arbitrary Dictation (8 tests) ---
-  it("returns UNKNOWN for arbitrary dictated offer text or unknown phrases", () => {
-    const paragraph = "The recruiter called me on WhatsApp and said I have to deposit 5000 rupees today.";
-    expect(matchCommand(paragraph)).toEqual({ kind: "UNKNOWN", rawText: paragraph });
+  // =========================================================================
+  // GROUP 2: On Check Page Commands (25+ tests)
+  // =========================================================================
+  describe("On check page commands", () => {
+    const ctx = { page: "/check", step: 1 };
 
-    expect(matchCommand("")).toEqual({ kind: "UNKNOWN", rawText: "" });
-    expect(matchCommand("   ")).toEqual({ kind: "UNKNOWN", rawText: "   " });
-    expect(matchCommand("hello world")).toEqual({ kind: "UNKNOWN", rawText: "hello world" });
-    expect(matchCommand("is this a legit internship")).toEqual({
-      kind: "UNKNOWN",
-      rawText: "is this a legit internship",
+    it("matches stepper relative navigation", () => {
+      expect(matchCommand("next", ctx)).toEqual({ kind: "WIZARD_NEXT" });
+      expect(matchCommand("next step", ctx)).toEqual({ kind: "WIZARD_NEXT" });
+      expect(matchCommand("go next", ctx)).toEqual({ kind: "WIZARD_NEXT" });
+      expect(matchCommand("continue", ctx)).toEqual({ kind: "WIZARD_NEXT" });
+      expect(matchCommand("proceed", ctx)).toEqual({ kind: "WIZARD_NEXT" });
+
+      expect(matchCommand("back", ctx)).toEqual({ kind: "WIZARD_BACK" });
+      expect(matchCommand("previous", ctx)).toEqual({ kind: "WIZARD_BACK" });
+      expect(matchCommand("previous step", ctx)).toEqual({ kind: "WIZARD_BACK" });
+      expect(matchCommand("go back", ctx)).toEqual({ kind: "WIZARD_BACK" });
+
+      expect(matchCommand("skip", ctx)).toEqual({ kind: "WIZARD_SKIP" });
+      expect(matchCommand("skip step", ctx)).toEqual({ kind: "WIZARD_SKIP" });
+      expect(matchCommand("skip this step", ctx)).toEqual({ kind: "WIZARD_SKIP" });
     });
-    expect(matchCommand("please")).toEqual({ kind: "UNKNOWN", rawText: "please" });
-    expect(matchCommand("random noise 12345")).toEqual({
-      kind: "UNKNOWN",
-      rawText: "random noise 12345",
+
+    it("matches direct step navigation", () => {
+      expect(matchCommand("step 1", ctx)).toEqual({ kind: "WIZARD_GOTO_STEP", step: 1, label: "Offer" });
+      expect(matchCommand("offer", ctx)).toEqual({ kind: "WIZARD_GOTO_STEP", step: 1, label: "Offer" });
+      expect(matchCommand("offer step", ctx)).toEqual({ kind: "WIZARD_GOTO_STEP", step: 1, label: "Offer" });
+
+      expect(matchCommand("step 2", ctx)).toEqual({ kind: "WIZARD_GOTO_STEP", step: 2, label: "Source" });
+      expect(matchCommand("source", ctx)).toEqual({ kind: "WIZARD_GOTO_STEP", step: 2, label: "Source" });
+      expect(matchCommand("channel", ctx)).toEqual({ kind: "WIZARD_GOTO_STEP", step: 2, label: "Source" });
+
+      expect(matchCommand("step 3", ctx)).toEqual({ kind: "WIZARD_GOTO_STEP", step: 3, label: "Conversation" });
+      expect(matchCommand("conversation", ctx)).toEqual({ kind: "WIZARD_GOTO_STEP", step: 3, label: "Conversation" });
+      expect(matchCommand("what was said", ctx)).toEqual({ kind: "WIZARD_GOTO_STEP", step: 3, label: "Conversation" });
+
+      expect(matchCommand("step 4", ctx)).toEqual({ kind: "WIZARD_GOTO_STEP", step: 4, label: "Money and documents" });
+      expect(matchCommand("money and documents", ctx)).toEqual({ kind: "WIZARD_GOTO_STEP", step: 4, label: "Money and documents" });
+      expect(matchCommand("payment", ctx)).toEqual({ kind: "WIZARD_GOTO_STEP", step: 4, label: "Money and documents" });
+      expect(matchCommand("documents", ctx)).toEqual({ kind: "WIZARD_GOTO_STEP", step: 4, label: "Money and documents" });
+
+      expect(matchCommand("step 5", ctx)).toEqual({ kind: "WIZARD_GOTO_STEP", step: 5, label: "Review" });
+      expect(matchCommand("review step", ctx)).toEqual({ kind: "WIZARD_GOTO_STEP", step: 5, label: "Review" });
+      expect(matchCommand("final step", ctx)).toEqual({ kind: "WIZARD_GOTO_STEP", step: 5, label: "Review" });
+    });
+
+    it("matches analyse action command", () => {
+      expect(matchCommand("analyse", ctx)).toEqual({ kind: "ANALYSE" });
+      expect(matchCommand("analyze", ctx)).toEqual({ kind: "ANALYSE" });
+      expect(matchCommand("run review", ctx)).toEqual({ kind: "ANALYSE" });
+      expect(matchCommand("review offer", ctx)).toEqual({ kind: "ANALYSE" });
+      expect(matchCommand("start review", ctx)).toEqual({ kind: "ANALYSE" });
+      expect(matchCommand("check it", ctx)).toEqual({ kind: "ANALYSE" });
+      expect(matchCommand("run analysis", ctx)).toEqual({ kind: "ANALYSE" });
+    });
+
+    it("matches post-review section jumps on check page", () => {
+      expect(matchCommand("overview", ctx)).toEqual({ kind: "JUMP_SECTION", sectionId: "section-summary", label: "Overview" });
+      expect(matchCommand("observations", ctx)).toEqual({ kind: "JUMP_SECTION", sectionId: "section-observations", label: "Observations" });
+      expect(matchCommand("flags", ctx)).toEqual({ kind: "JUMP_SECTION", sectionId: "section-observations", label: "Observations" });
+      expect(matchCommand("concerns", ctx)).toEqual({ kind: "JUMP_SECTION", sectionId: "section-observations", label: "Observations" });
+      expect(matchCommand("missing details", ctx)).toEqual({ kind: "JUMP_SECTION", sectionId: "section-missing", label: "Missing details" });
+      expect(matchCommand("questions", ctx)).toEqual({ kind: "JUMP_SECTION", sectionId: "section-questions", label: "Questions and checks" });
+      expect(matchCommand("company research", ctx)).toEqual({ kind: "JUMP_SECTION", sectionId: "section-research", label: "Company research" });
+      expect(matchCommand("research the company", ctx)).toEqual({ kind: "JUMP_SECTION", sectionId: "section-research", label: "Company research" });
+      expect(matchCommand("resources", { page: "/check", hasReview: true })).toEqual({
+        kind: "JUMP_SECTION",
+        sectionId: "section-advisories",
+        label: "Resources",
+      });
+      expect(matchCommand("your text", ctx)).toEqual({ kind: "JUMP_SECTION", sectionId: "section-your-text", label: "Your text" });
+      expect(matchCommand("my text", ctx)).toEqual({ kind: "JUMP_SECTION", sectionId: "section-your-text", label: "Your text" });
+      expect(matchCommand("edit my answers", ctx)).toEqual({ kind: "EDIT_ANSWERS" });
+    });
+  });
+
+  // =========================================================================
+  // GROUP 3: Wrong Context Rules (12+ tests)
+  // =========================================================================
+  describe("Wrong Context handling", () => {
+    it("returns WRONG_CONTEXT when check-page commands are used on landing page", () => {
+      const homeCtx = { page: "/" };
+      expect(matchCommand("next", homeCtx)).toEqual({ kind: "WRONG_CONTEXT", hint: "That command works on the check page." });
+      expect(matchCommand("back", homeCtx)).toEqual({ kind: "WRONG_CONTEXT", hint: "That command works on the check page." });
+      expect(matchCommand("skip", homeCtx)).toEqual({ kind: "WRONG_CONTEXT", hint: "That command works on the check page." });
+      expect(matchCommand("step 3", homeCtx)).toEqual({ kind: "WRONG_CONTEXT", hint: "That command works on the check page." });
+      expect(matchCommand("analyse", homeCtx)).toEqual({ kind: "WRONG_CONTEXT", hint: "That command works on the check page." });
+      expect(matchCommand("observations", homeCtx)).toEqual({ kind: "WRONG_CONTEXT", hint: "That command works on the check page." });
+      expect(matchCommand("missing details", homeCtx)).toEqual({ kind: "WRONG_CONTEXT", hint: "That command works on the check page." });
+      expect(matchCommand("questions", homeCtx)).toEqual({ kind: "WRONG_CONTEXT", hint: "That command works on the check page." });
+      expect(matchCommand("edit my answers", homeCtx)).toEqual({ kind: "WRONG_CONTEXT", hint: "That command works on the check page." });
+    });
+
+    it("returns WRONG_CONTEXT when check-page commands are used on resources or about", () => {
+      expect(matchCommand("next", { page: "/resources" })).toEqual({ kind: "WRONG_CONTEXT", hint: "That command works on the check page." });
+      expect(matchCommand("step 2", { page: "/about" })).toEqual({ kind: "WRONG_CONTEXT", hint: "That command works on the check page." });
+      expect(matchCommand("analyse", { page: "/privacy" })).toEqual({ kind: "WRONG_CONTEXT", hint: "That command works on the check page." });
+    });
+  });
+
+  // =========================================================================
+  // GROUP 4: Negatives, Removed Features & Unknown Input (15+ tests)
+  // =========================================================================
+  describe("Removed features and arbitrary text return UNKNOWN", () => {
+    it("returns UNKNOWN for removed answer-setting commands", () => {
+      expect(matchCommand("telegram")).toEqual({ kind: "UNKNOWN", rawText: "telegram" });
+      expect(matchCommand("whatsapp")).toEqual({ kind: "UNKNOWN", rawText: "whatsapp" });
+      expect(matchCommand("yes i applied")).toEqual({ kind: "UNKNOWN", rawText: "yes i applied" });
+      expect(matchCommand("no i did not apply")).toEqual({ kind: "UNKNOWN", rawText: "no i did not apply" });
+      expect(matchCommand("they asked for 5000")).toEqual({ kind: "UNKNOWN", rawText: "they asked for 5000" });
+      expect(matchCommand("aadhaar card")).toEqual({ kind: "UNKNOWN", rawText: "aadhaar card" });
+    });
+
+    it("returns UNKNOWN for removed utility commands (PDF, summary, clear, theme, samples)", () => {
+      expect(matchCommand("save as pdf")).toEqual({ kind: "UNKNOWN", rawText: "save as pdf" });
+      expect(matchCommand("copy summary")).toEqual({ kind: "UNKNOWN", rawText: "copy summary" });
+      expect(matchCommand("clear")).toEqual({ kind: "UNKNOWN", rawText: "clear" });
+      expect(matchCommand("clear all")).toEqual({ kind: "UNKNOWN", rawText: "clear all" });
+      expect(matchCommand("start over")).toEqual({ kind: "UNKNOWN", rawText: "start over" });
+      expect(matchCommand("toggle theme")).toEqual({ kind: "UNKNOWN", rawText: "toggle theme" });
+      expect(matchCommand("dark mode")).toEqual({ kind: "UNKNOWN", rawText: "dark mode" });
+      expect(matchCommand("sample 1")).toEqual({ kind: "UNKNOWN", rawText: "sample 1" });
+      expect(matchCommand("load sample")).toEqual({ kind: "UNKNOWN", rawText: "load sample" });
+    });
+
+    it("returns UNKNOWN for arbitrary dictated offer text or questions", () => {
+      const paragraph = "The HR emailed me from gmail.com and asked for an upfront security deposit of 2000 rupees.";
+      expect(matchCommand(paragraph)).toEqual({ kind: "UNKNOWN", rawText: paragraph });
+      expect(matchCommand("Is this company real?")).toEqual({ kind: "UNKNOWN", rawText: "Is this company real?" });
+      expect(matchCommand("Hello world")).toEqual({ kind: "UNKNOWN", rawText: "Hello world" });
+      expect(matchCommand("")).toEqual({ kind: "UNKNOWN", rawText: "" });
+      expect(matchCommand("   ")).toEqual({ kind: "UNKNOWN", rawText: "   " });
     });
   });
 });

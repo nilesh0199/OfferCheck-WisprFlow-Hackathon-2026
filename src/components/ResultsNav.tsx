@@ -57,7 +57,7 @@ export function ResultsNav({ items }: ResultsNavProps) {
   return (
     <nav
       aria-label="Review sections navigation"
-      className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-xs space-y-2 sticky top-20 transition-colors"
+      className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-xs space-y-2 sticky top-20 transition-colors print:hidden"
     >
       <div className="border-b border-[var(--border)] pb-2.5 px-2">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">

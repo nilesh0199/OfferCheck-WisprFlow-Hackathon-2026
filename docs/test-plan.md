@@ -1,7 +1,7 @@
 # Test Plan: OfferClara
 
 This document tracks all implemented, live, and planned automated tests for OfferClara across the development phases.
-- **Implemented**: Automated offline unit and integration tests active in Vitest (`npm run test`).
+- **Implemented**: Automated offline unit and integration tests active in Vitest (`npm test` — **477 tests passing across 49 test files as of 24 Oct 2026**).
 - **Manual / live**: Live test cases in `tests-live/analyze.live.test.ts` executed via `npm run test:live` (requires `GEMINI_API_KEY`). These are defined and ready to execute when an API key is supplied, without claiming they have been run in continuous offline verification.
 - **Planned**: Tests scheduled for implementation in subsequent phases.
 
@@ -355,6 +355,18 @@ This document tracks all implemented, live, and planned automated tests for Offe
 | `privacy: displays Last updated 22 Oct 2026 timestamp` | Verifies explicit update timestamp is present | Implemented |
 | `privacy: zero prohibited verdict words in privacy page content` | Verifies absence of 'safe', 'verified', 'legit', 'scam', 'fraud' as verdicts | Implemented |
 | `privacy: UI navigation and footer elements link directly to /privacy` | Verifies all UI links point to /privacy instead of markdown files | Implemented |
+| `groq: plain fetch client and token estimation` | Verifies Groq fetch headers, model id, token estimation, and error mapping | Implemented |
+| `groq: fallback chain integration in analyzeOfferText` | Verifies Groq runs after Gemini failures, respects 12s reserve, and handles 429 cooldown | Implemented |
+| `groq: token guard skips Groq when estimate > 7000` | Verifies large payloads skip Groq and preserve original Gemini error | Implemented |
+| `groq: live synthetic evaluation (tests-live/groq.live.test.ts)` | Live execution through Groq fallback verifying latency, JSON validity, and quotes | Manual / live |
+| `ask: AskResponseSchema validation and enum enforcement` | Verifies Zod schema parsing, language enum, and resource id constraints | Implemented |
+| `ask: guardrails drop banned verdict words and overclaiming` | Verifies detection of scam/fraud/safe/legit verdicts and strips invalid content | Implemented |
+| `ask: deterministic offline fallback in English and Hindi` | Verifies zero-failure calm fallback response based on official advisories | Implemented |
+| `ask: rate limiter separate namespace and sliding window` | Verifies independent askRateLimiter enforcing 10/15m and 40/day limits | Implemented |
+| `after-payment: mutual exclusivity normalization for Q2 and Q4` | Verifies nothing_yet and nothing_sensitive are mutually exclusive with active options | Implemented |
+| `after-payment: priority rules and section order` | Verifies doNow, keepEvidence, askOrCheck, report, and protectAccounts order | Implemented |
+| `after-payment: exhaustive option space property check and banned words audit` | Verifies all 400 answer combinations produce valid checklists with zero banned words | Implemented |
+| `resources: click-to-load YouTube embeds and questionnaire questions` | Verifies youtube-nocookie host, lazy loading, #already-paid anchor, and questionnaire | Implemented |
 | `UI: Bi-directional evidence linking between observation cards and offer viewer lines` | Manual check that hovering/focusing observation highlights line in viewer and clicking quote scrolls to observation | Manual |
 | `UI: Widescreen fluid container scaling up to 2000px without horizontal overflow` | Manual check verifying fluid container clamping across mobile, tablet, desktop, and ultra-wide displays | Manual |
 | `UI: Mobile bottom action bar on viewports <640px with safe area insets` | Manual check verifying sticky bottom bar renders with proper touch targets and safe area padding | Manual |

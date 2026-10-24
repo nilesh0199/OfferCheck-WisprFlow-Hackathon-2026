@@ -14,6 +14,13 @@ import { parseModelOutput } from "./validate-result";
 import { validateAnalysis } from "./validate-result";
 import { SYSTEM_INSTRUCTION, buildUserContent } from "./prompt";
 import { ModelCircuitBreaker, defaultCircuitBreaker } from "./model-health";
+import {
+  callGroqChat,
+  estimateGroqTokens,
+  GROQ_DEFAULT_MODEL,
+  GROQ_DEADLINE_RESERVE_MS,
+  GROQ_TOKEN_BUDGET_CAP,
+} from "@/lib/ai/groq";
 
 export type AnalyzeErrorCode =
   | "EMPTY_INPUT"
@@ -91,6 +98,9 @@ export interface AnalyzeOfferDeps {
   perAttemptTimeoutMs?: number;
   thinkingLevel?: string;
   circuitBreaker?: ModelCircuitBreaker;
+  groqApiKey?: string;
+  groqModel?: string;
+  groqFetch?: typeof fetch;
 }
 
 export interface ModelThinkingSpec {
@@ -377,6 +387,7 @@ export interface FallbackChainParams<T> {
   buildInput: (model: string) => unknown;
   parseOutput: (rawOutput: string | null | undefined) => { ok: true; data: T } | { ok: false; error: string };
   actionNoun?: string;
+  deadlineReserveMs?: number;
 }
 
 export type FallbackChainResult<T> =
@@ -413,6 +424,7 @@ export async function runModelFallbackChain<T>({
   buildInput,
   parseOutput,
   actionNoun = "review",
+  deadlineReserveMs = 0,
 }: FallbackChainParams<T>): Promise<FallbackChainResult<T>> {
   const startTime = Date.now();
   const deadlineTimestamp = startTime + overallDeadlineMs;
@@ -428,16 +440,16 @@ export async function runModelFallbackChain<T>({
     const now = Date.now();
     const timeRemaining = deadlineTimestamp - now;
 
-    // Check shared deadline before launching attempt
-    if (timeRemaining <= MIN_REMAINING_TIME_FOR_ATTEMPT_MS) {
+    // Check shared deadline before launching attempt (respecting optional reserve for downstream fallbacks)
+    if (timeRemaining <= MIN_REMAINING_TIME_FOR_ATTEMPT_MS + deadlineReserveMs) {
       deadlineExhausted = true;
       break;
     }
 
-    // Per-attempt timeout = min(cap, time remaining minus safety margin)
+    // Per-attempt timeout = min(cap, time remaining minus reserve minus safety margin)
     const perAttemptTimeout = Math.min(
       perAttemptTimeoutCap,
-      Math.max(0, timeRemaining - 1500)
+      Math.max(0, timeRemaining - deadlineReserveMs - 1500)
     );
 
     if (perAttemptTimeout < 1000) {
@@ -712,9 +724,24 @@ export async function analyzeOfferText(
     };
   }
 
-  // 2. API Key and configuration check
+  // 2. Timing, circuit breaker, and provider configuration check
+  const startTime = Date.now();
+  const overallDeadlineMs = deps?.overallDeadlineMs ?? OVERALL_DEADLINE_MS;
+  const perAttemptTimeoutCap =
+    deps?.perAttemptTimeoutMs ?? PER_ATTEMPT_TIMEOUT_CAP_MS;
+  const thinkingLevelEnv =
+    deps?.thinkingLevel ?? process.env.GEMINI_THINKING_LEVEL;
+  const breaker = deps?.circuitBreaker ?? defaultCircuitBreaker;
+
   const apiKey = deps?.apiKey ?? process.env.GEMINI_API_KEY;
-  if (!apiKey || !apiKey.trim()) {
+  const groqApiKey = deps?.groqApiKey ?? process.env.GROQ_API_KEY;
+  const groqModel = deps?.groqModel ?? process.env.GROQ_MODEL ?? GROQ_DEFAULT_MODEL;
+  const groqModelId = `groq:${groqModel}`;
+  const isGroqConfigured = Boolean(groqApiKey && groqApiKey.trim());
+  const isGroqAvailable = isGroqConfigured && breaker.isModelAvailable(groqModelId);
+  const deadlineReserveMs = isGroqAvailable ? GROQ_DEADLINE_RESERVE_MS : 0;
+
+  if ((!apiKey || !apiKey.trim()) && !isGroqConfigured) {
     return {
       ok: false,
       code: "NOT_CONFIGURED",
@@ -725,62 +752,264 @@ export async function analyzeOfferText(
     };
   }
 
-  // Model chain parsing
-  const rawModels =
-    deps?.modelChain && deps.modelChain.length > 0
-      ? deps.modelChain
-          .map((m) => m.trim())
-          .filter(Boolean)
-          .slice(0, MAX_MODEL_ATTEMPTS)
-      : deps?.modelName
-        ? [deps.modelName.trim()]
-        : parseModelChain(process.env.GEMINI_MODELS, process.env.GEMINI_MODEL);
+  let chainResult: FallbackChainResult<ModelOutput> | undefined;
 
-  const breaker = deps?.circuitBreaker ?? defaultCircuitBreaker;
-  const { modelsToTry } = breaker.filterModels(rawModels);
-  const models = modelsToTry.slice(0, MAX_MODEL_ATTEMPTS);
+  // Run Gemini model chain if Gemini is configured
+  if (apiKey && apiKey.trim()) {
+    // Model chain parsing
+    const rawModels =
+      deps?.modelChain && deps.modelChain.length > 0
+        ? deps.modelChain
+            .map((m) => m.trim())
+            .filter(Boolean)
+            .slice(0, MAX_MODEL_ATTEMPTS)
+        : deps?.modelName
+          ? [deps.modelName.trim()]
+          : parseModelChain(process.env.GEMINI_MODELS, process.env.GEMINI_MODEL);
 
-  const overallDeadlineMs = deps?.overallDeadlineMs ?? OVERALL_DEADLINE_MS;
-  const perAttemptTimeoutCap =
-    deps?.perAttemptTimeoutMs ?? PER_ATTEMPT_TIMEOUT_CAP_MS;
-  const thinkingLevelEnv =
-    deps?.thinkingLevel ?? process.env.GEMINI_THINKING_LEVEL;
+    const { modelsToTry } = breaker.filterModels(rawModels);
+    const models = modelsToTry.slice(0, MAX_MODEL_ATTEMPTS);
 
-  // Set up model client using Google GenAI SDK Interactions API
-  let client: GeminiModelClient;
-  if (deps?.client) {
-    client = deps.client;
-  } else {
-    const { GoogleGenAI } = await import("@google/genai");
-    const ai = new GoogleGenAI({ apiKey });
-    client = ai as unknown as GeminiModelClient;
+    // Set up model client using Google GenAI SDK Interactions API
+    let client: GeminiModelClient;
+    if (deps?.client) {
+      client = deps.client;
+    } else {
+      const { GoogleGenAI } = await import("@google/genai");
+      const ai = new GoogleGenAI({ apiKey });
+      client = ai as unknown as GeminiModelClient;
+    }
+
+    chainResult = await runModelFallbackChain<ModelOutput>({
+      client,
+      models,
+      overallDeadlineMs,
+      perAttemptTimeoutCap,
+      thinkingLevelEnv,
+      circuitBreaker: breaker,
+      maxOutputTokens: MAX_OUTPUT_TOKENS,
+      systemInstruction: SYSTEM_INSTRUCTION,
+      responseSchema: GEMINI_RESPONSE_SCHEMA,
+      buildInput: () => buildUserContent(trimmed),
+      parseOutput: parseModelOutput,
+      actionNoun: "review",
+      deadlineReserveMs,
+    });
+
+    if (chainResult.ok) {
+      const analysis = validateAnalysis(chainResult.data, text);
+      return {
+        ok: true,
+        analysis,
+        modelUsed: chainResult.modelUsed,
+        attempts: chainResult.attempts,
+        rawOutputForDebug: chainResult.rawOutputForDebug,
+      };
+    }
   }
 
-  const chainResult = await runModelFallbackChain<ModelOutput>({
-    client,
-    models,
-    overallDeadlineMs,
-    perAttemptTimeoutCap,
-    thinkingLevelEnv,
-    circuitBreaker: breaker,
-    maxOutputTokens: MAX_OUTPUT_TOKENS,
-    systemInstruction: SYSTEM_INSTRUCTION,
-    responseSchema: GEMINI_RESPONSE_SCHEMA,
-    buildInput: () => buildUserContent(trimmed),
-    parseOutput: parseModelOutput,
-    actionNoun: "review",
-  });
+  // If Gemini failed (or was not configured), attempt Groq fallback if configured and eligible
+  if (isGroqConfigured && breaker.isModelAvailable(groqModelId)) {
+    const timeRemaining = startTime + overallDeadlineMs - Date.now();
+    const tokenEstimate = estimateGroqTokens(SYSTEM_INSTRUCTION, trimmed, MAX_OUTPUT_TOKENS);
 
-  if (!chainResult.ok) {
+    if (
+      tokenEstimate <= GROQ_TOKEN_BUDGET_CAP &&
+      timeRemaining >= MIN_REMAINING_TIME_FOR_ATTEMPT_MS
+    ) {
+      const attempts = chainResult ? [...chainResult.attempts] : [];
+      const groqFetch = deps?.groqFetch ?? fetch;
+
+      // Allow 1 retry on invalid JSON schema output if deadline permits
+      const maxGroqAttempts = 2;
+      for (let attemptIdx = 0; attemptIdx < maxGroqAttempts; attemptIdx++) {
+        const attemptNow = Date.now();
+        const remainingForGroq = startTime + overallDeadlineMs - attemptNow;
+        if (remainingForGroq <= MIN_REMAINING_TIME_FOR_ATTEMPT_MS) {
+          break;
+        }
+
+        const groqTimeoutMs = Math.min(
+          perAttemptTimeoutCap,
+          Math.max(1000, remainingForGroq - 1000)
+        );
+
+        const controller = new AbortController();
+        let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          timeoutHandle = setTimeout(() => {
+            try {
+              controller.abort();
+            } catch {}
+            const err = new Error("Request timed out");
+            err.name = "TimeoutError";
+            reject(err);
+          }, groqTimeoutMs);
+        });
+
+        const attemptStart = Date.now();
+        try {
+          const groqPromise = callGroqChat({
+            messages: [
+              { role: "system", content: SYSTEM_INSTRUCTION },
+              { role: "user", content: buildUserContent(trimmed) },
+            ],
+            jsonSchema: GEMINI_RESPONSE_SCHEMA as Record<string, unknown>,
+            maxOutputTokens: MAX_OUTPUT_TOKENS,
+            reasoningEffort: "low",
+            model: groqModel,
+            apiKey: groqApiKey,
+            signal: controller.signal,
+            fetchFn: groqFetch,
+          });
+
+          const groqRes = await Promise.race([groqPromise, timeoutPromise]);
+          const elapsedMs = Date.now() - attemptStart;
+
+          if (!groqRes.ok) {
+            const outcomeCode: AnalyzeErrorCode =
+              groqRes.code === "RATE_LIMITED"
+                ? "RATE_LIMITED"
+                : groqRes.code === "NOT_CONFIGURED"
+                ? "NOT_CONFIGURED"
+                : groqRes.code === "TIMEOUT"
+                ? "TIMEOUT"
+                : "UPSTREAM_ERROR";
+
+            const httpStatus =
+              groqRes.httpStatus ?? (outcomeCode === "RATE_LIMITED" ? 429 : 502);
+
+            logSafeAttemptError(
+              outcomeCode,
+              httpStatus,
+              attempts.length + 1,
+              groqModelId,
+              elapsedMs,
+              groqRes.message
+            );
+
+            if (outcomeCode === "RATE_LIMITED") {
+              const cooldownMs = (groqRes.retryAfterSeconds ?? 60) * 1000;
+              breaker.recordFailure(groqModelId, "RATE_LIMITED", 429, undefined, cooldownMs);
+            } else if (outcomeCode === "TIMEOUT") {
+              breaker.recordFailure(groqModelId, "TIMEOUT", 504);
+            } else if (outcomeCode === "UPSTREAM_ERROR") {
+              breaker.recordFailure(groqModelId, "UPSTREAM_ERROR", httpStatus);
+            }
+
+            attempts.push({
+              model: groqModelId,
+              outcome: outcomeCode,
+              httpStatus,
+              elapsedMs,
+              error: groqRes.message,
+            });
+
+            break;
+          }
+
+          // Parse model output into structured schema
+          const parseResult = parseModelOutput(groqRes.content);
+          if (!parseResult.ok) {
+            logSafeAttemptError(
+              "INVALID_MODEL_OUTPUT",
+              502,
+              attempts.length + 1,
+              groqModelId,
+              elapsedMs,
+              parseResult.error
+            );
+            attempts.push({
+              model: groqModelId,
+              outcome: "INVALID_MODEL_OUTPUT",
+              httpStatus: 502,
+              elapsedMs,
+              error: parseResult.error,
+            });
+
+            const timeAfterParse = startTime + overallDeadlineMs - Date.now();
+            if (attemptIdx === 0 && timeAfterParse >= 5000) {
+              continue;
+            }
+
+            breaker.recordFailure(groqModelId, "INVALID_MODEL_OUTPUT", 502);
+            break;
+          }
+
+          // Success on Groq
+          breaker.recordSuccess(groqModelId);
+          attempts.push({
+            model: groqModelId,
+            outcome: "SUCCESS",
+            httpStatus: 200,
+            elapsedMs,
+          });
+
+          const validated = validateAnalysis(parseResult.data, text);
+          return {
+            ok: true,
+            analysis: validated,
+            modelUsed: groqModelId,
+            attempts,
+            rawOutputForDebug: groqRes.content,
+          };
+        } catch (err: unknown) {
+          const elapsedMs = Date.now() - attemptStart;
+          const isTimeout = isTimeoutError(err);
+          const outcomeCode: AnalyzeErrorCode = isTimeout ? "TIMEOUT" : "UPSTREAM_ERROR";
+          const httpStatus = isTimeout ? 504 : 502;
+
+          logSafeAttemptError(
+            outcomeCode,
+            httpStatus,
+            attempts.length + 1,
+            groqModelId,
+            elapsedMs,
+            (err as Error)?.message
+          );
+
+          breaker.recordFailure(groqModelId, outcomeCode, httpStatus);
+          attempts.push({
+            model: groqModelId,
+            outcome: outcomeCode,
+            httpStatus,
+            elapsedMs,
+            error: String((err as Error)?.message || err),
+          });
+          break;
+        } finally {
+          if (timeoutHandle) {
+            clearTimeout(timeoutHandle);
+          }
+        }
+      }
+
+      // If Groq attempts failed, determine final error code across all attempts
+      const finalError = determineFinalErrorCode(
+        attempts,
+        startTime + overallDeadlineMs - Date.now() <= 0,
+        "review"
+      );
+      return {
+        ok: false,
+        code: finalError.code,
+        message: finalError.message,
+        httpStatus: finalError.httpStatus,
+        attempts,
+      };
+    }
+  }
+
+  // If Groq was not attempted, return the Gemini failure result (or NOT_CONFIGURED)
+  if (chainResult && !chainResult.ok) {
     return chainResult;
   }
 
-  const analysis = validateAnalysis(chainResult.data, text);
   return {
-    ok: true,
-    analysis,
-    modelUsed: chainResult.modelUsed,
-    attempts: chainResult.attempts,
-    rawOutputForDebug: chainResult.rawOutputForDebug,
+    ok: false,
+    code: "NOT_CONFIGURED",
+    message: "Offer review service is currently unavailable. Please try again later.",
+    httpStatus: 500,
+    attempts: [],
   };
 }

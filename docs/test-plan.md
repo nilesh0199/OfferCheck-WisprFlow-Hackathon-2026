@@ -1,6 +1,6 @@
-# Test Plan: OfferCheck
+# Test Plan: OfferClara
 
-This document tracks all implemented, live, and planned automated tests for OfferCheck across the development phases.
+This document tracks all implemented, live, and planned automated tests for OfferClara across the development phases.
 - **Implemented**: Automated offline unit and integration tests active in Vitest (`npm run test`).
 - **Manual / live**: Live test cases in `tests-live/analyze.live.test.ts` executed via `npm run test:live` (requires `GEMINI_API_KEY`). These are defined and ready to execute when an API key is supplied, without claiming they have been run in continuous offline verification.
 - **Planned**: Tests scheduled for implementation in subsequent phases.
@@ -108,7 +108,7 @@ This document tracks all implemented, live, and planned automated tests for Offe
 | `highlights: clamps out-of-range spans and ignores invalid/reversed spans` | Verifies negative starts clamped to 0, over-length ends clamped to text length, reversed spans ignored | Implemented |
 | `highlights: preserves exact character offsets with emoji and Devanagari text before spans` | Verifies multi-byte UTF-16 character offsets correctly slice matching text | Implemented |
 | `highlights: handles out-of-order spans and sorts them` | Verifies unordered input spans are processed in ascending offset order | Implemented |
-| `summary: contains the disclaimer and title` | Verifies generated summary contains 'OfferCheck Review Summary' and the exact standard disclaimer | Implemented |
+| `summary: contains the disclaimer and title` | Verifies generated summary contains 'OfferClara Review Summary' and the exact standard disclaimer | Implemented |
 | `summary: contains quotes copied exactly character-for-character` | Verifies concern quotes and observations appear character-for-character in the summary | Implemented |
 | `summary: contains missing information and verification questions` | Verifies missing info topics and numbered verification questions appear in summary | Implemented |
 | `summary: contains limits and note on dropped unverified items` | Verifies review limits and dropped item warnings appear in the plain-text summary | Implemented |

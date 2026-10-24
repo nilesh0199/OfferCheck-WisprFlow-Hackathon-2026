@@ -2,70 +2,20 @@ import React from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Container } from "@/components/Container";
-import { LogoIcon, GitHubIcon, ExternalLinkIcon } from "@/components/Icons";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { TopNav } from "@/components/TopNav";
+import { GitHubIcon, ExternalLinkIcon } from "@/components/Icons";
 import { APP_NAME, AI_DATA_NOTICE, AI_FILE_NOTICE } from "@/lib/config";
 
 export const metadata: Metadata = {
   title: `Privacy and responsible data use — ${APP_NAME}`,
   description:
-    "How your information is processed, what is sent to external services, and what OfferCheck does not store.",
+    "How your information is processed, what is sent to external services, and what OfferClara does not store.",
 };
 
 export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col justify-between overflow-x-hidden transition-colors">
-      {/* Navigation matching /resources */}
-      <nav
-        aria-label="Privacy page navigation"
-        className="sticky top-0 z-30 w-full border-b border-[var(--border)] bg-[var(--surface)]/95 backdrop-blur-md"
-      >
-        <Container className="h-14 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 font-bold text-base tracking-tight text-[var(--text)] py-1 px-2 -ml-2 rounded-lg outline-none hover:opacity-90 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
-            >
-              <LogoIcon className="w-5 h-5 text-[var(--accent)] shrink-0" />
-              <span>{APP_NAME}</span>
-            </Link>
-          </div>
-
-          <div className="flex items-center gap-4 text-xs font-medium text-[var(--text-muted)]">
-            <Link
-              href="/"
-              className="hover:text-[var(--text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 px-1.5"
-            >
-              Home
-            </Link>
-            <Link
-              href="/resources"
-              className="hover:text-[var(--text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 px-1.5"
-            >
-              Resources
-            </Link>
-            <Link
-              href="/check"
-              className="hover:text-[var(--text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 px-1.5 font-semibold text-[var(--color-primary)]"
-            >
-              Check an offer
-            </Link>
-            <a
-              href="https://github.com/nilesh0199/OfferCheck-WisprFlow-Hackathon-2026"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 hover:text-[var(--text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 px-1.5"
-              aria-label="GitHub repository (opens in a new tab)"
-            >
-              <GitHubIcon className="w-4 h-4" />
-              <span className="hidden sm:inline">GitHub</span>
-              <ExternalLinkIcon className="w-3 h-3 opacity-60" />
-            </a>
-
-            <ThemeToggle />
-          </div>
-        </Container>
-      </nav>
+      <TopNav />
 
       {/* Main Content */}
       <main className="flex-1 py-8 sm:py-12 space-y-12">
@@ -80,7 +30,7 @@ export default function PrivacyPage() {
               Privacy and responsible data use
             </h1>
             <p className="text-sm sm:text-base text-[var(--text-muted)] leading-relaxed max-w-2xl mx-auto">
-              How your information is processed when you use OfferCheck, what is sent to external services, and what remains in your browser.
+              How your information is processed when you use OfferClara, what is sent to external services, and what remains in your browser.
             </p>
             <p className="text-xs text-[var(--text-muted)] pt-1 font-mono">
               Last updated 22 Oct 2026
@@ -111,12 +61,12 @@ export default function PrivacyPage() {
                   If you choose to use the independent company research helper, the generated search prompt contains only confirmed company details (such as organisation name, website, and location) and is copied by you into Perplexity, an external service with its own terms and privacy policy. Raw offer letters are never included in the research prompt.
                 </p>
                 <p>
-                  OfferCheck is hosted on Vercel, which processes incoming web requests and maintains standard operational infrastructure logs under its own privacy policy.
+                  OfferClara is hosted on Vercel, which processes incoming web requests and maintains standard operational infrastructure logs under its own privacy policy.
                 </p>
               </div>
             </section>
 
-            {/* Section 2: What OfferCheck does not store */}
+            {/* Section 2: What OfferClara does not store */}
             <section
               id="what-we-do-not-store"
               aria-labelledby="heading-store"
@@ -126,11 +76,11 @@ export default function PrivacyPage() {
                 id="heading-store"
                 className="text-lg sm:text-xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]"
               >
-                What OfferCheck does not store
+                What OfferClara does not store
               </h2>
               <div className="space-y-3 text-sm text-[var(--text-muted)] leading-relaxed">
                 <p>
-                  OfferCheck operates statelessly without persistent storage:
+                  OfferClara operates statelessly without persistent storage:
                 </p>
                 <ul className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm">
                   <li>
@@ -232,9 +182,9 @@ export default function PrivacyPage() {
               </div>
             </section>
 
-            {/* Section 6: What OfferCheck cannot do */}
+            {/* Section 6: What OfferClara cannot do */}
             <section
-              id="what-offercheck-cannot-do"
+              id="what-offerclara-cannot-do"
               aria-labelledby="heading-cannot"
               className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 sm:p-8 space-y-4 shadow-xs"
             >
@@ -242,18 +192,18 @@ export default function PrivacyPage() {
                 id="heading-cannot"
                 className="text-lg sm:text-xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]"
               >
-                What OfferCheck cannot do
+                What OfferClara cannot do
               </h2>
               <div className="space-y-3 text-sm text-[var(--text-muted)] leading-relaxed">
                 <p>
-                  OfferCheck is an automated review assistant designed for preliminary textual evaluation. It has strict operational boundaries:
+                  OfferClara is an automated review assistant designed for preliminary textual evaluation. It has strict operational boundaries:
                 </p>
                 <ul className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm">
                   <li>
                     <strong>Reviews supplied text only:</strong> The review evaluates solely the wording provided in the offer message.
                   </li>
                   <li>
-                    <strong>Cannot confirm that a sender is genuine:</strong> OfferCheck cannot verify whether an email sender legitimately represents the claimed employer, whether a company is legally incorporated, or whether an identity has been forged.
+                    <strong>Cannot confirm that a sender is genuine:</strong> OfferClara cannot verify whether an email sender legitimately represents the claimed employer, whether a company is legally incorporated, or whether an identity has been forged.
                   </li>
                   <li>
                     <strong>Not legal advice:</strong> Analysis findings, checklists, and suggested questions are informational prompts for self-advocacy and due diligence, not legal or employment counsel.
@@ -323,6 +273,12 @@ export default function PrivacyPage() {
               className="hover:text-[var(--text)] underline underline-offset-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1.5 min-h-[44px] inline-flex items-center"
             >
               Privacy
+            </Link>
+            <Link
+              href="/about"
+              className="hover:text-[var(--text)] underline underline-offset-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1.5 min-h-[44px] inline-flex items-center"
+            >
+              About
             </Link>
             <a
               href="https://github.com/nilesh0199/OfferCheck-WisprFlow-Hackathon-2026"

@@ -1,7 +1,7 @@
-# OfferCheck Design Brief
+# OfferClara Design Brief
 
 ## 1. Product Identity: The Annotated Document
-OfferCheck is a calm, honest review assistant for students and first-time job seekers receiving internship or entry-level job offers. Rather than behaving like an automated judging machine or AI oracle, its visual metaphor is a desk with an **annotated document**: a letter in the margins, real line numbers, high-contrast text, and a physical highlighter pen marking specific phrases of evidence. It renders observations with neutral forensic precision, avoiding alarmist verdicts or false assurances.
+OfferClara is a calm, honest review assistant for students and first-time job seekers receiving internship or entry-level job offers. Rather than behaving like an automated judging machine or AI oracle, its visual metaphor is a desk with an **annotated document**: a letter in the margins, real line numbers, high-contrast text, and a physical highlighter pen marking specific phrases of evidence. It renders observations with neutral forensic precision, avoiding alarmist verdicts or false assurances.
 
 ## 2. Typography
 - **UI & Body**: `IBM Plex Sans` (400, 500, 600) — engineering clarity, high legibility at dense scales.
@@ -24,7 +24,7 @@ OfferCheck is a calm, honest review assistant for students and first-time job se
 
 ### Swappable Palettes
 
-OfferCheck supports three complete, accessible, production-tested colour palettes. All tokens are declared in ONE clearly marked block in `src/app/globals.css`. Swapping the site's entire color theme requires editing only that single CSS block.
+OfferClara supports three complete, accessible, production-tested colour palettes. All tokens are declared in ONE clearly marked block in `src/app/globals.css`. Swapping the site's entire color theme requires editing only that single CSS block.
 
 #### Palette A: "Ink Blue" (Active / Default)
 *Authoritative editorial look with deep navy header, crisp paper/ink contrast, and warm yellow highlighter evidence.*

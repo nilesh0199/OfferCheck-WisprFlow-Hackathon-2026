@@ -8,7 +8,7 @@ export function LandingFooter() {
     <footer className="w-full border-t border-[var(--border)] bg-[var(--surface)] py-8 transition-colors">
       <Container className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--text-muted)]">
         <div className="space-y-1 text-center sm:text-left">
-          <p className="font-medium text-[var(--text)]">OfferCheck</p>
+          <p className="font-medium text-[var(--text)]">OfferClara</p>
           <p>Built for the No Hands: Wispr Challenge (WeMakeDevs x Wispr Flow).</p>
         </div>
 
@@ -36,6 +36,12 @@ export function LandingFooter() {
             className="hover:text-[var(--text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1.5 min-h-[44px] inline-flex items-center"
           >
             Privacy
+          </Link>
+          <Link
+            href="/about"
+            className="hover:text-[var(--text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1.5 min-h-[44px] inline-flex items-center"
+          >
+            About
           </Link>
           <a
             href="https://github.com/nilesh0199/OfferCheck-WisprFlow-Hackathon-2026"

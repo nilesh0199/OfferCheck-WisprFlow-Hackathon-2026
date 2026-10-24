@@ -40,32 +40,23 @@ export default async function Image() {
             }}
           >
             {/* Logo Mark */}
-            <div
-              style={{
-                width: "44px",
-                height: "44px",
-                borderRadius: "8px",
-                border: "2.5px solid #10263F",
-                backgroundColor: "#FFFFFF",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                position: "relative",
-              }}
+            <svg
+              width="48"
+              height="48"
+              viewBox="0 0 48 48"
+              fill="none"
+              style={{ display: "flex" }}
             >
-              <div
-                style={{
-                  width: "12px",
-                  height: "12px",
-                  borderRadius: "50%",
-                  backgroundColor: "#FFE27A",
-                  border: "2px solid #10263F",
-                  position: "absolute",
-                  bottom: "6px",
-                  right: "6px",
-                }}
+              <rect x="0" y="0" width="48" height="48" rx="11" fill="#1D5FA8" />
+              <path
+                d="M15 10h14l8 8v20a2 2 0 0 1-2 2H15a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2z"
+                fill="#FFFFFF"
               />
-            </div>
+              <path d="M29 10l8 8h-6a2 2 0 0 1-2-2z" fill="#CFD8E3" />
+              <rect x="17" y="22" width="14" height="2.4" rx="1.2" fill="#9DBDE3" />
+              <rect x="16" y="27.5" width="17" height="6" rx="1.5" fill="#FFE27A" />
+              <rect x="17.5" y="29.4" width="13" height="2.4" rx="1.2" fill="#14202E" />
+            </svg>
             <span
               style={{
                 fontSize: 32,

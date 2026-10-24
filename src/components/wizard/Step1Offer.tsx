@@ -288,7 +288,7 @@ export function Step1Offer({ onGoToStep }: Step1OfferProps) {
               Full examples
             </h3>
             <p className="text-xs text-[var(--text-muted)] mt-1">
-              Loads an entire offer flow across all 5 steps to try OfferCheck instantly.
+              Loads an entire offer flow across all 5 steps to try OfferClara instantly.
             </p>
           </div>
 

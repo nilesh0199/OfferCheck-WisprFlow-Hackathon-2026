@@ -1,7 +1,7 @@
-# Design System v5: Ink Blue Palette, Typographic Scale, and Anti-Template Polish (OfferCheck)
+# Design System v5: Ink Blue Palette, Typographic Scale, and Anti-Template Polish (OfferClara)
 
 ## 1. Principles
-OfferCheck is a calm, honest review assistant for students and first-time job seekers receiving internship or entry-level job offers. Rather than behaving like an automated judging machine or AI oracle, its visual metaphor is a desk with an **annotated document**: a letter in the margins, real line numbers, high-contrast text, and a physical highlighter pen marking specific phrases of evidence.
+OfferClara is a calm, honest review assistant for students and first-time job seekers receiving internship or entry-level job offers. Rather than behaving like an automated judging machine or AI oracle, its visual metaphor is a desk with an **annotated document**: a letter in the margins, real line numbers, high-contrast text, and a physical highlighter pen marking specific phrases of evidence.
 - **The Annotated Document Metaphor:** Tactile, forensic clarity. Clean canvas, high-contrast paper surfaces, authoritative Ink Blue primary actions against a deep navy header, and an authentic highlighter yellow accent strictly reserved for evidence phrases and observational markers.
 - **Calm, Honest Copy:** Strictly avoids verdict language ("safe", "verified", "legit", "scam", "fraud" as a verdict) and red/green traffic-light semantics. "No concerns identified" is never presented as a safety verdict.
 - **Evidence-Grounded Linking:** Every potential concern is anchored to verbatim quotations. On desktop, hovering an observation card highlights that quote in the left rail document viewer and scrolls to its line; clicking a highlighted quote in the document focuses the observation card.
@@ -137,7 +137,7 @@ Used consistently across all routes: landing page, `/check`, `/resources`, 404, 
 2. **Post-Review State: Master-Detail Desktop Layout ($\ge 1280$px / `xl`):**
    - **Left Rail (~240px, Sticky):** `ResultsNav.tsx` on-page section navigation with live `IntersectionObserver` scroll-spy, highlighting the active section and displaying count badges (Overview, Observations, Missing details, Questions & checks, Company research, Advisories & resources, Your text).
    - **Centre Column (~640-760px, Primary Fluid):**
-     - `ResultsActionsBar.tsx`: Save as PDF (dynamic title `OfferCheck Review - [Company] - [Date].pdf`), Copy summary, Share (Web Share API with safe non-leaking excerpt), and Start new review with native `<dialog>` confirmation.
+     - `ResultsActionsBar.tsx`: Save as PDF (dynamic title `OfferClara Review - [Company] - [Date].pdf`), Copy summary, Share (Web Share API with safe non-leaking excerpt), and Start new review with native `<dialog>` confirmation.
      - Section 1: Overview card (id `section-summary` / `section-overview`).
      - Section 2: Observations list (id `section-observations`).
      - Section 3: Missing details checklist (id `section-missing`).
@@ -156,7 +156,7 @@ Used consistently across all routes: landing page, `/check`, `/resources`, 404, 
 
 ### 4.4 Dedicated Privacy Route (`/privacy`)
 - Dedicated static server component at `/privacy` styled with standard layout containers, headers, and footers matching `/resources`.
-- Seven sentence-case sections: "What is sent to other services", "What OfferCheck does not store", "What stays in your browser", "Requests and limits", "Uploads", "What OfferCheck cannot do", and "Report a problem".
+- Seven sentence-case sections: "What is sent to other services", "What OfferClara does not store", "What stays in your browser", "Requests and limits", "Uploads", "What OfferClara cannot do", and "Report a problem".
 - Embeds verbatim `AI_DATA_NOTICE` and `AI_FILE_NOTICE`.
 - Includes "Last updated 22 Oct 2026" timestamp and direct issue reporting links.
 - Strictly adheres to calm, verdict-free language.

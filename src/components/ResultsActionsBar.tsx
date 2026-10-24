@@ -35,7 +35,7 @@ export function ResultsActionsBar({
     const originalTitle = document.title;
     const company = analysis.entities?.companyName || "Offer";
     const dateStr = new Date().toISOString().split("T")[0];
-    const newTitle = `OfferCheck Review - ${company} - ${dateStr}.pdf`;
+    const newTitle = `OfferClara Review - ${company} - ${dateStr}.pdf`;
 
     document.title = newTitle;
 
@@ -86,9 +86,9 @@ export function ResultsActionsBar({
         : "No upfront fees or severe warning signs identified in the provided text.";
 
     const sharePayload = {
-      title: "OfferCheck Internship Review",
-      text: `I just reviewed an internship offer using OfferCheck. Here is what to watch out for: ${concernsText} Check yours at https://offercheck.app/check`,
-      url: "https://offercheck.app/check",
+      title: "OfferClara Internship Review",
+      text: `I just reviewed an internship offer using OfferClara. Here is what to watch out for: ${concernsText} Check yours at /check`,
+      url: typeof window !== "undefined" ? window.location.origin + "/check" : "/check",
     };
 
     if (navigator?.share) {

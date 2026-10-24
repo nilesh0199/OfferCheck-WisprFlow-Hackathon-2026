@@ -1,8 +1,7 @@
-# Project Specification: OfferCheck
+# Project Specification: OfferClara
 
-> **Provisional Project Name:** OfferCheck  
-> *Note on naming:* OfferCheck is a working title maintained in a single configuration constant (`APP_NAME` in `src/lib/config.ts`) to enable seamless renaming. It makes no claim to uniqueness.  
-> **Tagline:** *"Understand the offer. Know what to verify."*  
+> **Project Name:** OfferClara  
+> **Tagline:** *"Understand the offer. Know what to verify. Make every offer clear."*  
 > **Context:** Entry for *"No Hands: The Wispr Challenge"* (Builders track), solo development. Hackathon deadline: October 30, 2026, 11:59 PM IST. Target submission package completion: October 29, 2026. Designed for low cost, minimal external dependencies, transparent explanations, and zero-sign-in evaluation by judges.
 
 ---
@@ -10,7 +9,7 @@
 ## 1. Purpose and Target User
 
 ### 1.1 Purpose
-OfferCheck is a review assistant created to assist students and first-time job seekers in critically evaluating internship and entry-level job offers and recruitment communications before paying money or sharing documents. The tool helps candidates:
+OfferClara is a review assistant created to assist students and first-time job seekers in critically evaluating internship and entry-level job offers and recruitment communications before paying money or sharing documents. The tool helps candidates:
 1. Identify questionable requests (such as upfront payment requests for training, security deposits, or software licenses).
 2. Spot missing, vague, or unusual contractual terms (such as missing compensation details, undefined roles, or ambiguous company details).
 3. Formulate concrete, professional verification questions to ask the prospective employer before paying any money, signing documents, or submitting sensitive personal credentials.
@@ -19,7 +18,7 @@ OfferCheck is a review assistant created to assist students and first-time job s
 Students and first-time job seekers (such as undergraduate and graduate students, recent college graduates, and career starters) receiving internship or entry-level job solicitations via email, messaging apps, job boards, or social media.
 
 ### 1.3 Non-Goals and Explicit Disclaimers
-To protect users and maintain absolute integrity, OfferCheck is explicitly **NOT**:
+To protect users and maintain absolute integrity, OfferClara is explicitly **NOT**:
 - **Not a scam detector:** It does not categorize offers into binary labels like "legitimate" vs. "scam".
 - **Not a company authentication service:** It cannot confirm whether the sender actually represents or has authority to act on behalf of the claimed organisation.
 - **Not legal advice:** Findings and suggested questions are informational prompts, not legal counsel.
@@ -29,7 +28,7 @@ To protect users and maintain absolute integrity, OfferCheck is explicitly **NOT
 
 ## 2. MVP Scope
 
-OfferCheck strictly limits its core MVP scope to keep complexity low, eliminate security vulnerabilities, and ensure zero-cost reliability:
+OfferClara strictly limits its core MVP scope to keep complexity low, eliminate security vulnerabilities, and ensure zero-cost reliability:
 
 ### In Scope (MVP & Core Pipeline)
 - Direct plain-text input of internship or job offer communications (emails, letters, chat messages) up to a maximum character limit (`MAX_INPUT_CHARS = 12000`).
@@ -62,7 +61,7 @@ OfferCheck strictly limits its core MVP scope to keep complexity low, eliminate 
 - **No Database or Saved History:** Ephemeral processing only. Once the user closes or refreshes the page, the submitted text and results are discarded.
 
 ### Application Routing Architecture
-OfferCheck is structured into dedicated routes:
+OfferClara is structured into dedicated routes:
 - **`/` (Landing Page):** A fast, static introduction to the product featuring a realistic static annotated paper card (using synthetic Example 1 with 3 highlighted phrases and observation badges), a 5-step wizard overview grid, Global Command Bar preview with interactive chips, side-by-side capabilities comparison, and dual-column FAQ.
 - **`/check` (Review Workspace):** The complete review workspace for students and first-time job seekers featuring the 5-step wizard pre-review and a master-detail 3-column layout post-review with left rail section navigation (`ResultsNav`), primary results findings (`AnalysisResults`), right rail document viewer (`YourOfferWorkspace`), and action controls (`ResultsActionsBar`).
 - **`/resources` (Official Resources & Helplines):** Dedicated directory of official government portals, cybercrime reporting channels, post-payment emergency checklists, and verified institutional advisories, with an active review return banner.
@@ -135,13 +134,13 @@ To eliminate AI hallucinations and ensure trust, all findings must strictly foll
 4. **Log Sanitization:** Server logs must never record the raw offer text or personal identifiable information. Only operational metadata (e.g., character length, execution latency, status codes) may be logged.
 5. **Credential Security:** All API keys (e.g., Gemini API) reside exclusively on the server in environment variables. No client-accessible prefixes (`NEXT_PUBLIC_`) are allowed for private keys.
 6. **Pre-Submission Privacy Notice:** The UI mandates a prominent privacy notice prompting users to redact names, phone numbers, home addresses, government ID numbers, bank details, and sensitive credentials prior to pasting.
-7. **External AI Provider Disclosure & Free-Tier Data-Use Terms:** (Verified against official Google Gemini API documentation as of October 19, 2026): OfferCheck routes analysis through Google Gemini's free tier (`gemini-3.8-flash`). Under Google's free-tier terms, submitted prompts and responses may be reviewed and used by Google to train and improve its models and products. The UI prominently displays this disclosure (`AI_DATA_NOTICE`) directly within the pre-paste privacy banner, warning students and job seekers not to submit personal details or sensitive information they would not want processed under those terms. *Note:* This policy and privacy notice must be explicitly revisited and updated if billing is ever enabled on the project (since Google's paid tier policies state that data is not retained or used for model training).
+7. **External AI Provider Disclosure & Free-Tier Data-Use Terms:** (Verified against official Google Gemini API documentation as of October 19, 2026): OfferClara routes analysis through Google Gemini's free tier (`gemini-3.8-flash`). Under Google's free-tier terms, submitted prompts and responses may be reviewed and used by Google to train and improve its models and products. The UI prominently displays this disclosure (`AI_DATA_NOTICE`) directly within the pre-paste privacy banner, warning students and job seekers not to submit personal details or sensitive information they would not want processed under those terms. *Note:* This policy and privacy notice must be explicitly revisited and updated if billing is ever enabled on the project (since Google's paid tier policies state that data is not retained or used for model training).
 
 ---
 
 ## 6. Optional Company Research: Perplexity Handoff
 
-OfferCheck does NOT perform automated in-app company research itself. The designated research path for this prototype is a structured prompt handoff to **Perplexity** (an external search assistant) via a one-click copy button and a plain link.
+OfferClara does NOT perform automated in-app company research itself. The designated research path for this prototype is a structured prompt handoff to **Perplexity** (an external search assistant) via a one-click copy button and a plain link.
 - **Architectural Boundary:** No search API, no Tavily integration, and no automated network requests to research providers exist within the application. Tavily and any in-app search are explicitly **NOT planned**.
 - **Data Minimization:** Only confirmed company entity details (name, website, sender domain, role, location) are included in the generated prompt; **the raw offer text is strictly and structurally excluded**.
 - **Plain-Text URLs Only:** Any claimed website or link extracted from the offer text is rendered exclusively as plain text in the UI and prompt, never as a clickable link.
@@ -187,5 +186,5 @@ When integrating external services, assumptions are prohibited; details must be 
 6. **Concurrency Guard:** In-memory cap of at most 4 analyses in flight per server instance (`MAX_CONCURRENT_ANALYSES = 4`). When exceeded, returns HTTP 503 (`BUSY`) with a calm retry message; in-flight counts are guaranteed to decrement in a `finally` block on success, failure, or cancellation.
 7. **Model Circuit Breaker:** In-memory breaker skips failing models during their cooldown window (5 minutes on timeout, 15 minutes on 429/quota exhaustion, 1 minute on 503/5xx server errors). Skipped models do not consume time budgets or attempt counts. If all models are on cooldown, cooldowns are ignored and all models are attempted normally (the service never fails closed). A successful call clears that model's cooldown.
 8. **Public Repository Security:** The source repository is public; no API keys, secrets, or sensitive credentials may ever be committed.
-9. **Name Architecture:** The application name remains "OfferCheck", centralized in a single configuration constant (`APP_NAME` in `src/lib/config.ts`) so it can be updated in one place if needed.
+9. **Name Architecture:** The application name is "OfferClara", centralized in a single configuration constant (`APP_NAME` in `src/lib/config.ts`) so it can be updated in one place if needed.
 10. **Job-Offer Coverage:** The review prompt treats salary, probation period, joining date and contract terms as missing details when unstated, and display labels say "Stipend or salary" and "Duration or contract term". Dedicated job-offer sample texts, evaluation benchmarks, and handling for service bonds or training-fee agreements are part of the future roadmap.

@@ -162,7 +162,7 @@ describe("validateAnalysis", () => {
     expect(
       validated.limits.some((l) =>
         l.includes(
-          "OfferCheck makes no claim about any named organisation; verify independently through official channels."
+          "OfferClara makes no claim about any named organisation; verify independently through official channels."
         )
       )
     ).toBe(true);

@@ -7,7 +7,7 @@ import {
 describe("detectSensitiveIdentifiers pure function", () => {
   it("exports a calm, non-blocking warning message", () => {
     expect(SENSITIVE_IDENTIFIER_WARNING).toBe(
-      "This looks like an account, UPI or ID number. Remove it before you continue; OfferCheck does not need it."
+      "This looks like an account, UPI or ID number. Remove it before you continue; OfferClara does not need it."
     );
   });
 

@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { LandingNav } from "@/components/landing/LandingNav";
+import { TopNav } from "@/components/TopNav";
 import { StaticAnnotatedCard } from "@/components/landing/StaticAnnotatedCard";
 import { WizardOverviewSection } from "@/components/landing/WizardOverviewSection";
 import { CommandBarPreviewSection } from "@/components/landing/CommandBarPreviewSection";
@@ -11,10 +11,10 @@ import { FaqSection } from "@/components/landing/FaqSection";
 import { FinalCta } from "@/components/landing/FinalCta";
 import { LandingFooter } from "@/components/landing/LandingFooter";
 import { Container } from "@/components/Container";
-import { APP_NAME, TAGLINE } from "@/lib/config";
+import { APP_NAME } from "@/lib/config";
 
 export const metadata: Metadata = {
-  title: `${APP_NAME} — ${TAGLINE}`,
+  title: `${APP_NAME}: make every offer clear`,
   description:
     "Calm, evidence-linked internship and job offer analysis. Paste an offer to spot upfront payment requests, urgent deadlines, and missing details before you pay or share documents.",
 };
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col justify-between transition-colors">
-      <LandingNav />
+      <TopNav />
 
       <main className="flex-1">
         {/* Asymmetric Hero Section */}

@@ -23,11 +23,11 @@ describe("/privacy page contract and compliance", () => {
   it("includes all required sections in sentence case", () => {
     const requiredHeadings = [
       "What is sent to other services",
-      "What OfferCheck does not store",
+      "What OfferClara does not store",
       "What stays in your browser",
       "Requests and limits",
       "Uploads",
-      "What OfferCheck cannot do",
+      "What OfferClara cannot do",
       "Report a problem",
     ];
 

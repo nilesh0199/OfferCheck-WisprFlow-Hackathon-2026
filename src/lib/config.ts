@@ -1,5 +1,7 @@
-export const APP_NAME = "OfferCheck";
-export const TAGLINE = "Understand the offer. Know what to verify.";
+export const APP_NAME = "OfferClara";
+export const TAGLINE = "Make every offer clear.";
+export const HERO_HEADLINE = "Understand the offer. Know what to verify.";
+export const FULL_TAGLINE = "Understand the offer. Know what to verify. Make every offer clear.";
 export const MAX_INPUT_CHARS = 12000;
 export const MIN_INPUT_CHARS = 40;
 export const MIN_QUOTE_CHARS = 4;
@@ -94,7 +96,7 @@ export function getTranscribeRateLimitPerDay(): number {
 }
 
 export const AI_FILE_NOTICE =
-  "Files you upload are sent to Google's Gemini API to read the text in them. OfferCheck uses Google's free tier, where Google states that submitted content may be used to improve its products. Anything visible in an image or PDF is sent too, so crop or cover personal details first, or paste the text instead. OfferCheck does not store your files.";
+  "Files you upload are sent to Google's Gemini API to read the text in them. OfferClara uses Google's free tier, where Google states that submitted content may be used to improve its products. Anything visible in an image or PDF is sent too, so crop or cover personal details first, or paste the text instead. OfferClara does not store your files.";
 
 export const AI_DATA_NOTICE =
-  "The text you submit is sent to Google's Gemini API for analysis. OfferCheck uses Google's free tier, where Google states that submitted content may be used to improve its products. Do not submit anything you would not want processed this way.";
+  "The text you submit is sent to Google's Gemini API for analysis. OfferClara uses Google's free tier, where Google states that submitted content may be used to improve its products. Do not submit anything you would not want processed this way.";

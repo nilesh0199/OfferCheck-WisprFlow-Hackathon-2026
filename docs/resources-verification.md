@@ -1,8 +1,8 @@
 # Official Resources Verification Record
 
-This document records the official verification of government portals and contact information included in OfferCheck. All entries were verified against official Indian government portals on **20 October 2026**.
+This document records the official verification of government portals and contact information included in OfferClara. All entries were verified against official Indian government portals on **20 October 2026**.
 
-OfferCheck makes zero outbound network calls to these services during runtime; these are static informational references provided to help students verify offers independently.
+OfferClara makes zero outbound network calls to these services during runtime; these are static informational references provided to help students verify offers independently.
 
 ---
 
@@ -53,7 +53,7 @@ OfferCheck makes zero outbound network calls to these services during runtime; t
 - **Verified Portal Claims:**
   - Official public search service under MCA FO Services to look up registered companies and LLPs, their Corporate Identification Number (CIN) or LLP Identification Number (LLPIN), and registration status.
   - Search allows users to verify whether an entity exists under the exact legal name in Indian corporate registry records.
-- **Contextual Disclaimer Added by OfferCheck:**
+- **Contextual Disclaimer Added by OfferClara:**
   - A registered company does not prove that the sender or offer is genuine, and an unregistered name does not by itself prove that an offer is fraudulent (e.g. unregistered trading names, early-stage partnerships, or international entities).
 - **Verification Date:** 2026-10-20
 - **Status:** All facts confirmed. None omitted.

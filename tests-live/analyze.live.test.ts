@@ -20,7 +20,7 @@ if (fs.existsSync(".env.local")) {
     process.loadEnvFile(".env.local");
   } catch (err: unknown) {
     console.warn(
-      "[OfferCheck Live Tests] Could not parse .env.local:",
+      "[OfferClara Live Tests] Could not parse .env.local:",
       err instanceof Error ? err.message : String(err)
     );
   }
@@ -32,7 +32,7 @@ const liveBaseUrl = process.env.LIVE_BASE_URL?.trim();
 
 if (!hasApiKey) {
   console.warn(
-    "\n[OfferCheck Live Tests] SKIPPED: GEMINI_API_KEY is not set in the environment or .env.local." +
+    "\n[OfferClara Live Tests] SKIPPED: GEMINI_API_KEY is not set in the environment or .env.local." +
       "\nNo live requests to Gemini will be made. Tests are safely skipped and NOT faked.\n"
   );
 }

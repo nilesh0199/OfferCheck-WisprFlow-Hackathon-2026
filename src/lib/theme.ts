@@ -1,7 +1,7 @@
 /**
- * Theme configuration and pure resolution utilities for OfferCheck.
+ * Theme configuration and pure resolution utilities for OfferClara.
  *
- * OfferCheck supports three theme settings: "light", "dark", and "system".
+ * OfferClara supports three theme settings: "light", "dark", and "system".
  * The active theme is reflected via the `data-theme` attribute on the root <html> element.
  *
  * Local storage key: "offercheck-theme".

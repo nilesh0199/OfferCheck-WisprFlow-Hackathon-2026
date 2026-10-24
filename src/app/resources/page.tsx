@@ -2,9 +2,9 @@ import React from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Container } from "@/components/Container";
+import { TopNav } from "@/components/TopNav";
 import { ResourceCard } from "@/components/ResourceCard";
-import { LogoIcon, GitHubIcon, ExternalLinkIcon } from "@/components/Icons";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { GitHubIcon, ExternalLinkIcon } from "@/components/Icons";
 import { VERIFICATION_RESOURCES } from "@/data/verification-resources";
 import { POST_PAYMENT_STEPS } from "@/data/post-payment-steps";
 import { BackToReviewBanner } from "@/components/BackToReviewBanner";
@@ -20,51 +20,7 @@ export const metadata: Metadata = {
 export default function ResourcesPage() {
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col justify-between overflow-x-hidden transition-colors">
-      {/* Navigation */}
-      <nav
-        aria-label="Resources page navigation"
-        className="sticky top-0 z-30 w-full border-b border-[var(--border)] bg-[var(--surface)]/95 backdrop-blur-md"
-      >
-        <Container className="h-14 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 font-bold text-base tracking-tight text-[var(--text)] py-1 px-2 -ml-2 rounded-lg outline-none hover:opacity-90 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
-            >
-              <LogoIcon className="w-5 h-5 text-[var(--accent)] shrink-0" />
-              <span>{APP_NAME}</span>
-            </Link>
-          </div>
-
-          <div className="flex items-center gap-4 text-xs font-medium text-[var(--text-muted)]">
-            <Link
-              href="/"
-              className="hover:text-[var(--text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 px-1.5"
-            >
-              Home
-            </Link>
-            <Link
-              href="/check"
-              className="hover:text-[var(--text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 px-1.5 font-semibold text-[var(--color-primary)]"
-            >
-              Check an offer
-            </Link>
-            <a
-              href="https://github.com/nilesh0199/OfferCheck-WisprFlow-Hackathon-2026"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 hover:text-[var(--text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1 px-1.5"
-              aria-label="GitHub repository (opens in a new tab)"
-            >
-              <GitHubIcon className="w-4 h-4" />
-              <span className="hidden sm:inline">GitHub</span>
-              <ExternalLinkIcon className="w-3 h-3 opacity-60" />
-            </a>
-
-            <ThemeToggle />
-          </div>
-        </Container>
-      </nav>
+      <TopNav />
 
       {/* Active Review Navigation Banner (if session exists) */}
       <BackToReviewBanner />
@@ -82,7 +38,7 @@ export default function ResourcesPage() {
               Official resources and reporting links
             </h1>
             <p className="text-sm sm:text-base text-[var(--text-muted)] leading-relaxed">
-              OfferCheck evaluates text only; it does not vouch for companies, verify job offers, or confirm identities. If you need to verify an opportunity or report suspicious demands, use the official resources below.
+              OfferClara evaluates text only; it does not vouch for companies, verify job offers, or confirm identities. If you need to verify an opportunity or report suspicious demands, use the official resources below.
             </p>
           </div>
 
@@ -162,9 +118,9 @@ export default function ResourcesPage() {
       <footer className="w-full border-t border-[var(--border)] bg-[var(--surface)] py-8 transition-colors">
         <Container className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--text-muted)]">
           <div className="space-y-1 text-center sm:text-left">
-            <p className="font-medium text-[var(--text)]">OfferCheck</p>
+            <p className="font-medium text-[var(--text)]">OfferClara</p>
             <p>
-              Links checked as of 20 October 2026. OfferCheck does not endorse or vouch for external parties.
+              Links checked as of 20 October 2026. OfferClara does not endorse or vouch for external parties.
             </p>
           </div>
 
@@ -186,6 +142,12 @@ export default function ResourcesPage() {
               className="hover:text-[var(--text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1.5 min-h-[44px] inline-flex items-center"
             >
               Privacy
+            </Link>
+            <Link
+              href="/about"
+              className="hover:text-[var(--text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded py-1.5 min-h-[44px] inline-flex items-center"
+            >
+              About
             </Link>
             <a
               href="https://github.com/nilesh0199/OfferCheck-WisprFlow-Hackathon-2026"

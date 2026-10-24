@@ -1,10 +1,11 @@
-# Build Plan: OfferCheck
+# Build Plan: OfferClara
 
+> **Tagline:** *"Understand the offer. Know what to verify. Make every offer clear."*  
 > **Hackathon Deadline:** October 30, 2026, 11:59 PM IST  
 > **Target Completion Date for Submission Package:** October 29, 2026  
 > **Track:** Builders track, solo entry ("No Hands: The Wispr Challenge")
 
-This phased build plan outlines the implementation roadmap for OfferCheck, an internship-offer review assistant. Each phase specifies a distinct goal, concrete acceptance criteria, and its truthful status.
+This phased build plan outlines the implementation roadmap for OfferClara, an internship-offer review assistant. Each phase specifies a distinct goal, concrete acceptance criteria, and its truthful status.
 
 ---
 
@@ -82,7 +83,7 @@ This phased build plan outlines the implementation roadmap for OfferCheck, an in
 - **Status:** Complete
 - **Goal:** Introduce an asymmetric landing page at `/` with an interactive annotated document, move the analysis tool to `/check`, implement in-memory session persistence surviving client navigation without browser storage, apply the "Annotated Paper" design system v2 with self-hosted Google Fonts (`Instrument Serif`, `Instrument Sans`, `IBM Plex Mono`), and add branded 404, error boundary, SVG favicon, and `next/og` Open Graph image.
 - **Acceptance Criteria:**
-  - Root `/` serves the landing page: asymmetric typography, primary CTA "Check an offer" above the fold at 1366x768 and 390x844, interactive document card featuring synthetic Example 1 with cursor-hover highlighting and sliding margin notes, gentle 3D parallax tilt (max 3 degrees) via `requestAnimationFrame` with touch/reduced-motion fallback, scroll-triggered "How it works" reveal, "What you get" index cards, "What OfferCheck will not do", "Privacy" notice, `<details>` FAQ accordion, and final CTA.
+  - Root `/` serves the landing page: asymmetric typography, primary CTA "Check an offer" above the fold at 1366x768 and 390x844, interactive document card featuring synthetic Example 1 with cursor-hover highlighting and sliding margin notes, gentle 3D parallax tilt (max 3 degrees) via `requestAnimationFrame` with touch/reduced-motion fallback, scroll-triggered "How it works" reveal, "What you get" index cards, "What OfferClara will not do", "Privacy" notice, `<details>` FAQ accordion, and final CTA.
   - Tool relocated to `/check` with full feature parity, input validation, sample picker, and results workspace.
   - `SessionProvider` client context in `src/app/layout.tsx` with pure reducer `offerSessionReducer`; persists offer text, analysis snapshot, and in-flight request status across client navigation; zero persistent browser storage (no `localStorage`, `sessionStorage`, cookies, or database); resets on hard refresh.
   - Feature flags in `src/lib/features.ts` ensure copy advertises only live features (`textAnalysis: true`, `documentUpload: false`, `companyResearch: false`).
@@ -149,7 +150,7 @@ This phased build plan outlines the implementation roadmap for OfferCheck, an in
   - Static server component route `/resources` created with post-payment action steps and all 4 official statutory resources always expanded using refactored `ResourceCard`.
   - Links to `/resources` added in navigation headers, footers, results section, and FAQ.
   - FAQ question 6 rewritten with calm, non-alarmist guidance; link styling verified for >= 4.5:1 contrast in light and dark modes.
-  - `package.json` updated with project name `offercheck`, version `1.0.0`, description, repository URL, and keywords; unused starter SVGs in `public/` removed.
+  - `package.json` updated with project name `offerclara`, version `1.0.0`, description, repository URL, and keywords; unused starter SVGs in `public/` removed.
   - Repository verified free of secrets; `.gitignore` updated with `*.log`.
   - Development log split into Build log (what changed) and Dictation log (author-provided).
   - Automated tests verify URL host allowlist and resources page data.

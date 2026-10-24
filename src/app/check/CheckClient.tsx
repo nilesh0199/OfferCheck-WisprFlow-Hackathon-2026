@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { Header } from "@/components/Header";
+import { TopNav } from "@/components/TopNav";
 import { Container } from "@/components/Container";
 import { WizardContainer } from "@/components/wizard/WizardContainer";
 import { AnalysisResults } from "@/components/AnalysisResults";
@@ -68,7 +68,19 @@ export function CheckClient() {
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col justify-between transition-colors">
-      <Header />
+      <TopNav />
+
+      {/* Page Title & Intro */}
+      <header className="w-full">
+        <Container className="pt-4 sm:pt-6 pb-2 text-left space-y-2">
+          <h1 className="text-2xl sm:text-3xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]">
+            Check an offer
+          </h1>
+          <p className="text-xs sm:text-sm text-[var(--text-muted)] max-w-2xl leading-relaxed">
+            Paste an offer letter, describe a call, or attach screenshots and PDFs for quote-linked observations and specific verification questions.
+          </p>
+        </Container>
+      </header>
 
       <Container as="main" className="py-6 sm:py-8 pb-24 sm:pb-8 space-y-8 flex-1">
         {/* ========================================================

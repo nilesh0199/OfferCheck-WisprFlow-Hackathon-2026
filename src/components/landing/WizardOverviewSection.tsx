@@ -51,7 +51,7 @@ const WIZARD_STEPS: readonly WizardStepCard[] = [
 export function WizardOverviewSection() {
   return (
     <section
-      id="wizard-steps"
+      id="how-it-works"
       aria-label="5-step review process"
       className="py-16 sm:py-24 border-b border-[var(--border)] bg-[var(--surface)] transition-colors"
     >

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { CheckClient } from "./CheckClient";
 
 export const metadata: Metadata = {
-  title: "Review an Offer — OfferCheck",
+  title: "Check an offer — OfferClara",
   description:
     "Paste internship or job offer text to analyze potential concerns, check missing details, and prepare verification questions.",
 };

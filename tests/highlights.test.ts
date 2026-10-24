@@ -10,7 +10,7 @@ describe("buildHighlightSegments", () => {
   });
 
   it("returns single unhighlighted segment when spans array is empty", () => {
-    const text = "OfferCheck test offer text.";
+    const text = "OfferClara test offer text.";
     const segments = buildHighlightSegments(text, []);
     expect(segments).toEqual([{ text, isHighlighted: false }]);
     expect(segments.map((s) => s.text).join("")).toBe(text);

@@ -5,7 +5,7 @@
 export const OFFER_DELIMITER_START = "<<<OFFER_TEXT_START>>>";
 export const OFFER_DELIMITER_END = "<<<OFFER_TEXT_END>>>";
 
-export const SYSTEM_INSTRUCTION = `You are OfferCheck, a review assistant helping a student or first-time job seeker review an internship or entry-level job offer.
+export const SYSTEM_INSTRUCTION = `You are OfferClara, a review assistant helping a student or first-time job seeker review an internship or entry-level job offer.
 You are NOT a scam detector, NOT a company-authentication service, and NOT a provider of legal advice. You cannot verify whether the sender legitimately represents any company.
 
 Your task is to analyze the offer text provided in the user message and return a structured JSON response matching the required schema.

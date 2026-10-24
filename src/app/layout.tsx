@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Newsreader, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
-import { APP_NAME, TAGLINE } from "@/lib/config";
+import { APP_NAME } from "@/lib/config";
 import { THEME_INLINE_SCRIPT } from "@/lib/theme";
 import { SessionProvider } from "@/components/SessionProvider";
 import { ScrollToTop } from "@/components/ScrollToTop";
@@ -39,7 +39,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: `${APP_NAME} — ${TAGLINE}`,
+    default: `${APP_NAME}: make every offer clear`,
     template: `%s — ${APP_NAME}`,
   },
   description:
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     icon: "/icon.svg",
   },
   openGraph: {
-    title: `${APP_NAME} — ${TAGLINE}`,
+    title: `${APP_NAME}: make every offer clear`,
     description:
       "Calm, evidence-linked internship and job offer analysis. Spot upfront deposits, urgent deadlines, and missing terms before you pay or share documents.",
     type: "website",
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: `${APP_NAME} — ${TAGLINE}`,
+    title: `${APP_NAME}: make every offer clear`,
     description:
       "Calm, evidence-linked internship and job offer analysis. Spot upfront deposits, urgent deadlines, and missing terms before you pay or share documents.",
   },

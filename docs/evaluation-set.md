@@ -1,9 +1,9 @@
 # Evaluation Set and Benchmark Cases
 
-> **OfferCheck** — *"Understand the offer. Know what to verify."*  
+> **OfferClara** — *"Understand the offer. Know what to verify. Make every offer clear."*  
 > Document Version: Phase 6 (Safeguards for Public Demo) — October 2026
 
-This document records the standard evaluation dataset used to verify OfferCheck's analysis pipeline, quotation validator, and epistemic guardrails across different models and pipeline revisions.
+This document records the standard evaluation dataset used to verify OfferClara's analysis pipeline, quotation validator, and epistemic guardrails across different models and pipeline revisions.
 
 The suite comprises **six synthetic examples** (user-facing, completely fictional with reserved IANA domains), **two full wizard examples**, and **one adversarial test fixture** (internal prompt injection test).
 

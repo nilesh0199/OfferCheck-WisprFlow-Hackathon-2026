@@ -8,7 +8,7 @@ if (fs.existsSync(".env.local")) {
     process.loadEnvFile(".env.local");
   } catch (err: unknown) {
     console.warn(
-      "[OfferCheck Live Transcribe Tests] Could not parse .env.local:",
+      "[OfferClara Live Transcribe Tests] Could not parse .env.local:",
       err instanceof Error ? err.message : String(err)
     );
   }
@@ -19,7 +19,7 @@ const hasApiKey = Boolean(apiKey);
 
 if (!hasApiKey) {
   console.warn(
-    "\n[OfferCheck Live Transcribe Tests] SKIPPED: GEMINI_API_KEY is not set." +
+    "\n[OfferClara Live Transcribe Tests] SKIPPED: GEMINI_API_KEY is not set." +
       "\nNo live transcription requests to Gemini will be made. Tests are safely skipped and NOT faked.\n"
   );
 }

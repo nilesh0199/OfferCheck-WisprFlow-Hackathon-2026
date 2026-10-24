@@ -1,12 +1,12 @@
-# OfferCheck
+# OfferClara
 
-> **Understand the offer. Know what to verify.**
+> **Understand the offer. Know what to verify. Make every offer clear.**
 
 A free, no-sign-in review assistant that helps students and first-time job seekers read an internship or job offer carefully before they pay money or share documents.
 
 - **Live Demo:** [offer-check-wispr-flow-hackathon-20.vercel.app](https://offer-check-wispr-flow-hackathon-20.vercel.app)
 - **Repository:** [github.com/nilesh0199/OfferCheck-WisprFlow-Hackathon-2026](https://github.com/nilesh0199/OfferCheck-WisprFlow-Hackathon-2026)
-- **Routes:** `/` (landing page and overview) · `/check` (review workspace) · `/resources` (official verification portals and reporting channels) · `/privacy` (privacy notice and data handling practices)
+- **Routes:** `/` (landing page and overview) · `/check` (review workspace) · `/resources` (official verification portals and reporting channels) · `/privacy` (privacy notice and data handling practices) · `/about` (about OfferClara) · `/ask` (clear doubt with AI)
 
 ---
 
@@ -14,13 +14,13 @@ A free, no-sign-in review assistant that helps students and first-time job seeke
 
 When you are starting out, an offer can feel like a rare chance, and normal hiring practices may be unfamiliar. Scam messages are built around that moment: an upfront registration or training fee, a "refundable" security deposit, an urgent request for identity or bank documents, and a tight deadline to create pressure.
 
-Official advisories in India state that genuine internship and job services do not charge applicants (see the AICTE National Internship Portal and National Career Service advisories documented in [docs/resources-verification.md](docs/resources-verification.md)). OfferCheck gives candidates a calm second look: it points out the exact lines worth questioning, lists what the communication does not say, and drafts questions to ask before paying money or sharing personal credentials.
+Official advisories in India state that genuine internship and job services do not charge applicants (see the AICTE National Internship Portal and National Career Service advisories documented in [docs/resources-verification.md](docs/resources-verification.md)). OfferClara gives candidates a calm second look: it points out the exact lines worth questioning, lists what the communication does not say, and drafts questions to ask before paying money or sharing personal credentials.
 
 ---
 
 ## Who It Is For and How a Review Works
 
-OfferCheck is built for students and first-time job seekers receiving internship or entry-level job solicitations via email, messaging apps, job boards, or phone calls.
+OfferClara is built for students and first-time job seekers receiving internship or entry-level job solicitations via email, messaging apps, job boards, or phone calls.
 
 A review works in five structured steps:
 
@@ -51,7 +51,7 @@ A review works in five structured steps:
 | **Combined text & file review** | Implemented | Evaluates combined text up to 12,000 characters; up to 5 screenshots (PNG, JPEG, WebP) or PDFs (max 4 MB total) transcribed via Gemini multimodal API and appended with generic source markers (`---- Text from Screenshot N ----`, `---- Text from PDF N ----`) and 1-level undo. |
 | **Global Command Bar** | Implemented | Docked bottom bar (`/` or `Ctrl+K` / `Cmd+K`) matching 80+ spoken or typed patterns, stripping conversational fillers, 2-second visual countdown, and dictation fallback for text > 80 chars. |
 | **Master-detail results layout** | Implemented | 3 desktop columns: left rail `ResultsNav` with live scroll-spy, middle fluid `AnalysisResults`, and right rail `YourOfferWorkspace` document viewer with line numbers and quote highlights. |
-| **Review actions & export** | Implemented | `ResultsActionsBar` with print-ready PDF export (dynamic title `OfferCheck Review - [Company] - [Date].pdf`), markdown summary clipboard copy, Web Share API, and native `<dialog>` clear confirmation. |
+| **Review actions & export** | Implemented | `ResultsActionsBar` with print-ready PDF export (dynamic title `OfferClara Review - [Company] - [Date].pdf`), markdown summary clipboard copy, Web Share API, and native `<dialog>` clear confirmation. |
 | **Call or conversation descriptions** | Implemented | Candidates can type or dictate an account of a phone call or verbal interaction in their own words; reviewed with a dedicated review limit acknowledging candidate descriptions. |
 | **Observations with line numbers and highlights** | Implemented | Document viewer with line numbers and quote highlights; bi-directional linking between observation cards and text lines. |
 | **Missing details table** | Implemented | Foundational contractual terms (compensation, roles, working hours, workplace location) displayed in a compact 2-column table (`Topic \| Note`), kept separate from concerns. |
@@ -103,9 +103,9 @@ flowchart TD
 
 ### What Is Sent to External Services
 
-When candidates submit text or upload files for review, they are transmitted over HTTPS to Google's Gemini API on the free tier. Above the input area and in the privacy policy, OfferCheck presents the verbatim notice:
+When candidates submit text or upload files for review, they are transmitted over HTTPS to Google's Gemini API on the free tier. Above the input area and in the privacy policy, OfferClara presents the verbatim notice:
 
-> "The text you submit is sent to Google's Gemini API for analysis. OfferCheck uses Google's free tier, where Google states that submitted content may be used to improve its products. Do not submit anything you would not want processed this way."
+> "The text you submit is sent to Google's Gemini API for analysis. OfferClara uses Google's free tier, where Google states that submitted content may be used to improve its products. Do not submit anything you would not want processed this way."
 
 For file uploads, anything visible in an uploaded screenshot or PDF is processed by Gemini's multimodal API solely to transcribe text. Original file names are never sent to Google, never logged, and never included in transcripts; appended text blocks use generic labels (`---- Text from Screenshot N ----`, `---- Text from PDF N ----`).
 
@@ -133,7 +133,7 @@ For complete policy details, see [docs/privacy-and-responsible-use.md](docs/priv
 
 ## Limitations
 
-- **Free-tier API quotas:** OfferCheck operates on Google's Gemini API free tier. Saturated upstream rate limits return clean HTTP 429 responses with retry advisories.
+- **Free-tier API quotas:** OfferClara operates on Google's Gemini API free tier. Saturated upstream rate limits return clean HTTP 429 responses with retry advisories.
 - **Serverless in-memory scope:** Rate limits, concurrency controls, and circuit breakers operate in-memory on the active serverless instance; state is not shared across multi-instance serverless deployments.
 - **Model errors and OCR mistakes:** Language models can misinterpret atypical arrangements or generate invalid quotes (which code drops). Transcription of low-resolution screenshots may contain OCR errors.
 - **Candidate-described verbal accounts:** When evaluating user-typed or dictated descriptions of calls or verbal conversations, the review reflects the candidate's description, not an original document or recording.
@@ -160,7 +160,7 @@ For complete policy details, see [docs/privacy-and-responsible-use.md](docs/priv
 ### Project Structure
 
 ```text
-OfferCheck/
+OfferClara/
 ├── docs/             # Specifications, design briefs, test plans, verified resources, and development logs
 ├── public/           # Static public assets (SVGs, web manifest)
 ├── src/
@@ -229,7 +229,7 @@ OfferCheck/
 
 ### Deployment
 
-OfferCheck is configured for zero-configuration deployment on Vercel. Set `GEMINI_API_KEY` in the Vercel project environment variables. No external database or persistent storage setup is required.
+OfferClara is configured for zero-configuration deployment on Vercel. Set `GEMINI_API_KEY` in the Vercel project environment variables. No external database or persistent storage setup is required.
 
 </details>
 
@@ -244,8 +244,6 @@ The test suite runs completely offline with zero network calls and mock client i
 ```bash
 npm test
 ```
-
-As of 23 Oct 2026, the offline test suite passes **420 tests across 43 test files**.
 
 The offline test suite validates:
 - 5-step wizard workflow and pure session reducer state transitions.
@@ -285,15 +283,15 @@ The evaluation dataset consists of five synthetic examples and one adversarial p
 
 ## Built with Wispr Flow
 
-OfferCheck was developed for the hackathon using Antigravity as the coding agent and Wispr Flow for dictated engineering prompts, feature change requests, and architectural decisions. These dictated entries, observations, resulting code changes, and verification records are documented chronologically in [docs/dev-log.md](docs/dev-log.md).
+OfferClara was developed for the hackathon using Antigravity as the coding agent and Wispr Flow for dictated engineering prompts, feature change requests, and architectural decisions. These dictated entries, observations, resulting code changes, and verification records are documented chronologically in [docs/dev-log.md](docs/dev-log.md).
 
-The OfferCheck web application contains **no direct Wispr Flow integration** or in-app voice recognition features. Candidates and evaluators can type or dictate into the text area using any dictation tool or voice input software of their choice.
+The OfferClara web application contains **no direct Wispr Flow integration** or in-app voice recognition features. Candidates and evaluators can type or dictate into the text area using any dictation tool or voice input software of their choice.
 
 ---
 
 ## Official Resources and Acknowledgements
 
-OfferCheck references official Indian statutory portals and reporting helplines:
+OfferClara references official Indian statutory portals and reporting helplines:
 
 - [National Cyber Crime Reporting Portal](https://cybercrime.gov.in) (`cybercrime.gov.in`) — 24/7 National Cyber Financial Fraud Helpline: **1930**
 - [AICTE National Internship Portal](https://internship.aicte-india.org) (`internship.aicte-india.org`) — Free student internship services and reporting (`internship@aicte-india.org`)

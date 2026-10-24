@@ -16,7 +16,7 @@ export function PrivacySection() {
             Privacy and responsible data use
           </h2>
           <p className="text-[1.0625rem] text-[var(--text-muted)] leading-relaxed max-w-2xl">
-            How your information is processed when you use OfferCheck.
+            How your information is processed when you use OfferClara.
           </p>
         </div>
 

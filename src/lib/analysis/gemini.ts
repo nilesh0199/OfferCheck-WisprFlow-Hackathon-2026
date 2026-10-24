@@ -221,7 +221,7 @@ export function logSafeAttemptError(
     extra = `, upstream=${clean}`;
   }
   console.error(
-    `[OfferCheck] Analysis attempt failed: code=${code}, httpStatus=${httpStatus}, attempt=${attemptNumber}, model=${modelId}, elapsedMs=${elapsedMs}${extra}`
+    `[OfferClara] Analysis attempt failed: code=${code}, httpStatus=${httpStatus}, attempt=${attemptNumber}, model=${modelId}, elapsedMs=${elapsedMs}${extra}`
   );
 }
 

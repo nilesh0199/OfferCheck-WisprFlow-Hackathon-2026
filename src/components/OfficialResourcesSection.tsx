@@ -54,7 +54,7 @@ export function OfficialResourcesSection({
           </span>
         </h3>
         <p className="mt-1 text-xs text-[var(--text-muted)]">
-          These are links to official sites. OfferCheck does not check or vouch for any sender.
+          These are links to official sites. OfferClara does not check or vouch for any sender.
         </p>
       </div>
 

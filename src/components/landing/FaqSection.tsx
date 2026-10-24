@@ -6,20 +6,20 @@ import { splitIntoColumns } from "@/lib/faq";
 export function FaqSection() {
   const faqs = [
     {
-      q: "Is OfferCheck free to use?",
-      a: "Yes. OfferCheck is completely free to use with no subscription plans, paid tiers, or account creation.",
+      q: "Is OfferClara free to use?",
+      a: "Yes. OfferClara is completely free to use with no subscription plans, paid tiers, or account creation.",
     },
     {
       q: "Is my offer stored on your servers?",
-      a: "No. OfferCheck stores zero offer text or uploaded files in any database, disk, or cookie. The files, transcribed text, and results live strictly in your active browser tab's memory and are discarded when you refresh or close the tab.",
+      a: "No. OfferClara stores zero offer text or uploaded files in any database, disk, or cookie. The files, transcribed text, and results live strictly in your active browser tab's memory and are discarded when you refresh or close the tab.",
     },
     {
       q: "Can I upload screenshots or PDFs?",
       a: "Yes. You can paste text, attach files, or both. You can upload up to 5 screenshots (PNG, JPEG, WebP) or PDF documents up to 4 MB total. Text read from files is added below any text already in the editor, letting you review and edit before analyzing.",
     },
     {
-      q: "Can OfferCheck tell me whether a company is real?",
-      a: "No. OfferCheck reviews the text of the offer you paste and does not verify companies itself. It cannot perform background checks or confirm identity. However, OfferCheck can prepare a structured, neutral research prompt from confirmed company details for you to run in an external assistant like Perplexity, and guides you to the official Ministry of Corporate Affairs (MCA) registry.",
+      q: "Can OfferClara tell me whether a company is real?",
+      a: "No. OfferClara reviews the text of the offer you paste and does not verify companies itself. It cannot perform background checks or confirm identity. However, OfferClara can prepare a structured, neutral research prompt from confirmed company details for you to run in an external assistant like Perplexity, and guides you to the official Ministry of Corporate Affairs (MCA) registry.",
     },
     {
       q: "What if the tool finds no concerns?",

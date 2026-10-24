@@ -21,7 +21,7 @@ export type SensitiveIdentifierKind =
   | "account_or_id";
 
 export const SENSITIVE_IDENTIFIER_WARNING =
-  "This looks like an account, UPI or ID number. Remove it before you continue; OfferCheck does not need it.";
+  "This looks like an account, UPI or ID number. Remove it before you continue; OfferClara does not need it.";
 
 /**
  * Checks a string of free text for sensitive identifiers.

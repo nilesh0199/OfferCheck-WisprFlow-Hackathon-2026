@@ -1,32 +1,16 @@
 import React from "react";
 
+import { Logo } from "./Logo";
+
 interface IconProps extends React.SVGProps<SVGSVGElement> {
   className?: string;
   size?: number;
 }
 
+export { Logo };
+
 export function LogoIcon({ className = "w-5 h-5", size = 20, ...props }: IconProps) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      className={className}
-      {...props}
-    >
-      <rect x="3" y="3" width="18" height="18" rx="4" />
-      <path d="M7 8h10" />
-      <path d="M7 12h10" />
-      <path d="M7 16h6" />
-      <circle cx="16" cy="16" r="1.5" fill="currentColor" stroke="none" />
-    </svg>
-  );
+  return <Logo size={size} className={className} {...props} />;
 }
 
 export function LockIcon({ className = "w-4 h-4", size = 16, ...props }: IconProps) {

@@ -39,7 +39,7 @@ function logSafeTranscribeError(
     extra = `, upstream=${clean}`;
   }
   console.error(
-    `[OfferCheck] Transcription attempt failed: code=${code}, httpStatus=${httpStatus}${extra}`
+    `[OfferClara] Transcription attempt failed: code=${code}, httpStatus=${httpStatus}${extra}`
   );
 }
 

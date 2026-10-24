@@ -104,12 +104,12 @@ describe("Logging Audit and Privacy Guard", () => {
       path.join(srcDir, "lib/analysis/gemini.ts"),
       "utf-8"
     );
-    expect(geminiContent).toContain("[OfferCheck] Analysis attempt failed:");
+    expect(geminiContent).toContain("[OfferClara] Analysis attempt failed:");
 
     const transcribeContent = fs.readFileSync(
       path.join(srcDir, "app/api/transcribe/route.ts"),
       "utf-8"
     );
-    expect(transcribeContent).toContain("[OfferCheck] Transcription attempt failed:");
+    expect(transcribeContent).toContain("[OfferClara] Transcription attempt failed:");
   });
 });

@@ -1,5 +1,5 @@
 /**
- * Feature flags for OfferCheck.
+ * Feature flags for OfferClara.
  *
  * All flags reflect features that exist today vs. features planned for future phases.
  * Prevents the landing page and UI from advertising capabilities before they are implemented.

@@ -20,7 +20,7 @@ export const REVIEW_LIMITS: readonly string[] = [
   "Absence of identified warnings is not proof of safety or legitimacy.",
   "Polished writing is not proof of legitimacy, and poor grammar is not proof of fraud.",
   "'Not stated in the provided text' is an observation about the text, not proof that a term does not exist in the actual offer.",
-  "OfferCheck makes no claim about any named organisation; verify independently through official channels.",
+  "OfferClara makes no claim about any named organisation; verify independently through official channels.",
   "If the text is your own description of a call or conversation, the review reflects your description, not a recording or a document.",
 ];
 

@@ -35,12 +35,12 @@ const WHAT_IT_DOES_NOT_DO = [
   {
     title: "Never declares an offer 'safe' or 'verified'",
     description:
-      "Zero findings in an offer text does not prove the sender is legitimate. A real scammer can copy genuine appointment letters.",
+      "Zero findings in an offer text does not prove the sender is legitimate. An unauthorized sender can copy genuine appointment letters.",
   },
   {
     title: "Cannot authenticate company senders",
     description:
-      "OfferCheck analyzes text only; it cannot verify whether an email address, phone number, or domain belongs to the real organization.",
+      "OfferClara analyzes text only; it cannot verify whether an email address, phone number, or domain belongs to the real organization.",
   },
   {
     title: "Never provides legal advice",
@@ -62,8 +62,8 @@ const WHAT_IT_DOES_NOT_DO = [
 export function CapabilitiesComparisonSection() {
   return (
     <section
-      id="capabilities"
-      aria-label="What OfferCheck does and does not do"
+      id="what-you-get"
+      aria-label="What OfferClara does and does not do"
       className="py-16 sm:py-24 border-b border-[var(--border)] bg-[var(--surface)] transition-colors"
     >
       <Container className="space-y-12">
@@ -72,7 +72,7 @@ export function CapabilitiesComparisonSection() {
             <span>Honest Product Boundaries</span>
           </div>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif tracking-[-0.015em] text-[var(--text)]">
-            What OfferCheck does — and what it will never do
+            What OfferClara does — and what it will never do
           </h2>
           <p className="text-sm sm:text-base text-[var(--text-muted)] leading-relaxed">
             Honest software clearly states what it cannot do. Here is a transparent side-by-side comparison.
@@ -85,7 +85,7 @@ export function CapabilitiesComparisonSection() {
             <div className="flex items-center gap-2 border-b border-[var(--border)] pb-3">
               <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-primary)]" />
               <h3 className="text-base sm:text-lg font-semibold text-[var(--text)]">
-                What OfferCheck does
+                What OfferClara does
               </h3>
             </div>
 
@@ -108,7 +108,7 @@ export function CapabilitiesComparisonSection() {
             <div className="flex items-center gap-2 border-b border-[var(--border)] pb-3">
               <span className="w-2.5 h-2.5 rounded-full bg-[var(--text-muted)]" />
               <h3 className="text-base sm:text-lg font-semibold text-[var(--text)]">
-                What OfferCheck will not do
+                What OfferClara will not do
               </h3>
             </div>
 

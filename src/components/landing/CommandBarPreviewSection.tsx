@@ -29,7 +29,7 @@ export function CommandBarPreviewSection() {
             Built for dictation and natural speech tools
           </h2>
           <p className="text-sm sm:text-base text-[var(--text-muted)] leading-relaxed">
-            OfferCheck has zero browser microphone permissions or proprietary speech APIs. It works with any external dictation tool — such as Wispr Flow, macOS Dictation, or Windows Voice Typing — via our Global Command Bar.
+            OfferClara has zero browser microphone permissions or proprietary speech APIs. It works with any external dictation tool — such as Wispr Flow, macOS Dictation, or Windows Voice Typing — via our Global Command Bar.
           </p>
         </div>
 

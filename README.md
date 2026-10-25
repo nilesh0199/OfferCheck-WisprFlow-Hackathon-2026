@@ -4,8 +4,12 @@
 
 A free, no-sign-in review assistant that helps students and first-time job seekers read an internship or job offer carefully before they pay money or share documents.
 
-- **Live Demo:** [offerclara-wisprflow.vercel.app](https://offerclara-wisprflow.vercel.app/)
-- **Repository:** [github.com/nilesh0199/OfferCheck-WisprFlow-Hackathon-2026](https://github.com/nilesh0199/OfferCheck-WisprFlow-Hackathon-2026)
+- **Live Project:** [offerclara-wisprflow.vercel.app](https://offerclara-wisprflow.vercel.app/)
+- **GitHub Repository:** [github.com/nilesh0199/OfferClara-WisprFlow-Hackathon](https://github.com/nilesh0199/OfferClara-WisprFlow-Hackathon)
+- **Demo Video:** [youtu.be/uXINb5E6vwg](https://youtu.be/uXINb5E6vwg)
+- **Dev.to Article:** [Before you pay for that internship: Building OfferClara with Wispr Flow](https://dev.to/nileshthipe/before-you-pay-for-that-internship-building-offerclara-with-wispr-flow-no-2n3e)
+- **Hackathon:** [No Hands: The Wispr Challenge by WeMakeDevs & Wispr Flow](https://www.wemakedevs.org/wispr)
+- **Connect on LinkedIn:** [Nilesh Thipe](https://www.linkedin.com/in/nilesh-h-thipe-372291253/)
 - **Routes:** `/` (landing page and overview) · `/check` (review workspace) · `/resources` (official verification portals and reporting channels) · `/privacy` (privacy notice and data handling practices) · `/about` (about OfferClara) · `/ask` (clear doubt with AI)
 
 ---
@@ -190,8 +194,8 @@ OfferClara/
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/nilesh0199/OfferCheck-WisprFlow-Hackathon-2026.git
-   cd OfferCheck-WisprFlow-Hackathon-2026
+   git clone https://github.com/nilesh0199/OfferClara-WisprFlow-Hackathon.git
+   cd OfferClara-WisprFlow-Hackathon
    ```
 
 2. Install dependencies:
@@ -287,11 +291,56 @@ The evaluation dataset consists of five synthetic examples and one adversarial p
 
 ---
 
-## Built with Wispr Flow
+## Building with Wispr Flow — No Hands: The Wispr Challenge
 
-OfferClara was developed for the hackathon using Antigravity as the coding agent and Wispr Flow for dictated engineering prompts, feature change requests, and architectural decisions. These dictated entries, observations, resulting code changes, and verification records are documented chronologically in [docs/dev-log.md](docs/dev-log.md).
+This project was built for **[No Hands: The Wispr Challenge](https://www.wemakedevs.org/wispr)**, organised by **WeMakeDevs** and **Wispr Flow**.
 
-The OfferClara web application contains **no direct Wispr Flow integration** or in-app voice recognition features. Candidates and evaluators can type or dictate into the text area using any dictation tool or voice input software of their choice.
+The challenge encouraged builders to use their voice throughout the building process: describing requirements, prompting coding assistants, writing documentation, and communicating as they worked.
+
+Rather than treating Wispr Flow as something to demonstrate only at the very end, I integrated it directly into my regular development workflow from day one.
+
+### 1. Speaking My Development Prompts
+While building OfferClara, I used Wispr Flow to dictate prompts and follow-up instructions into my AI coding workflow.
+
+When developing a feature, I often needed to explain several interconnected details together:
+- What the interface should look like and how it should behave.
+- How candidates move through each step of the review flow.
+- What edge cases to guard against (such as oversized inputs or unverified quotes).
+- Which existing architectural boundaries, color palettes, and design tokens must not be touched.
+
+Speaking those requirements felt significantly more natural and convenient than typing every single sentence manually. I could explain the intended behavior in clear, natural language, quickly review the dictated transcription, and send it directly to my coding assistant.
+
+Wispr Flow handled the voice dictation with high accuracy. The coding tool handled the implementation, and I reviewed the code diffs, tested the features, and verified the application. That distinction is important: Wispr Flow didn't build the project by itself; it fundamentally improved how I communicated what I wanted to build.
+
+### 2. Testing with Realistic Offer Text & Clear Doubt
+Another valuable application came during testing.
+
+OfferClara depends entirely on the text a candidate provides, so I needed to test realistic, imperfect inputs rather than only tidy, pre-formatted synthetic examples. I used Wispr Flow to dictate messy offer communications, phone call accounts, and recruiter messages directly into the application inputs.
+
+This allowed me to experience the intake workflow from a real user's perspective: speak or paste the information, review the structured summaries, edit details if necessary, and launch the analysis.
+
+I also experimented with dictating questions into the **Clear Doubt with AI (`/ask`)** feature. A student who has received a confusing or suspicious job offer is often stressed and wants to explain an ambiguous phone call in their own words or ask a quick question without meticulously composing every phrase. Speaking those scenarios helped ensure the interaction felt intuitive and supportive.
+
+### 3. Inviting Friends to Test
+I also wanted peers and fellow students to try OfferClara rather than relying solely on my own testing.
+
+I used Wispr Flow to dictate and draft the outreach messages inviting friends to test the live application and share their feedback. It was a simple task, but another practical demonstration of voice input outside the core code editor.
+
+### Key Takeaway
+Across all these activities, voice input proved faster and more convenient for me than typing everything by hand. I was impressed by how accurately Wispr Flow captured technical context and natural phrasing, and I ended up using it far more than I initially expected.
+
+The biggest takeaway wasn't that voice input replaces every single keyboard shortcut or code inspection. It was that I could express longer, more nuanced thoughts naturally, get them into the tool I was using without breaking flow, and keep moving forward.
+
+---
+
+## Project Links & Submission
+
+- **Live Project:** [https://offerclara-wisprflow.vercel.app/](https://offerclara-wisprflow.vercel.app/)
+- **GitHub Repository:** [https://github.com/nilesh0199/OfferClara-WisprFlow-Hackathon](https://github.com/nilesh0199/OfferClara-WisprFlow-Hackathon)
+- **Demo Video:** [https://youtu.be/uXINb5E6vwg](https://youtu.be/uXINb5E6vwg)
+- **Dev.to Article:** [Before you pay for that internship: Building OfferClara with Wispr Flow](https://dev.to/nileshthipe/before-you-pay-for-that-internship-building-offerclara-with-wispr-flow-no-2n3e)
+- **Hackathon Details:** [No Hands: The Wispr Challenge by WeMakeDevs & Wispr Flow](https://www.wemakedevs.org/wispr)
+- **Connect on LinkedIn:** [Nilesh Thipe](https://www.linkedin.com/in/nilesh-h-thipe-372291253/)
 
 ---
 

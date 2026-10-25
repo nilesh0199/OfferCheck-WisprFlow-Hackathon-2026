@@ -15,7 +15,7 @@ export function TopBar() {
   const pathname = usePathname();
   const router = useRouter();
   const isCheckPage = pathname === "/check" || pathname.startsWith("/check/");
-  const { isCommandBarEnabled, setCommandBarEnabled, toggleCommandBar } = useOfferSession();
+  const { isCommandBarEnabled, setCommandBarEnabled } = useOfferSession();
 
   // Listen for voice command or programmatic sidebar triggers
   useEffect(() => {
@@ -109,21 +109,15 @@ export function TopBar() {
 
           {/* Right Controls: Command bar toggle + Theme toggle + Home link + Primary "Check an offer" CTA button */}
           <div className="flex items-center gap-2 sm:gap-3 transition-all duration-300 ease-out">
-            {/* Command bar toggle: round On/Off pill with microphone icon, styled like ThemeToggle */}
+            {/* Command bar toggle: "CommandBar <Mic icon>" label + On/Off pill buttons */}
             <div
               role="group"
               aria-label="Commands"
-              title="Voice commands: dictate with Wispr Flow or any dictation tool"
+              title={isCommandBarEnabled ? "Hide command bar" : "Show command bar"}
               className="hidden sm:inline-flex items-center rounded-full border border-[var(--color-border-strong)]/40 bg-[var(--color-header-bg)]/80 p-1 gap-1 text-xs shadow-2xs transition-colors"
             >
-              <button
-                type="button"
-                onClick={toggleCommandBar}
-                aria-pressed={isCommandBarEnabled}
-                aria-label={isCommandBarEnabled ? "Hide command bar" : "Show command bar"}
-                title="Voice commands: dictate with Wispr Flow or any dictation tool"
-                className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full text-[var(--header-nav-text)] hover:text-[var(--header-text)] hover:bg-[rgba(255,255,255,0.08)] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] cursor-pointer"
-              >
+              <div className="flex items-center gap-1.5 pl-2.5 pr-1 text-xs font-medium text-[var(--header-nav-text)] select-none">
+                <span>CommandBar</span>
                 <svg
                   className="w-4 h-4 shrink-0 text-current"
                   viewBox="0 0 24 24"
@@ -138,35 +132,37 @@ export function TopBar() {
                   <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
                   <line x1="12" y1="19" x2="12" y2="22" />
                 </svg>
-              </button>
+              </div>
 
-              <button
-                type="button"
-                onClick={() => setCommandBarEnabled(true)}
-                aria-pressed={isCommandBarEnabled}
-                aria-label="Turn commands on"
-                className={`relative flex items-center justify-center px-2.5 h-7 sm:h-8 rounded-full text-xs transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] cursor-pointer ${
-                  isCommandBarEnabled
-                    ? "bg-[var(--color-primary)] text-[var(--color-primary-contrast)] shadow-xs font-semibold"
-                    : "text-[var(--header-nav-text)] hover:text-[var(--header-text)] hover:bg-[rgba(255,255,255,0.08)] font-medium"
-                }`}
-              >
-                On
-              </button>
+              <div className="inline-flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setCommandBarEnabled(true)}
+                  aria-pressed={isCommandBarEnabled}
+                  aria-label="Show command bar"
+                  className={`relative flex items-center justify-center px-2.5 h-7 sm:h-8 rounded-full text-xs transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] cursor-pointer ${
+                    isCommandBarEnabled
+                      ? "bg-[var(--color-primary)] text-[var(--color-primary-contrast)] shadow-xs font-semibold"
+                      : "text-[var(--header-nav-text)] hover:text-[var(--header-text)] hover:bg-[rgba(255,255,255,0.08)] font-medium"
+                  }`}
+                >
+                  On
+                </button>
 
-              <button
-                type="button"
-                onClick={() => setCommandBarEnabled(false)}
-                aria-pressed={!isCommandBarEnabled}
-                aria-label="Turn commands off"
-                className={`relative flex items-center justify-center px-2.5 h-7 sm:h-8 rounded-full text-xs transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] cursor-pointer ${
-                  !isCommandBarEnabled
-                    ? "bg-[var(--color-primary)] text-[var(--color-primary-contrast)] shadow-xs font-semibold"
-                    : "text-[var(--header-nav-text)] hover:text-[var(--header-text)] hover:bg-[rgba(255,255,255,0.08)] font-medium"
-                }`}
-              >
-                Off
-              </button>
+                <button
+                  type="button"
+                  onClick={() => setCommandBarEnabled(false)}
+                  aria-pressed={!isCommandBarEnabled}
+                  aria-label="Hide command bar"
+                  className={`relative flex items-center justify-center px-2.5 h-7 sm:h-8 rounded-full text-xs transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] cursor-pointer ${
+                    !isCommandBarEnabled
+                      ? "bg-[var(--color-primary)] text-[var(--color-primary-contrast)] shadow-xs font-semibold"
+                      : "text-[var(--header-nav-text)] hover:text-[var(--header-text)] hover:bg-[rgba(255,255,255,0.08)] font-medium"
+                  }`}
+                >
+                  Off
+                </button>
+              </div>
             </div>
 
             <ThemeToggle onHeader className="hidden sm:inline-flex" />

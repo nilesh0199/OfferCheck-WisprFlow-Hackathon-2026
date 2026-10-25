@@ -75,8 +75,34 @@ export function CheckClient() {
     }
   };
 
+  // Lock window scroll on desktop post-review workspace so only the center column moves
+  useEffect(() => {
+    if (!isPostReviewWorkspace || typeof window === "undefined") return;
+
+    const checkAndLock = () => {
+      if (window.innerWidth >= 1024) {
+        document.body.style.overflow = "hidden";
+      } else {
+        document.body.style.overflow = "";
+      }
+    };
+
+    checkAndLock();
+    window.addEventListener("resize", checkAndLock);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("resize", checkAndLock);
+    };
+  }, [isPostReviewWorkspace]);
+
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col justify-between transition-colors">
+    <div
+      className={`bg-[var(--bg)] text-[var(--text)] flex flex-col justify-between transition-colors ${
+        isPostReviewWorkspace
+          ? "lg:h-[calc(100dvh-4rem)] lg:max-h-[calc(100dvh-4rem)] lg:overflow-hidden min-h-screen lg:min-h-0"
+          : "min-h-screen"
+      }`}
+    >
       <ClearReviewDialog
         analysis={analysis}
         onClearSession={() => {
@@ -103,14 +129,14 @@ export function CheckClient() {
         /* ========================================================
             POST-REVIEW WORKSPACE: Locked Left & Right Rails, Middle Scroll Only
            ======================================================== */
-        <div className="flex-1 xl:h-[calc(100dvh-4rem)] xl:overflow-hidden flex flex-col">
-          <Container as="main" className="h-full flex flex-col py-2 sm:py-3 flex-1 xl:overflow-hidden">
-            <div className="grid grid-cols-1 xl:grid-cols-[240px_1fr] 2xl:grid-cols-[240px_1fr_360px] gap-6 xl:gap-8 items-start h-full xl:overflow-hidden">
-              {/* 1) Left Rail (~240px, desktop only >= 1280px): Locked navigation sidebar */}
+        <div className="flex-1 lg:h-[calc(100dvh-4rem)] lg:max-h-[calc(100dvh-4rem)] lg:overflow-hidden flex flex-col">
+          <Container as="main" className="h-full flex flex-col py-1.5 sm:py-2 flex-1 lg:overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr_320px] xl:grid-cols-[240px_1fr_360px] gap-4 xl:gap-6 items-start h-full lg:overflow-hidden">
+              {/* 1) Left Rail: Locked navigation sidebar */}
               <aside
                 aria-label="Review on-page navigation"
                 onWheel={handleRailWheel}
-                className="hidden xl:flex xl:flex-col xl:w-[240px] xl:shrink-0 xl:h-full xl:overflow-y-auto custom-scrollbar py-2 space-y-4"
+                className="hidden lg:flex lg:flex-col lg:w-[220px] xl:w-[240px] lg:shrink-0 lg:h-full lg:overflow-y-auto custom-scrollbar py-1 space-y-4"
               >
                 <ResultsNav
                   items={resultsNavItems}
@@ -122,7 +148,7 @@ export function CheckClient() {
               <section
                 id="review-results-scroll-container"
                 aria-label="Review findings and observations"
-                className="min-w-0 space-y-6 max-w-3xl w-full mx-auto xl:h-full xl:overflow-y-auto custom-scrollbar xl:px-4 py-2 pb-24"
+                className="min-w-0 space-y-6 max-w-3xl w-full mx-auto lg:h-full lg:overflow-y-auto custom-scrollbar lg:px-3 xl:px-4 py-1 pb-24"
               >
                 <div className="border-b border-[var(--border)] pb-2.5">
                   <h1 className="text-xl sm:text-2xl font-serif tracking-[-0.015em] text-[var(--text)] leading-tight">
@@ -144,8 +170,8 @@ export function CheckClient() {
                   }}
                 />
 
-                {/* Expandable 'Your text' panel for screens < 1536px (2xl) */}
-                <div className="2xl:hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3">
+                {/* Expandable 'Your text' panel for screens < 1024px (lg) */}
+                <div className="lg:hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3">
                   <button
                     type="button"
                     onClick={() => setMobileOfferExpanded(!mobileOfferExpanded)}
@@ -234,11 +260,11 @@ export function CheckClient() {
                 </div>
               </section>
 
-              {/* 3) Right Rail (~360px, desktop >= 1536px / 2xl): Locked 'Your text' document viewer */}
+              {/* 3) Right Rail: Locked 'Your text' document viewer */}
               <aside
                 aria-label="Your text document viewer"
                 onWheel={handleRailWheel}
-                className="hidden 2xl:flex 2xl:flex-col 2xl:w-[360px] 2xl:shrink-0 2xl:h-full 2xl:overflow-hidden py-2 space-y-4"
+                className="hidden lg:flex lg:flex-col lg:w-[320px] xl:w-[360px] lg:shrink-0 lg:h-full lg:overflow-y-auto custom-scrollbar py-1 space-y-4"
               >
                 <YourOfferWorkspace
                   text={analyzedSnapshotText}
@@ -372,7 +398,7 @@ export function CheckClient() {
       )}
 
       {/* Footer (hidden on desktop in post-review mode since it's inside the scroll container) */}
-      <footer className={`w-full border-t border-[var(--border)] bg-[var(--surface)] py-6 mt-12 transition-colors print:hidden ${isPostReviewWorkspace ? "xl:hidden" : ""}`}>
+      <footer className={`w-full border-t border-[var(--border)] bg-[var(--surface)] py-6 mt-12 transition-colors print:hidden ${isPostReviewWorkspace ? "lg:hidden" : ""}`}>
         <Container className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs text-[var(--text-muted)]">
           <div className="space-y-1">
             <p>

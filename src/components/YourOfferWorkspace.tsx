@@ -122,7 +122,7 @@ export function YourOfferWorkspace({
         tabIndex={0}
         role="region"
         aria-label="Analyzed text with line numbers and quote highlights"
-        className="max-h-[380px] 2xl:max-h-[calc(100dvh-17rem)] w-full overflow-y-auto rounded border border-[var(--border)] bg-[var(--surface-muted)] p-2.5 font-mono text-xs leading-relaxed text-[var(--text)] custom-scrollbar focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
+        className="max-h-[380px] lg:max-h-[calc(100dvh-15rem)] w-full overflow-y-auto rounded border border-[var(--border)] bg-[var(--surface-muted)] p-2.5 font-mono text-xs leading-relaxed text-[var(--text)] custom-scrollbar focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
       >
         {documentLines.map((line) => {
           const fullLineText = line.segments.map((s) => s.text).join("");

@@ -31,8 +31,9 @@ export function CommandBar() {
   const [pendingCommand, setPendingCommand] = useState<Command | null>(null);
   const [highlightHelp, setHighlightHelp] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
 
-  const isActive = isFocused || Boolean(pendingCommand) || Boolean(rawInput.trim());
+  const isActive = isFocused || Boolean(pendingCommand) || Boolean(rawInput.trim()) || isHelpOpen;
 
   const inputRef = useRef<HTMLInputElement>(null);
   const helpDialogRef = useRef<HTMLDialogElement>(null);
@@ -78,6 +79,21 @@ export function CommandBar() {
     [clearAnnouncementTimer]
   );
 
+  const openHelp = useCallback(() => {
+    window.dispatchEvent(
+      new CustomEvent("toggle-sidebar", { detail: { open: false } })
+    );
+    setIsHelpOpen(true);
+    setIsFocused(true);
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 50);
+  }, []);
+
+  const closeHelp = useCallback(() => {
+    setIsHelpOpen(false);
+  }, []);
+
   const triggerUnrecognised = useCallback(() => {
     clearCountdown();
     clearUnrecognisedTimer();
@@ -96,6 +112,9 @@ export function CommandBar() {
       clearCountdown();
       clearUnrecognisedTimer();
       setRawInput("");
+      if (cmd.kind !== "SHOW_HELP") {
+        closeHelp();
+      }
       // Keep input focused so user can continue voice or keyboard navigation
       inputRef.current?.focus();
 
@@ -121,7 +140,7 @@ export function CommandBar() {
         }
 
         case "SHOW_HELP": {
-          helpDialogRef.current?.showModal();
+          openHelp();
           break;
         }
 
@@ -281,6 +300,8 @@ export function CommandBar() {
       setStep,
       setStepSkipped,
       showAnnouncement,
+      closeHelp,
+      openHelp,
     ]
   );
 
@@ -291,6 +312,8 @@ export function CommandBar() {
     clearAnnouncementTimer();
     setRawInput("");
     setAnnouncement("");
+    inputRef.current?.focus();
+    setIsFocused(true);
   }, [clearCountdown, clearUnrecognisedTimer, clearAnnouncementTimer]);
 
   // Handle typing / dictating in input
@@ -366,10 +389,10 @@ export function CommandBar() {
     ]
   );
 
-  // Keyboard navigation: Any key cancels pending countdown (Enter runs immediately), Escape blurs, "/" or Cmd+K focuses
+  // Keyboard navigation: Space cancels pending countdown (Enter runs immediately), Escape blurs, "/" or Cmd+K focuses
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // If a command is pending/counting down, pressing any key cancels (Enter executes immediately)
+      // If a command is pending/counting down, Space cancels, Enter executes immediately
       if (pendingCommand) {
         if (e.key === "Enter") {
           e.preventDefault();
@@ -377,12 +400,24 @@ export function CommandBar() {
           executeCommand(pendingCommand);
           return;
         }
-        e.preventDefault();
-        handleCancel();
-        return;
+        if (e.key === " " || e.key === "Spacebar" || e.code === "Space") {
+          e.preventDefault();
+          handleCancel();
+          return;
+        }
+        if (e.key === "Escape") {
+          e.preventDefault();
+          handleCancel();
+          return;
+        }
       }
 
       if (e.key === "Escape") {
+        if (isHelpOpen) {
+          e.preventDefault();
+          closeHelp();
+          return;
+        }
         if (document.activeElement === inputRef.current) {
           inputRef.current?.blur();
           setIsFocused(false);
@@ -410,7 +445,73 @@ export function CommandBar() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [pendingCommand, handleCancel, clearCountdown, executeCommand]);
+  }, [pendingCommand, handleCancel, clearCountdown, executeCommand, isHelpOpen, closeHelp]);
+
+  // Sync help dialog modal state and lock background scroll
+  useEffect(() => {
+    const dialog = helpDialogRef.current;
+    if (!dialog) return;
+
+    if (isHelpOpen) {
+      if (!dialog.open) {
+        if (typeof dialog.show === "function") {
+          dialog.show();
+        } else {
+          dialog.showModal();
+        }
+      }
+      document.documentElement.style.overflow = "hidden";
+      document.body.style.overflow = "hidden";
+      setTimeout(() => {
+        inputRef.current?.focus();
+        setIsFocused(true);
+      }, 50);
+    } else {
+      if (dialog.open) {
+        dialog.close();
+      }
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+    }
+
+    return () => {
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+    };
+  }, [isHelpOpen]);
+
+  // Close What can I say modal when clicking anywhere outside it
+  useEffect(() => {
+    if (!isHelpOpen) return;
+
+    const handleWindowClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (
+        target?.closest?.("#command-help-dialog") ||
+        target?.closest?.('button[data-help-trigger="true"]') ||
+        target?.closest?.('aside[aria-label="Command bar"]')
+      ) {
+        return;
+      }
+      closeHelp();
+    };
+
+    window.addEventListener("click", handleWindowClick, true);
+    return () => window.removeEventListener("click", handleWindowClick, true);
+  }, [isHelpOpen, closeHelp]);
+
+  // If sidebar is opened, close the help dialog so they do not overlap
+  useEffect(() => {
+    const handleSidebarToggle = (e: Event) => {
+      const customEvent = e as CustomEvent<{ open?: boolean }>;
+      if (customEvent.detail?.open) {
+        closeHelp();
+      }
+    };
+
+    window.addEventListener("toggle-sidebar", handleSidebarToggle);
+    return () => window.removeEventListener("toggle-sidebar", handleSidebarToggle);
+  }, [closeHelp]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -471,6 +572,16 @@ export function CommandBar() {
         {announcement}
       </div>
 
+      {/* Backdrop overlay for What can I say modal */}
+      {isHelpOpen && (
+        <div
+          role="presentation"
+          aria-hidden="true"
+          onClick={closeHelp}
+          className="fixed inset-0 bg-[rgba(0,0,0,0.45)] backdrop-blur-xs z-40 transition-opacity duration-200 pointer-events-auto print:hidden"
+        />
+      )}
+
       {/* Docked Command Bar Container */}
       <aside
         aria-label="Command bar"
@@ -488,7 +599,7 @@ export function CommandBar() {
                 Running {getCommandDisplayLabel(pendingCommand)}...
               </span>
               <span className="text-[11px] text-[var(--text-muted)] font-normal">
-                (press any key to cancel)
+                (press space bar to cancel)
               </span>
             </div>
             <button
@@ -586,9 +697,16 @@ export function CommandBar() {
                   executeCommand(pendingCommand);
                   return;
                 }
-                e.preventDefault();
-                handleCancel();
-                return;
+                if (e.key === " " || e.key === "Spacebar" || e.code === "Space") {
+                  e.preventDefault();
+                  handleCancel();
+                  return;
+                }
+                if (e.key === "Escape") {
+                  e.preventDefault();
+                  handleCancel();
+                  return;
+                }
               }
 
               if (e.key === "Enter") {
@@ -628,9 +746,17 @@ export function CommandBar() {
 
           <button
             type="button"
-            onClick={() => helpDialogRef.current?.showModal()}
+            data-help-trigger="true"
+            aria-expanded={isHelpOpen}
+            onClick={() => {
+              if (isHelpOpen) {
+                closeHelp();
+              } else {
+                openHelp();
+              }
+            }}
             className={`shrink-0 px-2.5 sm:px-3 py-2 text-xs font-medium rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px] transition-colors border ${
-              highlightHelp
+              highlightHelp || isHelpOpen
                 ? "border-[var(--color-primary)] ring-2 ring-[var(--focus-ring)] text-[var(--color-primary)] font-semibold"
                 : "border-transparent"
             }`}
@@ -644,8 +770,29 @@ export function CommandBar() {
       <dialog
         ref={helpDialogRef}
         id="command-help-dialog"
-        className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xl backdrop:bg-[rgba(0,0,0,0.4)] max-w-lg w-full text-[var(--text)] space-y-4 print:hidden"
-        onCancel={() => helpDialogRef.current?.close()}
+        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 m-0 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xl max-w-lg w-[min(512px,calc(100vw-32px))] max-h-[85vh] text-[var(--text)] space-y-4 print:hidden"
+        onCancel={(e) => {
+          e.preventDefault();
+          closeHelp();
+        }}
+        onClose={() => {
+          if (isHelpOpen) {
+            setIsHelpOpen(false);
+          }
+        }}
+        onClick={(e) => {
+          const rect = helpDialogRef.current?.getBoundingClientRect();
+          if (rect) {
+            const isInside =
+              e.clientX >= rect.left &&
+              e.clientX <= rect.right &&
+              e.clientY >= rect.top &&
+              e.clientY <= rect.bottom;
+            if (!isInside) {
+              closeHelp();
+            }
+          }
+        }}
       >
         <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
           <h2 className="text-base font-semibold text-[var(--text)]">
@@ -653,9 +800,8 @@ export function CommandBar() {
           </h2>
           <button
             type="button"
-            onClick={() => helpDialogRef.current?.close()}
-            className="text-xs text-[var(--text-muted)] hover:text-[var(--text)] px-2 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px] inline-flex items-center"
-            autoFocus
+            onClick={closeHelp}
+            className="text-xs text-[var(--text-muted)] hover:text-[var(--text)] px-2 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px] inline-flex items-center cursor-pointer"
           >
             Close
           </button>

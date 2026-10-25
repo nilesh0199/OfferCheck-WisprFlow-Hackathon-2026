@@ -19,7 +19,7 @@ import {
 } from "@/lib/ask/prompt";
 import {
   sanitizeAndValidateAskResponse,
-  getOfflineFallbackAskResponse,
+  getDeterministicAskFallback,
 } from "@/lib/ask/guardrails";
 
 export const maxDuration = 60;
@@ -394,7 +394,7 @@ export async function POST(req: NextRequest) {
   }
 
   // PRIORITY 3: Deterministic Offline Fallback Response
-  const fallback = getOfflineFallbackAskResponse(lastUserMessage);
+  const fallback = getDeterministicAskFallback(lastUserMessage);
   return NextResponse.json(
     { ok: true, data: fallback },
     { status: 200, headers: NO_STORE_HEADERS }

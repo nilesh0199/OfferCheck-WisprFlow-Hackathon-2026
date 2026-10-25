@@ -1,8 +1,8 @@
 # Test Plan: OfferClara
 
 This document tracks all implemented, live, and planned automated tests for OfferClara across the development phases.
-- **Implemented**: Automated offline unit and integration tests active in Vitest (`npm test` — **477 tests passing across 49 test files as of 24 Oct 2026**).
-- **Manual / live**: Live test cases in `tests-live/analyze.live.test.ts` executed via `npm run test:live` (requires `GEMINI_API_KEY`). These are defined and ready to execute when an API key is supplied, without claiming they have been run in continuous offline verification.
+- **Implemented**: Automated offline unit and integration tests active in Vitest (`npm test` — **497 tests passing across 51 test files as of 25 Oct 2026**).
+- **Manual / live**: Live test cases in `tests-live/analyze.live.test.ts`, `tests-live/groq.live.test.ts`, and `tests-live/ask.live.test.ts` (evaluated against live API key and fallback paths).
 - **Planned**: Tests scheduled for implementation in subsequent phases.
 
 ---

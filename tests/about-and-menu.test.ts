@@ -71,6 +71,8 @@ describe("/about page and TopBar/Sidebar architecture", () => {
     expect(content).toContain('aria-label="OfferClara, home"');
     expect(content).toContain('href="/"');
     expect(content).toContain('href="/check"');
+    expect(content).toContain("Commands");
+    expect(content).toContain("Hide command bar");
   });
 
   it("Sidebar uses HTML5 dialog with zero-scroll flex layout and no WhatsApp link", () => {
@@ -82,6 +84,7 @@ describe("/about page and TopBar/Sidebar architecture", () => {
     expect(content).toContain("showModal()");
     expect(content).toContain('aria-label="Close sidebar"');
     expect(content).toContain("overflow-hidden");
+    expect(content).toContain("Command bar: ");
 
     // Links to /ask in Part 2 now that /ask is live
     expect(content).toContain('href="/ask"');

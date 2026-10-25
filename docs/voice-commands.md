@@ -8,16 +8,18 @@ The docked Command Box provides hands-free navigation across the site without cl
 
 ## Command Box Behavior
 
-- **Docked Input:** Positioned at the bottom of the viewport (`min(640px, 92vw)` on desktop; 44 px high bar on mobile). Contains an input box with the placeholder `Dictate a command` and a button labelled `What can I say?`.
-- **Minimal UI:** Contains no Run button, no shortcut badges, no microphone icon, and no translucent glassmorphism effects. It is hidden in print (`print:hidden`) and on error or not-found pages.
-- **Recognised Command:** When a command is recognised, a status line displays above the input: `Running <label> in 2... Cancel`.
-  - The 2-second countdown counts down in seconds.
-  - Clicking `Cancel` or pressing `Escape` cancels the execution and clears the input.
+- **Optional Toggle:** Positioned immediately left of the theme toggle in the top bar (`Commands` label at $\ge 1100$px; prompt-style `>_` icon below 1100px) and in the mobile sidebar below 640px (`Command bar: on/off`). The toggle state lives in volatile tab memory only (default ON at $\ge 768$px, OFF below 768px). When toggled OFF, the command bar, dock offset, and shortcuts are completely unmounted and inert. Turning ON displays the bar and focuses the input.
+- **Docked Input:** Positioned at the bottom of the viewport (`max-w-[min(480px,94vw)]`). Contains a decorative microphone icon, an input box with the placeholder `Dictate a command`, a decorative `Press / to start` shortcut badge, and a button labelled `What can I say?`.
+- **Dock Offset:** Sets `--dock-offset` dynamically on `:root` to (bar height + 16px) when rendered (72px) and `0px` when toggled off. All main containers apply `padding-bottom: calc(var(--dock-offset) + env(safe-area-inset-bottom) + 1rem)` and bottom-fixed controls position themselves via `bottom: calc(var(--dock-offset) + env(safe-area-inset-bottom))` so the bar never overlaps content.
+- **Recognised Command:** When a command is recognised, a status line displays above the input: `Running <label>... (press space bar to cancel)`.
+  - The 1-second countdown counts down in seconds.
+  - Pressing `Space` or clicking `Cancel` cancels execution, clears the text, and returns a clean, focused input.
   - Pressing `Enter` runs the command immediately without waiting for the timer.
+  - After executing a recognised navigation command, the input keeps focus and the text is cleared so dictation can continue.
 - **Unrecognised or Long Text:** If the input does not match a command or exceeds 80 characters, OfferClara immediately clears the input, reads out via `aria-live="polite"`: `"That command isn't recognised. Try again, or open the list of commands."`, and visually highlights the `What can I say?` button.
 - **Page Context Checks:** If a command designed for the check page (such as `next`, `back`, or `step 3`) is uttered while on another route (such as `/` or `/about`), the input is cleared and the notice displays: `"That command works on the check page."`
 - **Help Panel:** Clicking `What can I say?` opens an accessible dialog categorised into Anywhere and On check page commands, closing with the guidance:
-  *"No microphone permission is needed. Use Wispr Flow or any dictation tool to type for you. To enter your offer or your question, click that text box and dictate there."*
+  *"OfferClara does not use your microphone. Use Wispr Flow or any dictation tool to type into this box. To enter your offer or your question, click that text box and dictate there."*
 
 ---
 

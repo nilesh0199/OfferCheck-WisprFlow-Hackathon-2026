@@ -39,7 +39,8 @@ A review works in five structured steps:
 - **No scores or verdicts:** The tool never issues numeric risk scores, percentages, or binary verdict badges ("safe", "verified", "legit", "scam", or "fraud").
 - **Stated limits:** Every review includes immutable limits explaining what the tool cannot know (it cannot verify sender identity, corporate incorporation, or off-document oral promises).
 - **External research handoff:** Rather than claiming to verify company legitimacy in-app, the tool prepares a structured search prompt that candidates can copy to Perplexity to research company presence independently.
-- **Docked Command Box (Navigation Only):** Docked input (`Dictate a command`) with a `What can I say?` dialog and a 2-second countdown for hands-free site navigation without requiring microphone permissions.
+- **Docked Command Box (Navigation Only):** Docked input (`Dictate a command`) with an optional toggle (top bar and sidebar), status dot, active green glow, `What can I say?` dialog, Spacebar cancellation, and a 1-second countdown for hands-free site navigation without requiring microphone permissions.
+- **Clear Doubt with AI (`/ask`):** A focused, full-height chat interface with docked composer, auto-growing input, example question starter cards, right-aligned bubbles, left-aligned answer cards, and question-aware deterministic fallback with zero employer generalizations.
 
 ---
 
@@ -49,7 +50,8 @@ A review works in five structured steps:
 | :--- | :--- | :--- |
 | **5-step review wizard** | Implemented | Step-by-step guidance separating offer documents, source channel, candidate-described conversations, payment/document requests, and review snapshot at `/check`. Header row includes a "Clear and start over" ghost button. |
 | **Combined text & file review** | Implemented | Evaluates combined text up to 12,000 characters; up to 5 screenshots (PNG, JPEG, WebP) or PDFs (max 4 MB total) transcribed via Gemini multimodal API and appended with generic source markers (`---- Text from Screenshot N ----`, `---- Text from PDF N ----`) and 1-level undo. |
-| **Docked Command Box** | Implemented | Docked bottom bar with placeholder `Dictate a command` and `What can I say?` button, matching navigation patterns across the app, stripping conversational fillers, and providing a 2-second visual countdown. |
+| **Docked Command Box** | Implemented | Docked bottom bar with placeholder `Dictate a command`, optional top bar/sidebar toggle, active green glow, `What can I say?` dialog, Spacebar cancellation, 1-second countdown, and dynamic `--dock-offset` preventing viewport overlap. |
+| **Clear doubt with AI** | Implemented | Focused full-height chat interface at `/ask` with docked bottom composer, auto-growing textarea, IME guards, 2x2 starter questions, calm text-only loading state, and question-aware deterministic fallback with zero employer generalizations. |
 | **Master-detail results layout** | Implemented | 3 desktop columns: left rail `ResultsNav` with live scroll-spy, middle fluid `AnalysisResults`, and right rail `YourOfferWorkspace` document viewer with line numbers and quote highlights. |
 | **Review actions & export** | Implemented | `ResultsActionsBar` with print-ready PDF export (dynamic title `OfferClara review YYYY-MM-DD`), markdown summary clipboard copy, Web Share API, and native `<dialog id="clear-review-dialog">` clear confirmation. |
 | **Call or conversation descriptions** | Implemented | Candidates can type or dictate an account of a phone call or verbal interaction in their own words; reviewed with a dedicated review limit acknowledging candidate descriptions. |

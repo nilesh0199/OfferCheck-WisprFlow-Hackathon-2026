@@ -74,24 +74,48 @@ Native HTML5 `<dialog id="app-sidebar">` rendered at the root layout level with 
 ## 4. Docked Command Box (`CommandBar.tsx`)
 
 OfferClara includes a hands-free, voice-ready navigation box docked at the bottom of the viewport:
-- **Layout:** One docked input (`min(640px, 92vw)` desktop; 44px bar on mobile) with placeholder `"Dictate a command"` and button `"What can I say?"`.
+- **Optional Toggle:** Positioned immediately left of the theme toggle in the top bar (visible label `Commands` at $\ge 1100$px; prompt-style `>_` icon below 1100px) and in the sidebar below 640px (`Command bar: on/off`). The toggle state lives in volatile tab memory only (`SessionProvider`), defaulting ON at $\ge 768$px and OFF below 768px. When toggled OFF, the bar, its status line, help dialog, and dock space are completely unmounted and shortcuts (`/`, `Ctrl/Cmd+K`) are inert. Toggling ON displays the bar and focuses the input.
+- **Dock Offset Variable:** Sets `--dock-offset` dynamically on `:root` to (bar height + 16px) when rendered (72px) and `0px` when toggled off. All main containers apply `padding-bottom: calc(var(--dock-offset) + env(safe-area-inset-bottom) + 1rem)` and bottom-fixed controls position themselves via `bottom: calc(var(--dock-offset) + env(safe-area-inset-bottom))` so the bar never overlaps content or composers.
+- **Layout:** One docked input (`min(480px, 94vw)`) with decorative microphone icon, placeholder `"Dictate a command"`, decorative `"Press / to start"` badge, and button `"What can I say?"`.
 - **Navigation-Only Scope:** Strictly restricted to site and wizard navigation. Contains no answer-setting commands, no theme toggles, and no "Add to offer text" flows.
-- **Countdown Execution:** Recognised commands display a status line above the bar: `"Running <label> in 2... Cancel"` (with cancel button, Escape to cancel, Enter to run immediately).
+- **Active Glow & WCAG Contrast:** When active, the bar displays a green ring using semantic tokens `--color-command-active-border` (`#059669` light theme with $\ge 3.4:1$ contrast against `#ffffff` / `#f2f5f9`; `#34d399` dark theme with $\ge 5.8:1$ contrast), paired with a 2px border change and screen-reader status text so it never relies on colour alone. Focus stays in the input after executing a recognised navigation command.
+- **Execution & Spacebar Cancellation:** Recognised commands display a status line: `"Running <label>... (press space bar to cancel)"` with a 1-second countdown. Pressing Spacebar or clicking Cancel aborts the execution and clears the input. Pressing Enter executes immediately.
 - **Graceful Rejection:** Unrecognised input or long paragraphs (>80 chars) are cleared immediately, announcing via `aria-live="polite"`: `"That command isn't recognised. Try again, or open the list of commands."` and highlighting the `"What can I say?"` button.
-- **Page Context Awareness:** Check-page commands uttered on other routes prompt: `"That command works on the check page."`
-- **Zero Microphone Permissions:** Works with Wispr Flow or OS dictation tools typing directly into the input. No Web Speech API or microphone permissions required.
+- **Zero Microphone Permissions:** Works with Wispr Flow or OS dictation tools typing directly into the input. No Web Speech API, `getUserMedia`, or microphone permissions required.
 
 ---
 
-## 5. Normative Employment Wording Prohibition
+## 5. Home Page Hero Layout (`src/app/page.tsx`)
+
+- **Asymmetric Typography:** Headline uses a display clamp (`clamp(2.75rem, 5.5vw, 4.5rem)`) in `Newsreader` serif: `"Understand the offer. Know what to verify."` directly followed by a second line `"Make every offer clear."` in serif at `clamp(1.5rem, 2.5vw, 1.875rem)` in muted ink.
+- **Enlarged Action Buttons:** Primary button (`"Check an offer"`) and secondary button (`"View sample review"`) sized to `min-h-[3.5rem]` (56px) with `px-8` (2rem horizontal padding) and `text-[1.125rem]`, preserving WCAG focus rings and tap targets.
+- **Vertically Centered Desk Metaphor:** Desktop layout vertically centers the left typography column against the right-hand annotated demo card (`lg:items-center`), tightening top spacing so that at 1440x900 and 1366x768 the hero text, both buttons, and the top and body of the example card are fully visible above the fold without scrolling.
+- **Trust Strip:** Set in sans font at full `text-[1rem]` with generous spacing (`gap-x-4 gap-y-2`) highlighting no sign-up, in-memory processing, and fallback availability.
+
+---
+
+## 6. Clear Doubt with AI Chat Interface (`src/app/ask/`)
+
+- **Full-Height 3-Zone Architecture:** A focused, full-height chat interface (`h-[calc(100dvh-3.5rem)]`) structured as:
+  1. **Zone 1 (Header):** Compact header row with title `"Clear doubt with AI"`, sentence-case description, and a ghost `"Clear"` button with an inline confirmation dialog. Zero all-caps or monospace headings.
+  2. **Zone 2 (Scrollable Thread):** Centered `role="log"` region with `aria-live="polite"`, `aria-relevant="additions"`, and smooth auto-scrolling to user messages on send and to the top of answer cards on arrival. Empty state presents a clean 2x2 grid of 4 example questions that fill the composer on click. When messages exist, examples remain reachable via an `"Examples"` disclosure above the composer.
+  3. **Zone 3 (Docked Composer):** Docked at the bottom, strictly aware of `--dock-offset` and mobile `dvh`. Features an auto-growing textarea (1 to 6 lines, internal scroll after 144px), primary 44px up-arrow `"Ask"` button that flips to `"Stop"` during loading, tabular-nums character counter (`x/1,500`), optional review context checkbox, and tab-memory data notice with link to Privacy Details.
+- **Message Cards & Bubbles:** User messages styled as right-aligned bubbles with `rounded-[4px]` and `bg-[var(--surface-alt)]`. Assistant guidance rendered in left-aligned cards with clear sections: `"What this may mean"`, `"What to do now"`, `"What to ask or check"`, verified resource cards, and educational disclaimer.
+- **Calm Loading State:** Text-only `"Thinking..."` with a `"Cancel"` button. Zero spinners, respecting reduced motion preferences.
+- **Question-Aware Deterministic Fallback:** `getDeterministicAskFallback` provides targeted, calm guidance across company registration (MCA portal and Perplexity prompt), payments/fees (bank freeze, cybercrime 1930, `/resources#already-paid`), documents (Aadhaar/PAN masking), and messaging channels, prefixed with `"The AI service is unavailable right now, so this is general guidance."` with zero employer generalizations.
+
+---
+
+## 7. Normative Employment Wording Prohibition
 
 To prevent misleading students about employment norms:
 - **System Instruction:** In `src/lib/analysis/prompt.ts`, Rule 5 explicitly instructs the model never to assert what is "standard", "typical", "normal", or "usual" in hiring or employment.
 - **Deterministic Guardrail:** In `src/lib/analysis/guardrails.ts`, `detectOverclaiming` enforces `/\b(standard|typical|normal|usual)\b/i` across all model-written fields (observation, interpretation, note, verification question). Quotes from user-submitted text remain verbatim and exempt.
+- **Zero Generalizations in Fallbacks & Prompts:** All claims about fees cite verified facts (e.g. AICTE / NCS advisories) rather than generalizations about what employers "rarely", "normally", or "authentically" do.
 
 ---
 
-## 6. Typographic Architecture & Floor Audit
+## 8. Typographic Architecture & Floor Audit
 
 - **Scale Floor:** Strict `0.875rem` (14px at 16px root) floor enforced by `tests/token-audit.test.ts` across all components.
 - **Fonts:** Build-time Google fonts (`IBM Plex Sans`, `IBM Plex Mono`, `Newsreader`) via `next/font/google`.

@@ -119,7 +119,13 @@ export interface OfferSessionContextValue {
   askLoading: boolean;
   askError: { code: string; message: string } | null;
   sendAskQuestion: (question: string, reviewContext?: AskReviewContext) => Promise<void>;
+  cancelAskQuestion: () => void;
   clearAskThread: () => void;
+
+  // Command bar visibility (tab memory only, default ON at >= 768px, OFF below 768px):
+  isCommandBarEnabled: boolean;
+  setCommandBarEnabled: React.Dispatch<React.SetStateAction<boolean>>;
+  toggleCommandBar: () => void;
 }
 
 const OfferSessionContext = createContext<OfferSessionContextValue | null>(null);
@@ -142,6 +148,18 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [askThread, setAskThread] = useState<AskThreadMessage[]>([]);
   const [askLoading, setAskLoading] = useState(false);
   const [askError, setAskError] = useState<{ code: string; message: string } | null>(null);
+
+  // Command bar visibility state (tab memory only, default ON at >= 768px, OFF below 768px)
+  const [isCommandBarEnabled, setIsCommandBarEnabled] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      return window.innerWidth >= 768;
+    }
+    return true;
+  });
+
+  const toggleCommandBar = useCallback(() => {
+    setIsCommandBarEnabled((prev) => !prev);
+  }, []);
 
   // Keep a ref of selectedFiles so we can revoke object URLs on unmount without re-triggering effect
   const selectedFilesRef = useRef(state.selectedFiles);
@@ -439,6 +457,16 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     clearAskThread();
   }, [handleClear, clearAskThread]);
 
+  const askAbortControllerRef = useRef<AbortController | null>(null);
+
+  const cancelAskQuestion = useCallback(() => {
+    if (askAbortControllerRef.current) {
+      askAbortControllerRef.current.abort();
+      askAbortControllerRef.current = null;
+    }
+    setAskLoading(false);
+  }, []);
+
   const sendAskQuestion = useCallback(
     async (question: string, reviewContext?: AskReviewContext) => {
       const trimmed = question.trim();
@@ -466,6 +494,9 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       setAskLoading(true);
       setAskError(null);
 
+      const controller = new AbortController();
+      askAbortControllerRef.current = controller;
+
       try {
         const payload = {
           messages: updatedThread.map((m) => ({
@@ -479,6 +510,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
+          signal: controller.signal,
         });
 
         const data = await res.json();
@@ -498,13 +530,17 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
             "Unable to clear doubt right now. Please try again or check the official resources.";
           setAskError({ code, message });
         }
-      } catch {
+      } catch (err) {
+        if (err instanceof Error && err.name === "AbortError") {
+          return;
+        }
         setAskError({
           code: "NETWORK_ERROR",
           message:
             "A network error occurred while communicating with the server. Please check your connection.",
         });
       } finally {
+        askAbortControllerRef.current = null;
         setAskLoading(false);
       }
     },
@@ -813,7 +849,13 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       askLoading,
       askError,
       sendAskQuestion,
+      cancelAskQuestion,
       clearAskThread,
+
+      // Command bar visibility:
+      isCommandBarEnabled,
+      setCommandBarEnabled: setIsCommandBarEnabled,
+      toggleCommandBar,
     }),
     [
       state.currentStep,
@@ -876,7 +918,10 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       askLoading,
       askError,
       sendAskQuestion,
+      cancelAskQuestion,
       clearAskThread,
+      isCommandBarEnabled,
+      toggleCommandBar,
     ]
   );
 

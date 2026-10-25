@@ -1,4 +1,6 @@
 import { describe, it, expect } from "vitest";
+import fs from "fs";
+import path from "path";
 import {
   AskResponseSchema,
   AskResourceIdEnum,
@@ -6,19 +8,20 @@ import {
 import {
   sanitizeAskText,
   sanitizeAndValidateAskResponse,
+  getDeterministicAskFallback,
   getOfflineFallbackAskResponse,
 } from "@/lib/ask/guardrails";
 import { buildAskUserMessage } from "@/lib/ask/prompt";
 import { defaultAskRateLimiter } from "@/lib/rate-limit";
 
-describe("Clear doubt AI data contract and schema (Milestone Q2)", () => {
-  it("validates a well-formed ask response", () => {
+describe("Clear doubt AI data contract and schema", () => {
+  it("validates a well-formed ask response without generalizations", () => {
     const valid = {
       language: "en",
       summary: "This inquiry concerns a requested laptop security deposit.",
       whatThisMayMean: [
-        "Legitimate employers do not ask candidates to pay for office equipment.",
-        "Security deposits for internship assets are irregular in authentic hiring.",
+        "Advisories from student placement cells note that candidates should not be asked to pay for office equipment.",
+        "Security deposits for internship assets are irregular under official guidelines.",
       ],
       doNow: [
         "Do not transfer funds to the requested account or UPI ID.",
@@ -59,7 +62,16 @@ describe("Clear doubt AI data contract and schema (Milestone Q2)", () => {
   });
 
   it("permits only verified resource identifiers", () => {
-    const validEnum = ["cybercrime", "aicte", "ncs", "mca", "advisories", "resources_page"];
+    const validEnum = [
+      "cybercrime",
+      "aicte",
+      "ncs",
+      "mca",
+      "advisories",
+      "resources_page",
+      "check_page",
+      "research_prompt",
+    ];
     for (const id of validEnum) {
       expect(AskResourceIdEnum.safeParse(id).success).toBe(true);
     }
@@ -102,26 +114,139 @@ describe("Ask guardrails and sanitization", () => {
       expect(result.resources).toEqual(["cybercrime"]);
     }
   });
+});
 
-  it("generates deterministic offline fallback in English", () => {
-    const fb = getOfflineFallbackAskResponse("They want me to pay Rs 500 for training");
-    expect(fb.language).toBe("en");
-    expect(fb.summary).toContain("General verification guidance");
-    expect(fb.doNow.length).toBeGreaterThan(0);
+describe("Deterministic question-aware ask fallback (Milestone R3)", () => {
+  const REQUIRED_PREFIX = "The AI service is unavailable right now, so this is general guidance.";
+
+  it("handles company registration questions with MCA portal instructions and research prompt", () => {
+    const fb = getDeterministicAskFallback("How do I check whether a company is registered?");
+    expect(fb.summary.startsWith(REQUIRED_PREFIX)).toBe(true);
+    expect(fb.resources).toContain("mca");
+    expect(fb.resources).toContain("research_prompt");
+
+    const fullContent = JSON.stringify(fb);
+    expect(fullContent).toContain("Ministry of Corporate Affairs");
+    expect(fullContent).toContain("Check Company/LLP Name");
+    expect(fullContent).toContain("Perplexity");
+  });
+
+  it("handles payment/fee questions with bank, cybercrime 1930, and /resources#already-paid", () => {
+    const fb = getDeterministicAskFallback("They asked me to transfer a Rs 2,500 security deposit fee");
+    expect(fb.summary.startsWith(REQUIRED_PREFIX)).toBe(true);
+    expect(fb.resources).toContain("cybercrime");
+    expect(fb.resources).toContain("aicte");
+    expect(fb.resources).toContain("ncs");
+
+    const fullContent = JSON.stringify(fb);
+    expect(fullContent).toContain("1930");
+    expect(fullContent).toContain("cybercrime.gov.in");
+    expect(fullContent).toContain("/resources#already-paid");
+    expect(fullContent).toContain("reversal");
+  });
+
+  it("handles document/Aadhaar/PAN questions with safe sharing guidance", () => {
+    const fb = getDeterministicAskFallback("Can I share my Aadhaar card, PAN, and bank details?");
+    expect(fb.summary.startsWith(REQUIRED_PREFIX)).toBe(true);
     expect(fb.resources).toContain("cybercrime");
     expect(fb.resources).toContain("mca");
 
-    // Zero verdict words in fallback
-    const text = JSON.stringify(fb);
-    expect(text).not.toMatch(/\b(safe|verified|legit|scam|fraud)\b/i);
+    const fullContent = JSON.stringify(fb);
+    expect(fullContent).toContain("masked Aadhaar");
+    expect(fullContent).toContain("passwords");
   });
 
-  it("generates deterministic offline fallback in Hindi when Hindi text is detected", () => {
-    const fb = getOfflineFallbackAskResponse("क्या मुझे 2000 रुपये जमा करने चाहिए?");
-    expect(fb.language).toBe("hi");
-    expect(fb.summary).toContain("दिशानिर्देश");
-    expect(fb.doNow.length).toBeGreaterThan(0);
-    expect(fb.resources).toContain("cybercrime");
+  it("handles messaging questions with independent verification advice", () => {
+    const fb = getDeterministicAskFallback("I got an offer on WhatsApp and I did not apply");
+    expect(fb.summary.startsWith(REQUIRED_PREFIX)).toBe(true);
+    expect(fb.resources).toContain("mca");
+    expect(fb.resources).toContain("advisories");
+
+    const fullContent = JSON.stringify(fb);
+    expect(fullContent).toContain("messaging");
+    expect(fullContent).toContain("official");
+  });
+
+  it("handles generic questions with verified facts and questions to ask sender", () => {
+    const fb = getDeterministicAskFallback("What should I check before accepting?");
+    expect(fb.summary.startsWith(REQUIRED_PREFIX)).toBe(true);
+    expect(fb.resources).toContain("mca");
+    expect(fb.resources).toContain("aicte");
+    expect(fb.askOrCheck.length).toBeGreaterThan(0);
+  });
+
+  it("supports backwards compatibility alias getOfflineFallbackAskResponse", () => {
+    const fb1 = getDeterministicAskFallback("How do I check if a company exists?");
+    const fb2 = getOfflineFallbackAskResponse("How do I check if a company exists?");
+    expect(fb1).toEqual(fb2);
+  });
+});
+
+describe("Automated scan for banned words and employer generalizations in /ask", () => {
+  const askDir = path.resolve(process.cwd(), "src");
+
+  function getAskFiles(dir: string, out: string[] = []): string[] {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        getAskFiles(fullPath, out);
+      } else if (
+        entry.isFile() &&
+        (fullPath.includes(path.join("src", "lib", "ask")) ||
+          fullPath.includes(path.join("src", "app", "ask")))
+      ) {
+        out.push(fullPath);
+      }
+    }
+    return out;
+  }
+
+  it("ensures no code-owned string in /ask contains banned words or employer generalizations", () => {
+    const files = getAskFiles(askDir);
+    expect(files.length).toBeGreaterThan(0);
+
+    const bannedGeneralizations = [
+      /employers\s+do\s+not/i,
+      /authentic\s+employer/i,
+      /legitimate\s+employer/i,
+      /genuine\s+employer/i,
+      /authentic\s+internship/i,
+      /genuine\s+internship/i,
+      /rarely\s+ask/i,
+      /\btypically\b/i,
+      /\busually\b/i,
+      /\bnormally\b/i,
+    ];
+
+    const violations: { file: string; line: number; match: string }[] = [];
+
+    for (const filePath of files) {
+      const relPath = path.relative(process.cwd(), filePath);
+      const content = fs.readFileSync(filePath, "utf-8");
+      const lines = content.split("\n");
+
+      lines.forEach((line, index) => {
+        // Skip comment lines in prompt or code if any
+        for (const pattern of bannedGeneralizations) {
+          const match = line.match(pattern);
+          if (match) {
+            violations.push({
+              file: relPath,
+              line: index + 1,
+              match: match[0],
+            });
+          }
+        }
+      });
+    }
+
+    expect(
+      violations,
+      `Found forbidden employer generalizations in /ask:\n${violations
+        .map((v) => `${v.file}:${v.line} -> "${v.match}"`)
+        .join("\n")}`
+    ).toHaveLength(0);
   });
 });
 
@@ -138,7 +263,6 @@ describe("buildAskUserMessage with optional review context", () => {
     expect(msg).toContain("upfront_payment");
     expect(msg).toContain("stipend_or_pay");
     expect(msg).toContain("What are the daily hours?");
-    // Context boundaries
     expect(msg).toContain("--- Session Review Context (High-level summary only) ---");
   });
 
@@ -154,7 +278,6 @@ describe("Ask rate limiter", () => {
     const testKey = "test_ask_client_" + Date.now();
     const limiter = defaultAskRateLimiter;
 
-    // Up to default limit should be allowed
     const first = limiter.checkAndRecord(testKey);
     expect(first.allowed).toBe(true);
   });

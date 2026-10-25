@@ -11,6 +11,7 @@ import { matchCommand, Command } from "@/lib/commands/match";
 import { APP_NAME, HERO_HEADLINE } from "@/lib/config";
 import { useOfferSession } from "./SessionProvider";
 import { WizardStep } from "@/lib/combined-text";
+import { computeDockOffset, DOCK_BAR_DEFAULT_HEIGHT_PX } from "@/lib/dock-layout";
 
 export function CommandBar() {
   const router = useRouter();
@@ -23,6 +24,7 @@ export function CommandBar() {
     isReady,
     handleAnalyze,
     analysis,
+    isCommandBarEnabled,
   } = useOfferSession();
 
   const [rawInput, setRawInput] = useState("");
@@ -35,6 +37,7 @@ export function CommandBar() {
 
   const isActive = isFocused || Boolean(pendingCommand) || Boolean(rawInput.trim()) || isHelpOpen;
 
+  const asideRef = useRef<HTMLElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const helpDialogRef = useRef<HTMLDialogElement>(null);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -556,8 +559,45 @@ export function CommandBar() {
     }
   };
 
-  // Hidden on 404, error, and print
-  if (pathname === "/_not-found" || pathname === "/not-found") {
+  // Set --dock-offset on root so pages and fixed/sticky elements avoid overlapping the command bar
+  useEffect(() => {
+    if (!isCommandBarEnabled) {
+      document.documentElement.style.setProperty("--dock-offset", "0px");
+      return;
+    }
+
+    const updateDockOffset = () => {
+      const asideEl = asideRef.current;
+      const barHeight = asideEl ? asideEl.offsetHeight : DOCK_BAR_DEFAULT_HEIGHT_PX;
+      const offset = computeDockOffset(true, barHeight);
+      document.documentElement.style.setProperty("--dock-offset", `${offset}px`);
+    };
+
+    updateDockOffset();
+
+    const asideEl = asideRef.current;
+    if (!asideEl) return;
+
+    const observer = new ResizeObserver(() => {
+      updateDockOffset();
+    });
+    observer.observe(asideEl);
+
+    return () => {
+      observer.disconnect();
+      document.documentElement.style.setProperty("--dock-offset", "0px");
+    };
+  }, [isCommandBarEnabled, pendingCommand, announcement, isHelpOpen]);
+
+  // When enabled / shown, automatically focus the input field
+  useEffect(() => {
+    if (isCommandBarEnabled) {
+      inputRef.current?.focus();
+    }
+  }, [isCommandBarEnabled]);
+
+  // Hidden on 404, error, print, or when toggled off
+  if (pathname === "/_not-found" || pathname === "/not-found" || !isCommandBarEnabled) {
     return null;
   }
 
@@ -584,6 +624,7 @@ export function CommandBar() {
 
       {/* Docked Command Bar Container */}
       <aside
+        ref={asideRef}
         aria-label="Command bar"
         className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-[min(480px,94vw)] px-3 sm:px-0 pointer-events-none pb-[calc(env(safe-area-inset-bottom,0px))] print:hidden"
       >
@@ -598,7 +639,7 @@ export function CommandBar() {
               <span className="font-semibold text-[var(--text)]">
                 Running {getCommandDisplayLabel(pendingCommand)}...
               </span>
-              <span className="text-[11px] text-[var(--text-muted)] font-normal">
+              <span className="text-xs text-[var(--text-muted)] font-normal">
                 (press space bar to cancel)
               </span>
             </div>
@@ -654,26 +695,31 @@ export function CommandBar() {
           }`}
         >
           {/* Active Status Indicator Light */}
-          <div className="pl-2 shrink-0 flex items-center justify-center" aria-hidden="true">
+          <div className="pl-2 shrink-0 flex items-center justify-center">
             {isActive ? (
               <span className="relative flex h-2.5 w-2.5" title="Command bar active">
+                <span className="sr-only">Command bar active</span>
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--command-active-border)] opacity-75" />
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[var(--command-active-border)]" />
               </span>
             ) : (
-              <svg
-                className="w-4 h-4 text-[var(--text-muted)]"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
-                <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                <line x1="12" x2="12" y1="19" y2="22" />
-              </svg>
+              <>
+                <span className="sr-only">Command bar ready</span>
+                <svg
+                  aria-hidden="true"
+                  className="w-4 h-4 text-[var(--text-muted)]"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                  <line x1="12" x2="12" y1="19" y2="22" />
+                </svg>
+              </>
             )}
           </div>
 
@@ -731,6 +777,7 @@ export function CommandBar() {
               }
             }}
             placeholder="Dictate a command..."
+            title="Voice commands: dictate with Wispr Flow or any dictation tool"
             className="flex-1 min-w-0 bg-transparent text-xs sm:text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none min-h-[44px] px-2.5 sm:px-3 rounded-lg"
             aria-label="Dictate a command"
           />
@@ -738,10 +785,12 @@ export function CommandBar() {
           <button
             type="button"
             onClick={() => inputRef.current?.focus()}
-            title="Press / anywhere to focus the command box"
-            className="hidden sm:inline-flex items-center gap-1 text-[11px] text-[var(--text-muted)] hover:text-[var(--text)] bg-[var(--surface-muted)]/70 hover:bg-[var(--surface-muted)] border border-[var(--border)] rounded-md px-2 py-1 shrink-0 font-medium select-none cursor-pointer transition-colors"
+            aria-hidden="true"
+            tabIndex={-1}
+            title="Voice commands: dictate with Wispr Flow or any dictation tool"
+            className="hidden sm:inline-flex items-center gap-1.5 text-xs text-[var(--text-muted)] hover:text-[var(--text)] bg-[var(--surface-muted)]/70 hover:bg-[var(--surface-muted)] border border-[var(--border)] rounded-md px-2 py-1 shrink-0 font-medium select-none cursor-pointer transition-colors"
           >
-            Press <kbd className="font-mono font-semibold text-[var(--text)] text-[10px] bg-[var(--surface)] px-1 py-0.5 rounded border border-[var(--border)]">/</kbd> to start
+            Press <kbd className="font-sans font-semibold text-[var(--text)] text-xs bg-[var(--surface)] px-1 py-0.5 rounded border border-[var(--border)]">/</kbd> to start
           </button>
 
           <button
@@ -841,7 +890,7 @@ export function CommandBar() {
           </div>
 
           <p className="pt-2 text-xs border-t border-[var(--border)] leading-relaxed text-[var(--text-subtle)]">
-            No microphone permission is needed. Use Wispr Flow or any dictation tool to type for you. To enter your offer or your question, click that text box and dictate there.
+            OfferClara does not use your microphone. Use Wispr Flow or any dictation tool to type into this box. To enter your offer or your question, click that text box and dictate there.
           </p>
         </div>
       </dialog>

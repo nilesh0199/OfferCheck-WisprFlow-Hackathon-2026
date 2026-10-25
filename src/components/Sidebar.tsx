@@ -8,6 +8,7 @@ import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { GitHubIcon, ExternalLinkIcon } from "@/components/Icons";
 import { itemHeightRem } from "@/lib/sidebar";
+import { useOfferSession } from "@/components/SessionProvider";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   );
   const pathname = usePathname();
   const router = useRouter();
+  const { isCommandBarEnabled, toggleCommandBar } = useOfferSession();
 
   const handleHomeClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     onClose();
@@ -580,8 +582,47 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             </button>
           </div>
 
-          {/* Bottom Theme Control */}
-          <div className="pt-2 border-t border-[var(--border)] shrink-0">
+          {/* Bottom Controls: Command bar toggle (< 640px) + Theme Control */}
+          <div className="pt-2 border-t border-[var(--border)] shrink-0 space-y-1">
+            <div className="sm:hidden">
+              <button
+                type="button"
+                onClick={toggleCommandBar}
+                aria-pressed={isCommandBarEnabled}
+                aria-label={isCommandBarEnabled ? "Hide command bar" : "Show command bar"}
+                title="Voice commands: dictate with Wispr Flow or any dictation tool"
+                className="w-full flex items-center justify-between px-2 py-2 rounded-lg text-sm text-[var(--text)] hover:bg-[var(--surface-muted)] transition-colors text-left min-h-[44px] cursor-pointer"
+              >
+                <div className="flex items-center gap-2.5">
+                  <svg
+                    className="w-4 h-4 text-[var(--text-muted)] shrink-0"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <rect x="3" y="3" width="18" height="18" rx="4" />
+                    <path d="M7 8l4 4-4 4" />
+                    <path d="M13 16h4" />
+                  </svg>
+                  <span>Command bar: {isCommandBarEnabled ? "on" : "off"}</span>
+                </div>
+                <div className="flex items-center gap-1.5" aria-hidden="true">
+                  {isCommandBarEnabled ? (
+                    <span className="w-2 h-2 rounded-full bg-[var(--color-primary)]" />
+                  ) : (
+                    <span className="w-2 h-2 rounded-full border border-[var(--text-muted)]" />
+                  )}
+                </div>
+                <span className="sr-only">
+                  {isCommandBarEnabled ? "On" : "Off"}
+                </span>
+              </button>
+            </div>
+
             <div className="flex items-center justify-between px-2">
               <span className="text-xs font-medium text-[var(--text-muted)]">
                 Theme

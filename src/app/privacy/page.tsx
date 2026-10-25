@@ -116,7 +116,10 @@ export default function PrivacyPage() {
                   Offer text, attached files, and review results remain exclusively in your browser tab&apos;s volatile memory during your active session. When you refresh the page or close the tab, that data is immediately cleared.
                 </p>
                 <p>
-                  Your theme choice (light, dark, or system preference) is the only item saved in browser storage (<code className="font-mono text-xs px-1.5 py-0.5 rounded bg-[var(--surface-muted)] border border-[var(--border)]">localStorage</code>) to maintain visual consistency across visits.
+                  Your theme choice (light, dark, or system preference) is the only item saved in browser storage (<code className="font-mono text-xs px-1.5 py-0.5 rounded bg-[var(--surface-muted)] border border-[var(--border)]">localStorage</code>) to maintain visual consistency across visits. The optional command bar visibility state and doubt inquiry messages stay in volatile tab memory only and are never written to browser storage.
+                </p>
+                <p>
+                  OfferClara does not use or access your microphone. Spoken dictation is handled entirely on your device by your own operating system or speech application (such as Wispr Flow) typing directly into the focused input field.
                 </p>
               </div>
             </section>

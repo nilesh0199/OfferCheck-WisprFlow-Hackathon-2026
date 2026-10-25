@@ -66,11 +66,14 @@
   --color-tint-attention-accent: #d9a400;
   --color-tint-attention-text: #593e00;
 
-  /* Command Bar Active State (Green light surround) */
-  --color-command-active-border: #10b981;
-  --color-command-active-glow: rgba(16, 185, 129, 0.35);
+  /* Command Bar Active State (Green light surround, WCAG >= 3:1 UI component contrast) */
+  --color-command-active-border: #059669;
+  --color-command-active-glow: rgba(5, 150, 105, 0.25);
   --command-active-border: var(--color-command-active-border);
   --command-active-glow: var(--color-command-active-glow);
+
+  /* Dock Offset for Command Bar (0px when hidden/unmounted, barHeight + 16px when rendered) */
+  --dock-offset: 0px;
 
   /* Backwards-compatible aliases */
   --bg: var(--color-canvas);
@@ -167,6 +170,9 @@
   --command-active-border: var(--color-command-active-border);
   --command-active-glow: var(--color-command-active-glow);
 
+  /* Dock Offset for Command Bar (0px when hidden/unmounted, barHeight + 16px when rendered) */
+  --dock-offset: 0px;
+
   /* Backwards-compatible aliases */
   --bg: var(--color-canvas);
   --surface: var(--color-surface);
@@ -225,6 +231,11 @@ body {
 /* Headings font & tracking */
 h1, h2, h3, h4, h5, h6 {
   letter-spacing: -0.01em;
+}
+
+/* Ensure main content container respects bottom dock offset */
+main {
+  padding-bottom: calc(var(--dock-offset, 0px) + env(safe-area-inset-bottom, 0px) + 1rem);
 }
 
 /* Full-width Container Utility */

@@ -23,32 +23,37 @@ export default function LandingPage() {
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col justify-between transition-colors">
       <main className="flex-1">
         {/* Asymmetric Hero Section */}
-        <section className="pt-6 pb-12 sm:pt-10 sm:pb-16 border-b border-[var(--border)] bg-[var(--tint-info-bg)]/40 transition-colors">
-          <Container className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
+        <section className="pt-4 pb-10 sm:pt-6 sm:pb-12 lg:pt-8 lg:pb-12 border-b border-[var(--border)] bg-[var(--tint-info-bg)]/40 transition-colors">
+          <Container className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start lg:items-center">
             {/* Left Column: Asymmetric Typography, Actions & Trust Bar */}
-            <div className="lg:col-span-6 space-y-5 text-left">
-              <h1 className="text-3xl sm:text-5xl lg:text-5xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]">
-                Understand the offer. Know what to verify.
-              </h1>
+            <div className="lg:col-span-6 space-y-6 text-left">
+              <div className="space-y-3">
+                <h1 className="text-[clamp(2.75rem,5.5vw,4.5rem)] font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]">
+                  Understand the offer. Know what to verify.
+                </h1>
+                <p className="text-[clamp(1.5rem,2.5vw,1.875rem)] font-serif text-[var(--text-muted)] leading-snug">
+                  Make every offer clear.
+                </p>
+              </div>
 
               {/* Primary & Secondary CTAs */}
               <div className="pt-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
                 <Link
                   href="/check"
-                  className="inline-flex items-center justify-center rounded-xl bg-[var(--color-primary)] text-[var(--color-primary-contrast)] px-6 py-3 text-base font-semibold shadow-xs hover:bg-[var(--color-primary-hover)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px]"
+                  className="inline-flex items-center justify-center rounded-xl bg-[var(--color-primary)] text-[var(--color-primary-contrast)] px-8 py-3.5 text-[1.125rem] font-semibold shadow-xs hover:bg-[var(--color-primary-hover)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[3.5rem]"
                 >
                   Check an offer
                 </Link>
                 <Link
                   href="/check?sample=full-sample-a"
-                  className="inline-flex items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] px-5 py-3 text-base font-medium shadow-xs hover:bg-[var(--surface-muted)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px]"
+                  className="inline-flex items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] px-8 py-3.5 text-[1.125rem] font-medium shadow-xs hover:bg-[var(--surface-muted)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[3.5rem]"
                 >
                   View sample review
                 </Link>
               </div>
 
               {/* Trust Strip in Sans Font */}
-              <div className="pt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--text-muted)] font-sans">
+              <div className="pt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-[1rem] text-[var(--text-muted)] font-sans leading-normal">
                 <span>No sign-up</span>
                 <span aria-hidden="true">•</span>
                 <span>We do not store your offer text</span>

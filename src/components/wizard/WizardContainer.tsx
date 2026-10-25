@@ -187,7 +187,8 @@ export function WizardContainer({
         <div
           role="region"
           aria-label="Mobile step navigation"
-          className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-[var(--surface)] border-t border-[var(--border)] p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] shadow-lg flex items-center justify-between gap-3 print:hidden"
+          style={{ bottom: "calc(var(--dock-offset, 0px) + env(safe-area-inset-bottom, 0px))" }}
+          className="sm:hidden fixed left-0 right-0 z-40 bg-[var(--surface)] border-t border-[var(--border)] p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] shadow-lg flex items-center justify-between gap-3 print:hidden transition-all duration-300"
         >
           {currentStep > 1 ? (
             <button

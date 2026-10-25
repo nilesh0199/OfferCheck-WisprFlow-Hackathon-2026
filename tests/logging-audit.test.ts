@@ -112,4 +112,36 @@ describe("Logging Audit and Privacy Guard", () => {
     );
     expect(transcribeContent).toContain("[OfferClara] Transcription attempt failed:");
   });
+
+  it("ensures zero microphone or browser speech recognition APIs exist anywhere under src/", () => {
+    const forbiddenApisRegex =
+      /\b(SpeechRecognition|webkitSpeechRecognition|getUserMedia|navigator\.mediaDevices|MediaRecorder)\b/;
+
+    const violations: { file: string; line: number; text: string; match: string }[] = [];
+
+    for (const file of sourceFiles) {
+      const relFile = path.relative(srcDir, file).replace(/\\/g, "/");
+      const content = fs.readFileSync(file, "utf-8");
+      const lines = content.split("\n");
+
+      lines.forEach((line, index) => {
+        const match = line.match(forbiddenApisRegex);
+        if (match) {
+          violations.push({
+            file: relFile,
+            line: index + 1,
+            text: line.trim(),
+            match: match[0],
+          });
+        }
+      });
+    }
+
+    expect(
+      violations,
+      `Forbidden microphone or speech APIs detected under src/:\n${violations
+        .map((v) => `${v.file}:${v.line} [${v.match}] -> ${v.text}`)
+        .join("\n")}`
+    ).toHaveLength(0);
+  });
 });

@@ -11,18 +11,18 @@ export function StaticAnnotatedCard() {
           <span className="w-2.5 h-2.5 rounded-full bg-[var(--border)]" />
           <span className="w-2.5 h-2.5 rounded-full bg-[var(--border)]" />
           <span className="w-2.5 h-2.5 rounded-full bg-[var(--border)]" />
-          <span className="ml-2 font-mono text-[0.75rem] text-[var(--text-muted)] truncate max-w-[200px] sm:max-w-none">
+          <span className="ml-2 font-mono text-xs text-[var(--text-muted)] truncate max-w-[200px] sm:max-w-none">
             internship_offer_letter_synthetic.pdf
           </span>
         </div>
-        <span className="font-mono text-[0.6875rem] px-2 py-0.5 rounded bg-[var(--surface)] text-[var(--text-muted)] border border-[var(--border)]">
+        <span className="font-mono text-xs px-2 py-0.5 rounded bg-[var(--surface)] text-[var(--text-muted)] border border-[var(--border)]">
           Demo Document
         </span>
       </div>
 
       {/* Document Body with Highlighted Phrases and Callout Badges */}
       <div className="p-5 sm:p-6 space-y-5 text-left font-sans text-xs sm:text-sm">
-        <div className="space-y-1 text-[var(--text-muted)] font-mono text-[0.75rem] border-b border-[var(--border)] pb-3">
+        <div className="space-y-1 text-[var(--text-muted)] font-mono text-xs border-b border-[var(--border)] pb-3">
           <p>Sender: careers@vortexpulse-tech-portal.online</p>
           <p>Subject: Internship Selection — Data Analyst Trainee</p>
         </div>
@@ -40,7 +40,7 @@ export function StaticAnnotatedCard() {
             </mark>{" "}
             prior to project assignment.&quot;
           </p>
-          <div className="flex items-center gap-1.5 text-[0.75rem] text-[var(--color-primary)] font-medium pl-1">
+          <div className="flex items-center gap-1.5 text-xs text-[var(--color-primary)] font-medium pl-1">
             <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-highlighter)]" aria-hidden="true" />
             <span>Observation: Paid training requested before internship starts</span>
           </div>
@@ -55,7 +55,7 @@ export function StaticAnnotatedCard() {
             </mark>
             .&quot;
           </p>
-          <div className="flex items-center gap-1.5 text-[0.75rem] text-[var(--color-primary)] font-medium pl-1">
+          <div className="flex items-center gap-1.5 text-xs text-[var(--color-primary)] font-medium pl-1">
             <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-highlighter)]" aria-hidden="true" />
             <span>Observation: Urgent payment deadline prevents independent verification</span>
           </div>
@@ -70,7 +70,7 @@ export function StaticAnnotatedCard() {
             </mark>{" "}
             for instant batch allocation.&quot;
           </p>
-          <div className="flex items-center gap-1.5 text-[0.75rem] text-[var(--color-primary)] font-medium pl-1">
+          <div className="flex items-center gap-1.5 text-xs text-[var(--color-primary)] font-medium pl-1">
             <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-highlighter)]" aria-hidden="true" />
             <span>Observation: Contact and payment proof diverted to personal messaging app</span>
           </div>

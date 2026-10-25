@@ -79,6 +79,7 @@ describe("WCAG 2.1 Contrast Ratios for Semantic Design Tokens", () => {
       expect(light["--color-tint-info-bg"]).toBeDefined();
       expect(light["--color-tint-action-bg"]).toBeDefined();
       expect(light["--color-tint-attention-bg"]).toBeDefined();
+      expect(light["--color-command-active-border"]).toBeDefined();
     });
 
     it("header text and nav text achieve >= 4.5:1 against header-bg", () => {
@@ -136,6 +137,11 @@ describe("WCAG 2.1 Contrast Ratios for Semantic Design Tokens", () => {
       // In light mode, keyboard focus on navy bar uses white offset ring
       expect(contrastRatio("#ffffff", light["--color-header-bg"])).toBeGreaterThanOrEqual(3.0);
     });
+
+    it("command active border achieves >= 3:1 against surface and canvas", () => {
+      expect(contrastRatio(light["--color-command-active-border"], light["--color-surface"])).toBeGreaterThanOrEqual(3.0);
+      expect(contrastRatio(light["--color-command-active-border"], light["--color-canvas"])).toBeGreaterThanOrEqual(3.0);
+    });
   });
 
   describe("Dark Theme Token Contrast", () => {
@@ -158,6 +164,7 @@ describe("WCAG 2.1 Contrast Ratios for Semantic Design Tokens", () => {
       expect(dark["--color-focus-ring"]).toBeDefined();
       expect(dark["--color-tint-info-bg"]).toBeDefined();
       expect(dark["--color-tint-action-bg"]).toBeDefined();
+      expect(dark["--color-command-active-border"]).toBeDefined();
       expect(dark["--color-tint-attention-bg"]).toBeDefined();
     });
 
@@ -211,6 +218,11 @@ describe("WCAG 2.1 Contrast Ratios for Semantic Design Tokens", () => {
       expect(contrastRatio(dark["--color-focus-ring"], dark["--color-canvas"])).toBeGreaterThanOrEqual(3.0);
       expect(contrastRatio(dark["--color-focus-ring"], dark["--color-surface"])).toBeGreaterThanOrEqual(3.0);
       expect(contrastRatio(dark["--color-focus-ring"], dark["--color-header-bg"])).toBeGreaterThanOrEqual(3.0);
+    });
+
+    it("command active border achieves >= 3:1 against surface and canvas", () => {
+      expect(contrastRatio(dark["--color-command-active-border"], dark["--color-surface"])).toBeGreaterThanOrEqual(3.0);
+      expect(contrastRatio(dark["--color-command-active-border"], dark["--color-canvas"])).toBeGreaterThanOrEqual(3.0);
     });
   });
 });

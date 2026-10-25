@@ -2,6 +2,7 @@ export const APP_NAME = "OfferClara";
 export const TAGLINE = "Make every offer clear.";
 export const HERO_HEADLINE = "Understand the offer. Know what to verify.";
 export const FULL_TAGLINE = "Understand the offer. Know what to verify. Make every offer clear.";
+export const PRODUCTION_DOMAIN = "https://offerclara-wisprflow.vercel.app";
 export const MAX_INPUT_CHARS = 12000;
 export const MIN_INPUT_CHARS = 40;
 export const MIN_QUOTE_CHARS = 4;

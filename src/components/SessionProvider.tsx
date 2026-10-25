@@ -37,6 +37,7 @@ import { MIN_INPUT_CHARS } from "@/lib/config";
 import { compressFileForUpload, TranscribedItem } from "@/lib/upload";
 import { buildCombinedText, isReadyToAnalyse } from "@/lib/combined-text";
 import { AskThreadMessage, AskReviewContext } from "@/lib/ask/schema";
+import { getStoredSampleAnalysis } from "@/data/stored-sample-analysis";
 
 const CLIENT_TIMEOUT_MS = 65000; // 65-second client-side timeout cap
 
@@ -139,6 +140,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const abortControllerRef = useRef<AbortController | null>(null);
   const timeoutHandleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const sampleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const transcribeAbortControllerRef = useRef<AbortController | null>(null);
   const transcribeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -173,6 +175,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     return () => {
       if (timeoutHandleRef.current) clearTimeout(timeoutHandleRef.current);
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+      if (sampleTimerRef.current) clearTimeout(sampleTimerRef.current);
       if (abortControllerRef.current) abortControllerRef.current.abort();
       if (transcribeTimeoutRef.current) clearTimeout(transcribeTimeoutRef.current);
       if (transcribeIntervalRef.current) clearInterval(transcribeIntervalRef.current);
@@ -548,6 +551,10 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   );
 
   const handleCancel = useCallback(() => {
+    if (sampleTimerRef.current) {
+      clearTimeout(sampleTimerRef.current);
+      sampleTimerRef.current = null;
+    }
     if (abortControllerRef.current) {
       abortControllerRef.current.abort("user_cancelled");
     }
@@ -587,6 +594,30 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       type: "START_ANALYSIS",
       payload: { snapshotText: currentSnapshot },
     });
+
+    // Check if this matches a pre-stored synthetic sample (e.g. "View sample review")
+    // Guarantees completion in ~1.2s (well under 5s ceiling) with 100% reliability
+    const storedSample = getStoredSampleAnalysis(currentSnapshot);
+    if (storedSample) {
+      if (timeoutHandleRef.current) clearTimeout(timeoutHandleRef.current);
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+
+      dispatch({ type: "TICK_ELAPSED", payload: 1 });
+
+      const sampleTimer = setTimeout(() => {
+        dispatch({
+          type: "ANALYSIS_SUCCESS",
+          payload: {
+            analysis: storedSample,
+            snapshotText: currentSnapshot,
+          },
+        });
+        sampleTimerRef.current = null;
+      }, 1200);
+
+      sampleTimerRef.current = sampleTimer;
+      return;
+    }
 
     // Start elapsed-seconds timer
     const startTime = Date.now();

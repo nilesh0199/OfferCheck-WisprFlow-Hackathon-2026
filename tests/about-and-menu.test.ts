@@ -13,6 +13,23 @@ describe("/about page and TopBar/Sidebar architecture", () => {
     expect(content.includes('"use client"')).toBe(false);
   });
 
+  it("includes 'Why the name OfferClara?' section directly above 'Why it exists'", () => {
+    const content = fs.readFileSync(aboutPath, "utf-8");
+    const nameIdx = content.indexOf("Why the name OfferClara?");
+    const existsIdx = content.indexOf("Why it exists");
+
+    expect(nameIdx).toBeGreaterThanOrEqual(0);
+    expect(existsIdx).toBeGreaterThanOrEqual(0);
+    expect(nameIdx).toBeLessThan(existsIdx);
+
+    expect(content).toContain("represents the job and internship offers candidates receive.");
+    expect(content).toContain(
+      "represents clarity — helping people understand an offer, recognise potential red flags, and know what to verify before paying money or sharing documents."
+    );
+    expect(content).toContain("Together,");
+    expect(content).toContain("means bringing clarity to every offer.");
+  });
+
   it("includes all required sections in exact order on /about (P3)", () => {
     const content = fs.readFileSync(aboutPath, "utf-8");
     const requiredHeadings = [

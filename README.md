@@ -4,7 +4,7 @@
 
 A free, no-sign-in review assistant that helps students and first-time job seekers read an internship or job offer carefully before they pay money or share documents.
 
-- **Live Demo:** [offer-check-wispr-flow-hackathon-20.vercel.app](https://offer-check-wispr-flow-hackathon-20.vercel.app)
+- **Live Demo:** [offerclara-wisprflow.vercel.app](https://offerclara-wisprflow.vercel.app/)
 - **Repository:** [github.com/nilesh0199/OfferCheck-WisprFlow-Hackathon-2026](https://github.com/nilesh0199/OfferCheck-WisprFlow-Hackathon-2026)
 - **Routes:** `/` (landing page and overview) · `/check` (review workspace) · `/resources` (official verification portals and reporting channels) · `/privacy` (privacy notice and data handling practices) · `/about` (about OfferClara) · `/ask` (clear doubt with AI)
 

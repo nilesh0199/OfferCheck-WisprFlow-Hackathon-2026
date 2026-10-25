@@ -3,7 +3,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { APP_NAME, TAGLINE, HERO_HEADLINE } from "@/lib/config";
+import { APP_NAME, TAGLINE, HERO_HEADLINE, PRODUCTION_DOMAIN } from "@/lib/config";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { GitHubIcon, ExternalLinkIcon } from "@/components/Icons";
@@ -155,7 +155,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const shareUrl =
     typeof window !== "undefined"
       ? window.location.origin
-      : "https://offerclara.vercel.app";
+      : PRODUCTION_DOMAIN;
 
   const handleShare = async () => {
     onClose();

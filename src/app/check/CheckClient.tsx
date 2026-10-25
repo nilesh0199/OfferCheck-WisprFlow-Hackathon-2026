@@ -14,6 +14,7 @@ import { ClearReviewDialog } from "@/components/ClearReviewDialog";
 import { SpinnerIcon } from "@/components/Icons";
 import { useOfferSession } from "@/components/SessionProvider";
 import { FULL_WIZARD_SAMPLES } from "@/data/wizard-samples";
+import { SYNTHETIC_EXAMPLES } from "@/data/examples";
 import Link from "next/link";
 
 export function CheckClient() {
@@ -30,6 +31,7 @@ export function CheckClient() {
     handleCancel,
     handleClear,
     loadWizardSample,
+    setOfferText,
     setStep,
   } = useOfferSession();
 
@@ -43,14 +45,25 @@ export function CheckClient() {
       const params = new URLSearchParams(window.location.search);
       const sampleId = params.get("sample");
       if (sampleId) {
-        const full = FULL_WIZARD_SAMPLES.find((s) => s.id === sampleId);
+        const full = FULL_WIZARD_SAMPLES.find(
+          (s) =>
+            s.id === sampleId ||
+            (sampleId === "full-sample-a" && s.id === "full-sample-course-as-internship") ||
+            (sampleId === "full-sample-b" && s.id === "full-sample-phone-call-account")
+        );
         if (full) {
           loadWizardSample(full);
           setStep(5);
+        } else {
+          const single = SYNTHETIC_EXAMPLES.find((s) => s.id === sampleId);
+          if (single) {
+            setOfferText(single.text);
+            setStep(5);
+          }
         }
       }
     }
-  }, [loadWizardSample, setStep]);
+  }, [loadWizardSample, setStep, setOfferText]);
 
   // Compute sections dynamically for ResultsNav (left rail)
   const resultsNavItems = useMemo<ResultsNavItem[]>(() => {

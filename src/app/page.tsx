@@ -45,7 +45,7 @@ export default function LandingPage() {
                   Check an offer
                 </Link>
                 <Link
-                  href="/check?sample=full-sample-a"
+                  href="/check?sample=full-sample-course-as-internship"
                   className="inline-flex items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] px-8 py-3.5 text-[1.125rem] font-medium shadow-xs hover:bg-[var(--surface-muted)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[3.5rem]"
                 >
                   View sample review

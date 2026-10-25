@@ -3,6 +3,7 @@ import { analyzeOfferText } from "@/lib/analysis/gemini";
 import { validateInputHygiene } from "@/lib/input-hygiene";
 import { deriveClientKey, defaultRateLimiter } from "@/lib/rate-limit";
 import { defaultConcurrencyGuard } from "@/lib/concurrency";
+import { getStoredSampleAnalysis } from "@/data/stored-sample-analysis";
 
 export const maxDuration = 60;
 
@@ -109,6 +110,18 @@ export async function POST(req: NextRequest) {
         },
       },
       { status: hygiene.httpStatus, headers: NO_STORE_HEADERS }
+    );
+  }
+
+  // 6b. Check for pre-stored synthetic sample analysis (instant response, zero LLM token/quota usage)
+  const storedSample = getStoredSampleAnalysis(hygiene.text);
+  if (storedSample) {
+    return NextResponse.json(
+      {
+        ok: true,
+        analysis: storedSample,
+      },
+      { status: 200, headers: NO_STORE_HEADERS }
     );
   }
 

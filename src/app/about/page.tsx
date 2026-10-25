@@ -32,6 +32,51 @@ export default function AboutPage() {
           </div>
 
           <div className="space-y-8 max-w-4xl mx-auto text-left">
+            {/* Why the name OfferClara? */}
+            <section
+              id="why-the-name-offerclara"
+              aria-labelledby="heading-why-the-name-offerclara"
+              className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 sm:p-8 space-y-4 shadow-xs"
+            >
+              <h2
+                id="heading-why-the-name-offerclara"
+                className="text-lg sm:text-xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]"
+              >
+                Why the name OfferClara?
+              </h2>
+              <div className="text-xs sm:text-sm text-[var(--text-muted)] space-y-3.5 leading-relaxed">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 space-y-1.5">
+                    <span
+                      aria-hidden="true"
+                      className="inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-md bg-[var(--surface)] text-[var(--color-primary)] border border-[var(--border)] shadow-2xs"
+                    >
+                      Offer
+                    </span>
+                    <p>
+                      <strong className="text-[var(--text)] font-semibold">Offer</strong> represents the job and internship offers candidates receive.
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 space-y-1.5">
+                    <span
+                      aria-hidden="true"
+                      className="inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-md bg-[var(--surface)] text-[var(--color-primary)] border border-[var(--border)] shadow-2xs"
+                    >
+                      Clara
+                    </span>
+                    <p>
+                      <strong className="text-[var(--text)] font-semibold">Clara</strong> represents clarity — helping people understand an offer, recognise potential red flags, and know what to verify before paying money or sharing documents.
+                    </p>
+                  </div>
+                </div>
+
+                <p className="pt-0.5 text-xs sm:text-sm text-[var(--text)] leading-relaxed">
+                  Together, <strong className="font-semibold text-[var(--color-primary)]">OfferClara</strong> means bringing clarity to every offer.
+                </p>
+              </div>
+            </section>
+
             {/* 1. Why it exists */}
             <section
               id="why-it-exists"

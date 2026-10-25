@@ -8,7 +8,7 @@ import React, {
 } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { matchCommand, Command } from "@/lib/commands/match";
-import { APP_NAME, HERO_HEADLINE } from "@/lib/config";
+import { APP_NAME, HERO_HEADLINE, PRODUCTION_DOMAIN } from "@/lib/config";
 import { useOfferSession } from "./SessionProvider";
 import { WizardStep } from "@/lib/combined-text";
 import { computeDockOffset, DOCK_BAR_DEFAULT_HEIGHT_PX } from "@/lib/dock-layout";
@@ -173,7 +173,7 @@ export function CommandBar() {
           const shareUrl =
             typeof window !== "undefined"
               ? window.location.origin
-              : "https://offerclara.vercel.app";
+              : PRODUCTION_DOMAIN;
 
           if (typeof navigator !== "undefined" && navigator.share) {
             try {

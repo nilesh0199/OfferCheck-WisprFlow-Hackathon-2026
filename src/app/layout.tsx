@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Newsreader, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
-import { APP_NAME, HERO_HEADLINE } from "@/lib/config";
+import { APP_NAME, HERO_HEADLINE, PRODUCTION_DOMAIN } from "@/lib/config";
 import { THEME_INLINE_SCRIPT } from "@/lib/theme";
 import { SessionProvider } from "@/components/SessionProvider";
 import { ScrollToTop } from "@/components/ScrollToTop";
@@ -35,7 +35,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
   ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
   : process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
-  : "http://localhost:3000";
+  : PRODUCTION_DOMAIN;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

@@ -3,8 +3,7 @@
 import React, { useState, useCallback } from "react";
 import { ValidatedAnalysis } from "@/lib/analysis/schema";
 import { buildReviewSummary } from "@/lib/analysis/summary";
-import { sortConcernsByPriority } from "@/lib/analysis/priorities";
-import { getConcernCategoryLabel } from "@/lib/analysis/labels";
+import { generateReviewPdfBlob } from "@/lib/pdf/generateReviewPdf";
 import { APP_NAME, HERO_HEADLINE } from "@/lib/config";
 import { CopyIcon, CheckIcon, PrinterIcon, ShareIcon } from "./Icons";
 
@@ -69,40 +68,72 @@ export function ResultsActionsBar({
     }
   };
 
-  // Safe share text that does NOT leak full offer text
+  // Share review summary with PDF attachment, name, and tagline
   const handleShare = async () => {
-    const sorted = sortConcernsByPriority(analysis.concerns);
-    const top2 = sorted.slice(0, 2).map((c, i) => {
-      const label = getConcernCategoryLabel(c.category);
-      return `${i + 1}. ${label}: ${c.observation}`;
+    const summaryText = buildReviewSummary(analysis, analyzedSnapshotText, {
+      sourceNote,
+      conversationText,
     });
 
-    const concernsText =
-      top2.length > 0
-        ? top2.join(" ")
-        : "No upfront fees or severe warning signs identified in the provided text.";
+    const shareUrl =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/check`
+        : "/check";
+    const shareTitle = `${APP_NAME} Review Summary — ${HERO_HEADLINE}`;
+    const shareText = `${APP_NAME} — ${HERO_HEADLINE}\n\n${summaryText}\n\nReview an offer at: ${shareUrl}`;
 
-    const sharePayload = {
-      title: `${APP_NAME} — ${HERO_HEADLINE}`,
-      text: `I just reviewed an offer using ${APP_NAME}. ${HERO_HEADLINE} Here is what to watch out for: ${concernsText} Check yours at /check`,
-      url: typeof window !== "undefined" ? window.location.origin + "/check" : "/check",
-    };
+    let pdfFile: File | null = null;
+    try {
+      const blob = generateReviewPdfBlob({
+        analysis,
+        analyzedSnapshotText,
+        sourceNote,
+        conversationText,
+      });
+      const companySlug = analysis.entities?.companyName
+        ? analysis.entities.companyName
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .slice(0, 30)
+        : "offer";
+      const dateStr = new Date().toISOString().split("T")[0];
+      const filename = `offerclara-review-${companySlug}-${dateStr}.pdf`;
+      pdfFile = new File([blob], filename, { type: "application/pdf" });
+    } catch {
+      // Fallback without file if File constructor unsupported
+    }
 
-    if (navigator?.share) {
+    if (typeof navigator !== "undefined" && navigator.share) {
       try {
-        await navigator.share(sharePayload);
+        if (pdfFile && navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+          await navigator.share({
+            title: shareTitle,
+            text: shareText,
+            files: [pdfFile],
+          });
+          setLiveAnnouncement("Shared review summary with PDF");
+          return;
+        }
+
+        await navigator.share({
+          title: shareTitle,
+          text: shareText,
+          url: shareUrl,
+        });
         setLiveAnnouncement("Shared review summary");
         return;
-      } catch {
-        // User cancelled or unsupported, fallback to clipboard
+      } catch (err: unknown) {
+        if (err instanceof Error && err.name === "AbortError") {
+          return;
+        }
       }
     }
 
     // Clipboard fallback
     try {
-      await navigator.clipboard.writeText(sharePayload.text);
+      await navigator.clipboard.writeText(shareText);
       setCopiedShare(true);
-      setLiveAnnouncement("Share message copied to clipboard");
+      setLiveAnnouncement("Review summary copied to clipboard");
       setTimeout(() => {
         setCopiedShare(false);
         setLiveAnnouncement("");
@@ -159,12 +190,12 @@ export function ResultsActionsBar({
           type="button"
           onClick={handleShare}
           className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-xs sm:text-sm font-medium text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px] transition-colors"
-          aria-label="Share review"
+          aria-label="Share review summary with PDF"
         >
           {copiedShare ? (
             <>
               <CheckIcon className="w-4 h-4 text-[var(--color-primary)]" />
-              <span>Copied link</span>
+              <span>Copied summary</span>
             </>
           ) : (
             <>

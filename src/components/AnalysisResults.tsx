@@ -135,7 +135,7 @@ export function AnalysisResults({
           entities={analysis.entities}
           level="recommended"
           reasons={nudge.reasons}
-          defaultCollapsed={false}
+          defaultCollapsed={true}
         />
       )}
 
@@ -223,7 +223,7 @@ export function AnalysisResults({
           entities={analysis.entities}
           level="optional"
           reasons={[]}
-          defaultCollapsed={false}
+          defaultCollapsed={true}
         />
       )}
 

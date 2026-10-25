@@ -2,6 +2,12 @@ import { AskResponse, AskResponseSchema, AskResourceId } from "./schema";
 
 const FORBIDDEN_WORDS_REGEX = /\b(scam|scammer|scammers|fraud|fraudulent|frauds)\b/gi;
 const VERDICT_PHRASES_REGEX = /\b(verified safe|guaranteed legit|definitely a scam|categorically fraud|100% genuine)\b/gi;
+const EMPLOYER_GENERALIZATIONS_REGEX = /\b(legitimate|authentic|genuine)\s+(employers?|organizations?|organisations?|companies|internships?)\b/gi;
+const NORMATIVE_CLAIMS_REGEX = /\b(typically|normally|usually|rarely)\b/gi;
+const PROHIBITED_ADVICE_WORDS_REGEX = /\b(immediately|immediate)\b/gi;
+const PROHIBITED_REVERSAL_REGEX = /\b(payment\s+reversal|account\s+freeze|reversal|freeze|frozen)\b/gi;
+const PROHIBITED_MASKED_REGEX = /\bmasked\s+aadhaar\b/gi;
+const PROHIBITED_SAFELY_REGEX = /\b(safely|safe\s+sharing)\b/gi;
 
 const VALID_RESOURCES: Set<AskResourceId> = new Set([
   "cybercrime",
@@ -15,11 +21,14 @@ const VALID_RESOURCES: Set<AskResourceId> = new Set([
 ]);
 
 /**
- * Sanitizes any stray verdict language or forbidden scam/fraud words from model output.
+ * Sanitizes any stray verdict language, employer generalizations, or prohibited words from model output.
  */
 export function sanitizeAskText(text: string): string {
   if (!text) return "";
   let clean = text.replace(VERDICT_PHRASES_REGEX, "irregular pattern");
+  clean = clean.replace(EMPLOYER_GENERALIZATIONS_REGEX, "registered organizations");
+  clean = clean.replace(/\bemployers\s+(?:do\s+not|never|rarely)\s+ask\b/gi, "advisories recommend confirming before sharing");
+  clean = clean.replace(/\bemployers\s+(?:do\s+not|never|rarely)\b/gi, "official guidelines caution against");
   clean = clean.replace(FORBIDDEN_WORDS_REGEX, (match) => {
     const lower = match.toLowerCase();
     if (lower === "scam" || lower === "fraud") return "paid or unauthorised scheme";
@@ -27,6 +36,11 @@ export function sanitizeAskText(text: string): string {
     if (lower === "fraudulent") return "unauthorised";
     return "unauthorised scheme";
   });
+  clean = clean.replace(NORMATIVE_CLAIMS_REGEX, "often");
+  clean = clean.replace(PROHIBITED_ADVICE_WORDS_REGEX, "as soon as you can");
+  clean = clean.replace(PROHIBITED_REVERSAL_REGEX, "reporting the transaction");
+  clean = clean.replace(PROHIBITED_MASKED_REGEX, "Aadhaar with the first eight digits concealed");
+  clean = clean.replace(PROHIBITED_SAFELY_REGEX, "independently");
   return clean;
 }
 
@@ -137,7 +151,7 @@ export function getDeterministicAskFallback(userQuestion: string): AskResponse {
         "Advisories from leading universities (including IITs and NITs) advise students that internships do not require upfront deposits, training charges, or processing fees.",
       ],
       doNow: [
-        "If you have already transferred money, contact your bank or payment app immediately to request a payment reversal or account freeze.",
+        "If you have already transferred money, contact your bank or payment provider as soon as you can to report the transaction.",
         "Call the National Cyber Crime Helpline at 1930 or submit a formal report at cybercrime.gov.in with all transaction reference IDs.",
         "Preserve all transaction records, chat transcripts, payment slips, and email messages, following the guidance in /resources#already-paid.",
         "Do not make any additional or follow-up payments under any circumstances.",
@@ -163,7 +177,7 @@ export function getDeterministicAskFallback(userQuestion: string): AskResponse {
       ],
       doNow: [
         "Never share one-time passwords (OTPs), PINs, or net banking passwords with anyone.",
-        "Use masked Aadhaar (which conceals the first eight digits) if proof of identity is needed for initial evaluation.",
+        "Use an Aadhaar copy with the first eight digits concealed if proof of identity is requested for initial evaluation.",
         "Confirm the recipient's corporate email domain and official entity standing before providing any official documentation.",
       ],
       askOrCheck: [

@@ -15,7 +15,7 @@ export function TopBar() {
   const pathname = usePathname();
   const router = useRouter();
   const isCheckPage = pathname === "/check" || pathname.startsWith("/check/");
-  const { isCommandBarEnabled, toggleCommandBar } = useOfferSession();
+  const { isCommandBarEnabled, setCommandBarEnabled, toggleCommandBar } = useOfferSession();
 
   // Listen for voice command or programmatic sidebar triggers
   useEffect(() => {
@@ -109,40 +109,65 @@ export function TopBar() {
 
           {/* Right Controls: Command bar toggle + Theme toggle + Home link + Primary "Check an offer" CTA button */}
           <div className="flex items-center gap-2 sm:gap-3 transition-all duration-300 ease-out">
-            <button
-              type="button"
-              onClick={toggleCommandBar}
-              aria-pressed={isCommandBarEnabled}
-              aria-label={isCommandBarEnabled ? "Hide command bar" : "Show command bar"}
+            {/* Command bar toggle: round On/Off pill with microphone icon, styled like ThemeToggle */}
+            <div
+              role="group"
+              aria-label="Commands"
               title="Voice commands: dictate with Wispr Flow or any dictation tool"
-              className="hidden sm:inline-flex items-center gap-2 h-[44px] min-h-[44px] px-2.5 min-[1100px]:px-3 rounded-lg text-sm font-medium text-[var(--header-nav-text)] hover:text-[var(--header-text)] hover:bg-[rgba(255,255,255,0.08)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] cursor-pointer"
+              className="hidden sm:inline-flex items-center rounded-full border border-[var(--color-border-strong)]/40 bg-[var(--color-header-bg)]/80 p-1 gap-1 text-xs shadow-2xs transition-colors"
             >
-              <svg
-                className="w-4 h-4 shrink-0 text-current"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
+              <button
+                type="button"
+                onClick={toggleCommandBar}
+                aria-pressed={isCommandBarEnabled}
+                aria-label={isCommandBarEnabled ? "Hide command bar" : "Show command bar"}
+                title="Voice commands: dictate with Wispr Flow or any dictation tool"
+                className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full text-[var(--header-nav-text)] hover:text-[var(--header-text)] hover:bg-[rgba(255,255,255,0.08)] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] cursor-pointer"
               >
-                <rect x="3" y="3" width="18" height="18" rx="4" />
-                <path d="M7 8l4 4-4 4" />
-                <path d="M13 16h4" />
-              </svg>
-              <span className="hidden min-[1100px]:inline">Commands</span>
-              <span className="inline-flex items-center" aria-hidden="true">
-                {isCommandBarEnabled ? (
-                  <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                ) : (
-                  <span className="w-1.5 h-1.5 rounded-full border border-current" />
-                )}
-              </span>
-              <span className="sr-only">
-                {isCommandBarEnabled ? "On" : "Off"}
-              </span>
-            </button>
+                <svg
+                  className="w-4 h-4 shrink-0 text-current"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                  <line x1="12" y1="19" x2="12" y2="22" />
+                </svg>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setCommandBarEnabled(true)}
+                aria-pressed={isCommandBarEnabled}
+                aria-label="Turn commands on"
+                className={`relative flex items-center justify-center px-2.5 h-7 sm:h-8 rounded-full text-xs transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] cursor-pointer ${
+                  isCommandBarEnabled
+                    ? "bg-[var(--color-primary)] text-[var(--color-primary-contrast)] shadow-xs font-semibold"
+                    : "text-[var(--header-nav-text)] hover:text-[var(--header-text)] hover:bg-[rgba(255,255,255,0.08)] font-medium"
+                }`}
+              >
+                On
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setCommandBarEnabled(false)}
+                aria-pressed={!isCommandBarEnabled}
+                aria-label="Turn commands off"
+                className={`relative flex items-center justify-center px-2.5 h-7 sm:h-8 rounded-full text-xs transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--header-text)] cursor-pointer ${
+                  !isCommandBarEnabled
+                    ? "bg-[var(--color-primary)] text-[var(--color-primary-contrast)] shadow-xs font-semibold"
+                    : "text-[var(--header-nav-text)] hover:text-[var(--header-text)] hover:bg-[rgba(255,255,255,0.08)] font-medium"
+                }`}
+              >
+                Off
+              </button>
+            </div>
 
             <ThemeToggle onHeader className="hidden sm:inline-flex" />
 
@@ -160,7 +185,7 @@ export function TopBar() {
             </Link>
 
             <div
-              className={`transition-all duration-300 ease-out overflow-hidden flex items-center ${
+              className={`hidden sm:flex transition-all duration-300 ease-out overflow-hidden items-center ${
                 isCheckPage
                   ? "max-w-0 opacity-0 pointer-events-none -mr-2 sm:-mr-3 scale-95"
                   : "max-w-[200px] opacity-100"

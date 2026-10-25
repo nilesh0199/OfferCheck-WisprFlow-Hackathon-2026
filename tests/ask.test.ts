@@ -142,17 +142,17 @@ describe("Deterministic question-aware ask fallback (Milestone R3)", () => {
     expect(fullContent).toContain("1930");
     expect(fullContent).toContain("cybercrime.gov.in");
     expect(fullContent).toContain("/resources#already-paid");
-    expect(fullContent).toContain("reversal");
+    expect(fullContent).toContain("report the transaction");
   });
 
-  it("handles document/Aadhaar/PAN questions with safe sharing guidance", () => {
+  it("handles document/Aadhaar/PAN questions with document verification guidance", () => {
     const fb = getDeterministicAskFallback("Can I share my Aadhaar card, PAN, and bank details?");
     expect(fb.summary.startsWith(REQUIRED_PREFIX)).toBe(true);
     expect(fb.resources).toContain("cybercrime");
     expect(fb.resources).toContain("mca");
 
     const fullContent = JSON.stringify(fb);
-    expect(fullContent).toContain("masked Aadhaar");
+    expect(fullContent).toContain("first eight digits concealed");
     expect(fullContent).toContain("passwords");
   });
 
@@ -182,19 +182,39 @@ describe("Deterministic question-aware ask fallback (Milestone R3)", () => {
   });
 });
 
-describe("Automated scan for banned words and employer generalizations in /ask", () => {
-  const askDir = path.resolve(process.cwd(), "src");
+describe("Always-visible fallback indicator", () => {
+  it("guarantees the standard disclaimer prefix in all fallback summaries", () => {
+    const questions = [
+      "How do I check whether a company is registered?",
+      "They asked for Rs 2000 fee",
+      "Should I share my Aadhaar card?",
+      "I got a WhatsApp message",
+      "General question",
+    ];
+    for (const q of questions) {
+      const fb = getDeterministicAskFallback(q);
+      expect(fb.summary).toContain(
+        "The AI service is unavailable right now, so this is general guidance."
+      );
+    }
+  });
+});
 
-  function getAskFiles(dir: string, out: string[] = []): string[] {
+describe("Automated scan for banned words and employer generalizations in /ask", () => {
+  const srcDir = path.resolve(process.cwd(), "src");
+
+  function getAskTargetFiles(dir: string, out: string[] = []): string[] {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
     for (const entry of entries) {
       const fullPath = path.join(dir, entry.name);
       if (entry.isDirectory()) {
-        getAskFiles(fullPath, out);
+        getAskTargetFiles(fullPath, out);
       } else if (
         entry.isFile() &&
         (fullPath.includes(path.join("src", "lib", "ask")) ||
-          fullPath.includes(path.join("src", "app", "ask")))
+          fullPath.includes(path.join("src", "app", "ask")) ||
+          fullPath.includes(path.join("src", "app", "api", "ask")) ||
+          fullPath.includes(path.join("src", "data", "test-fixtures")))
       ) {
         out.push(fullPath);
       }
@@ -203,23 +223,25 @@ describe("Automated scan for banned words and employer generalizations in /ask",
   }
 
   it("ensures no code-owned string in /ask contains banned words or employer generalizations", () => {
-    const files = getAskFiles(askDir);
+    const files = getAskTargetFiles(srcDir);
     expect(files.length).toBeGreaterThan(0);
 
-    const bannedGeneralizations = [
-      /employers\s+do\s+not/i,
-      /authentic\s+employer/i,
-      /legitimate\s+employer/i,
-      /genuine\s+employer/i,
-      /authentic\s+internship/i,
-      /genuine\s+internship/i,
-      /rarely\s+ask/i,
-      /\btypically\b/i,
-      /\busually\b/i,
-      /\bnormally\b/i,
+    const bannedWordPatterns: { name: string; regex: RegExp }[] = [
+      { name: "immediate/immediately", regex: /\b(immediately|immediate)\b/i },
+      { name: "freeze/frozen", regex: /\b(freeze|frozen)\b/i },
+      { name: "dispute", regex: /\bdispute\b/i },
+      { name: "reversal/reverse", regex: /\b(reversal|reverse\s+the\s+payment)\b/i },
+      { name: "refund", regex: /\brefund\b/i },
+      { name: "recover/recovery", regex: /\b(recover|recovery)\b/i },
+      { name: "masked", regex: /\bmasked\b/i },
+      { name: "safe/safely as advice", regex: /\b(safe\s+sharing|safely)\b/i },
+      { name: "authentic/genuine/legitimate as verdict", regex: /\b(authentic|legitimate|genuine)\s+(employer|internship|offer|company)/i },
+      { name: "employers generalization", regex: /\bemployers\s+(do\s+not|never|always|rarely)\b/i },
+      { name: "normative generalizations", regex: /\b(typically|normally|usually|rarely\s+ask)\b/i },
+      { name: "scam/scammer/fraud", regex: /\b(scam|scammer|fraud)\b/i },
     ];
 
-    const violations: { file: string; line: number; match: string }[] = [];
+    const violations: { file: string; line: number; pattern: string; match: string }[] = [];
 
     for (const filePath of files) {
       const relPath = path.relative(process.cwd(), filePath);
@@ -227,13 +249,37 @@ describe("Automated scan for banned words and employer generalizations in /ask",
       const lines = content.split("\n");
 
       lines.forEach((line, index) => {
-        // Skip comment lines in prompt or code if any
-        for (const pattern of bannedGeneralizations) {
-          const match = line.match(pattern);
+        const trimmed = line.trim();
+
+        // Allow definitions of forbidden rules/patterns, negative instructions, regexes, comments, and CSS
+        if (
+          trimmed.startsWith("//") ||
+          trimmed.startsWith("/*") ||
+          trimmed.startsWith("*") ||
+          trimmed.includes("FORBIDDEN_WORDS_REGEX") ||
+          trimmed.includes("VERDICT_PHRASES_REGEX") ||
+          trimmed.includes("EMPLOYER_GENERALIZATIONS_REGEX") ||
+          trimmed.includes("NORMATIVE_CLAIMS_REGEX") ||
+          trimmed.includes("PROHIBITED_") ||
+          trimmed.includes("clean.replace") ||
+          trimmed.includes("if (lower ===") ||
+          trimmed.includes("Do NOT") ||
+          trimmed.includes("NEVER state") ||
+          trimmed.includes("never write") ||
+          trimmed.includes("safe-area-inset") ||
+          trimmed.includes("bannedWordPatterns") ||
+          trimmed.includes("PROMPT_INJECTION_FIXTURE") // fixture testing injection payload
+        ) {
+          return;
+        }
+
+        for (const { name, regex } of bannedWordPatterns) {
+          const match = trimmed.match(regex);
           if (match) {
             violations.push({
               file: relPath,
               line: index + 1,
+              pattern: name,
               match: match[0],
             });
           }
@@ -243,8 +289,8 @@ describe("Automated scan for banned words and employer generalizations in /ask",
 
     expect(
       violations,
-      `Found forbidden employer generalizations in /ask:\n${violations
-        .map((v) => `${v.file}:${v.line} -> "${v.match}"`)
+      `Found forbidden words or generalizations in /ask:\n${violations
+        .map((v) => `${v.file}:${v.line} [${v.pattern}] -> "${v.match}"`)
         .join("\n")}`
     ).toHaveLength(0);
   });

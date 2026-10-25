@@ -142,7 +142,7 @@ export function buildReviewSummary(
 
   // Section D: Limits of this Review
   lines.push("--- LIMITS OF THIS REVIEW ---");
-  for (const lim of analysis.limits) {
+  for (const lim of analysis.limits || []) {
     lines.push(`- ${lim}`);
   }
 

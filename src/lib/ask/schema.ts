@@ -24,7 +24,7 @@ export const AskResponseSchema = z.object({
     .max(4, "At most 4 points allowed for what this may mean"),
   doNow: z
     .array(z.string().min(1).max(350))
-    .max(4, "At most 4 immediate actions allowed"),
+    .max(4, "At most 4 action steps allowed"),
   askOrCheck: z
     .array(z.string().min(1).max(350))
     .max(4, "At most 4 verification questions or checks allowed"),

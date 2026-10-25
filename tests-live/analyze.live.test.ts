@@ -28,7 +28,10 @@ if (fs.existsSync(".env.local")) {
 
 const apiKey = process.env.GEMINI_API_KEY?.trim();
 const hasApiKey = Boolean(apiKey);
+const hasGroqKey = Boolean(process.env.GROQ_API_KEY?.trim());
 const liveBaseUrl = process.env.LIVE_BASE_URL?.trim();
+
+console.log("[Analyze Live Key Status]", { hasGeminiKey: hasApiKey, hasGroqKey });
 
 if (!hasApiKey) {
   console.warn(

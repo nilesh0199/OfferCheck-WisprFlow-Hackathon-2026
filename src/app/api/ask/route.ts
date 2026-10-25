@@ -6,8 +6,14 @@ import { defaultCircuitBreaker } from "@/lib/analysis/model-health";
 import {
   DEFAULT_MODEL_CHAIN,
   PER_ATTEMPT_TIMEOUT_CAP_MS,
+  OVERALL_DEADLINE_MS,
 } from "@/lib/config";
-import { cleanJsonSchemaForGemini, logSafeAttemptError } from "@/lib/analysis/gemini";
+import {
+  cleanJsonSchemaForGemini,
+  logSafeAttemptError,
+  resolveThinkingLevel,
+  isModelSpecific400,
+} from "@/lib/analysis/gemini";
 import {
   AskResponse,
   AskResponseSchema,
@@ -37,12 +43,103 @@ const ASK_RESPONSE_JSON_SCHEMA = cleanJsonSchemaForGemini(
   z.toJSONSchema(AskResponseSchema)
 ) as Record<string, unknown>;
 
-interface RequestMessage {
+export interface RequestMessage {
   role: "user" | "assistant";
   content: string;
 }
 
-export async function POST(req: NextRequest) {
+export interface AskAttemptDiagnostic {
+  provider: "gemini" | "groq";
+  code: string;
+  httpStatus?: number;
+  attemptNumber: number;
+  elapsedMs: number;
+}
+
+export interface AskExecutionDiagnostics {
+  fallbackUsed: boolean;
+  attempts: AskAttemptDiagnostic[];
+}
+
+export interface AskTestHooks {
+  onDiagnostics?: (diagnostics: AskExecutionDiagnostics) => void;
+}
+
+function getErrorStatus(err: unknown): number | undefined {
+  if (typeof err === "object" && err !== null) {
+    const r = err as Record<string, unknown>;
+    if (typeof r.status === "number") return r.status;
+    if (typeof r.statusCode === "number") return r.statusCode;
+    if (typeof r.code === "number") return r.code;
+    const msg = String(r.message || "");
+    const match = msg.match(/\b(400|401|403|429|500|502|503|504)\b/);
+    if (match) return parseInt(match[1], 10);
+  }
+  return undefined;
+}
+
+function isRateLimitError(err: unknown, status?: number): boolean {
+  if (status === 429) return true;
+  if (typeof err === "object" && err !== null) {
+    const msg = String((err as Record<string, unknown>).message || "");
+    if (msg.includes("429") || msg.includes("RESOURCE_EXHAUSTED")) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function isTimeoutError(err: unknown): boolean {
+  if (err instanceof Error) {
+    if (
+      err.name === "AbortError" ||
+      err.name === "TimeoutError" ||
+      err.name === "APIUserAbortError" ||
+      err.name === "RequestTimeoutError" ||
+      err.message.toLowerCase().includes("timeout") ||
+      err.message.toLowerCase().includes("aborted")
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+export function formatAskConversationForGemini(
+  messages: RequestMessage[],
+  reviewContext?: AskReviewContext
+): string {
+  if (messages.length === 1 && messages[0].role === "user") {
+    return buildAskUserMessage(messages[0].content, reviewContext);
+  }
+  return messages
+    .map((m, idx) => {
+      const isLastUser = idx === messages.length - 1 && m.role === "user";
+      const text = isLastUser ? buildAskUserMessage(m.content, reviewContext) : m.content;
+      return `${m.role === "user" ? "Student" : "Assistant"}: ${text}`;
+    })
+    .join("\n\n");
+}
+
+export async function POST(
+  req: NextRequest,
+  testHooks?: AskTestHooks | unknown
+) {
+  const attemptsDiagnostics: AskAttemptDiagnostic[] = [];
+  const onDiagnosticsCallback =
+    (testHooks as AskTestHooks)?.onDiagnostics ||
+    (req as unknown as { __onDiagnostics?: (d: AskExecutionDiagnostics) => void }).__onDiagnostics;
+
+  const reportDiagnostics = (fallbackUsed: boolean) => {
+    if (onDiagnosticsCallback) {
+      try {
+        onDiagnosticsCallback({
+          fallbackUsed,
+          attempts: [...attemptsDiagnostics],
+        });
+      } catch {}
+    }
+  };
   // 1. Content-Length header guard
   const contentLength = req.headers.get("content-length");
   if (contentLength && parseInt(contentLength, 10) > MAX_BODY_BYTES) {
@@ -216,7 +313,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // 5. Construct prompt messages
+  // 5. Construct prompt messages and execute fallback chain
   const groqApiKey = process.env.GROQ_API_KEY;
   const groqModel = process.env.GROQ_MODEL || GROQ_DEFAULT_MODEL;
   const groqModelId = `groq:${groqModel}`;
@@ -224,6 +321,8 @@ export async function POST(req: NextRequest) {
 
   let validatedResponse: AskResponse | null = null;
   let attemptIdx = 0;
+  const startTime = Date.now();
+  const overallDeadlineMs = OVERALL_DEADLINE_MS;
 
   // PRIORITY 1: Groq Chat Completion
   if (groqApiKey && groqApiKey.trim() && defaultCircuitBreaker.isModelAvailable(groqModelId)) {
@@ -273,6 +372,14 @@ export async function POST(req: NextRequest) {
 
         if (validatedResponse) {
           defaultCircuitBreaker.recordSuccess(groqModelId);
+          attemptsDiagnostics.push({
+            provider: "groq",
+            code: "SUCCESS",
+            httpStatus: 200,
+            attemptNumber: attemptIdx,
+            elapsedMs,
+          });
+          reportDiagnostics(false);
           return NextResponse.json(
             { ok: true, data: validatedResponse },
             { status: 200, headers: NO_STORE_HEADERS }
@@ -280,32 +387,46 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      if (!res.ok) {
-        logSafeAttemptError(
-          res.code === "RATE_LIMITED" ? "RATE_LIMITED" : "UPSTREAM_ERROR",
-          res.httpStatus ?? 502,
-          attemptIdx,
+      const groqCode = res.code === "RATE_LIMITED" ? "RATE_LIMITED" : "UPSTREAM_ERROR";
+      const groqStatus = res.httpStatus ?? (res.code === "RATE_LIMITED" ? 429 : 502);
+      logSafeAttemptError(
+        groqCode,
+        groqStatus,
+        attemptIdx,
+        groqModelId,
+        elapsedMs,
+        res.message
+      );
+      if (res.code === "RATE_LIMITED") {
+        defaultCircuitBreaker.recordFailure(
           groqModelId,
-          elapsedMs,
-          res.message
+          "RATE_LIMITED",
+          429,
+          undefined,
+          (res.retryAfterSeconds ?? 60) * 1000
         );
-        if (res.code === "RATE_LIMITED") {
-          defaultCircuitBreaker.recordFailure(
-            groqModelId,
-            "RATE_LIMITED",
-            429,
-            undefined,
-            (res.retryAfterSeconds ?? 60) * 1000
-          );
-        } else {
-          defaultCircuitBreaker.recordFailure(groqModelId, "UPSTREAM_ERROR", res.httpStatus);
-        }
+      } else {
+        defaultCircuitBreaker.recordFailure(groqModelId, "UPSTREAM_ERROR", groqStatus);
       }
+      attemptsDiagnostics.push({
+        provider: "groq",
+        code: groqCode,
+        httpStatus: groqStatus,
+        attemptNumber: attemptIdx,
+        elapsedMs,
+      });
     } catch (err: unknown) {
       clearTimeout(timeoutHandle);
       const elapsedMs = Date.now() - start;
       logSafeAttemptError("UPSTREAM_ERROR", 502, attemptIdx, groqModelId, elapsedMs, (err as Error)?.message);
       defaultCircuitBreaker.recordFailure(groqModelId, "UPSTREAM_ERROR", 502);
+      attemptsDiagnostics.push({
+        provider: "groq",
+        code: "UPSTREAM_ERROR",
+        httpStatus: 502,
+        attemptNumber: attemptIdx,
+        elapsedMs,
+      });
     }
   }
 
@@ -316,49 +437,69 @@ export async function POST(req: NextRequest) {
 
     const models = [...DEFAULT_MODEL_CHAIN];
     for (const model of models) {
-      if (!defaultCircuitBreaker.isModelAvailable(model)) continue;
+      const timeRemaining = overallDeadlineMs - (Date.now() - startTime);
+      if (timeRemaining <= 3000) {
+        break;
+      }
+
+      if (!defaultCircuitBreaker.isModelAvailable(model)) {
+        continue;
+      }
 
       attemptIdx++;
       const start = Date.now();
+      const perAttemptTimeout = Math.min(
+        PER_ATTEMPT_TIMEOUT_CAP_MS,
+        Math.max(1000, timeRemaining - 1500)
+      );
+
       const controller = new AbortController();
-      const timeoutHandle = setTimeout(() => {
-        try { controller.abort(); } catch {}
-      }, PER_ATTEMPT_TIMEOUT_CAP_MS);
+      let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
+
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutHandle = setTimeout(() => {
+          try { controller.abort(); } catch {}
+          const err = new Error("Request timed out");
+          err.name = "TimeoutError";
+          reject(err);
+        }, perAttemptTimeout);
+      });
 
       try {
-        const createFn = (ai as unknown as { interactions?: { create: (...args: unknown[]) => Promise<{ output_text?: string | null }> } })
-          .interactions?.create;
+        if (!ai.interactions?.create) break;
 
-        if (!createFn) break;
+        const inputString = formatAskConversationForGemini(conversationMessages, reviewContext);
+        const thinkingLevel = resolveThinkingLevel(model, process.env.GEMINI_THINKING_LEVEL);
+        const generationConfig: Record<string, unknown> = {
+          max_output_tokens: 1500,
+        };
+        if (thinkingLevel) {
+          generationConfig.thinking_level = thinkingLevel;
+        }
 
-        const formattedInput = conversationMessages.map((m, idx) => {
-          if (idx === conversationMessages.length - 1 && m.role === "user") {
-            return {
-              role: "user",
-              content: buildAskUserMessage(m.content, reviewContext),
-            };
-          }
-          return { role: m.role, content: m.content };
-        });
-
-        const interaction = await createFn({
+        const interactionPromise = ai.interactions.create({
           model,
-          input: formattedInput,
+          input: inputString,
           system_instruction: ASK_SYSTEM_INSTRUCTION,
           response_format: {
             type: "text",
             mime_type: "application/json",
             schema: ASK_RESPONSE_JSON_SCHEMA,
           },
-          generation_config: {
-            max_output_tokens: 1500,
-          },
+          generation_config: generationConfig,
         }, {
           signal: controller.signal,
-          timeout_ms: PER_ATTEMPT_TIMEOUT_CAP_MS,
+          timeout_ms: perAttemptTimeout,
         });
 
-        clearTimeout(timeoutHandle);
+        const interaction = await Promise.race([
+          interactionPromise,
+          timeoutPromise,
+        ]);
+
+        if (timeoutHandle) {
+          clearTimeout(timeoutHandle);
+        }
         const elapsedMs = Date.now() - start;
 
         if (interaction?.output_text) {
@@ -375,6 +516,14 @@ export async function POST(req: NextRequest) {
 
           if (validatedResponse) {
             defaultCircuitBreaker.recordSuccess(model);
+            attemptsDiagnostics.push({
+              provider: "gemini",
+              code: "SUCCESS",
+              httpStatus: 200,
+              attemptNumber: attemptIdx,
+              elapsedMs,
+            });
+            reportDiagnostics(false);
             return NextResponse.json(
               { ok: true, data: validatedResponse },
               { status: 200, headers: NO_STORE_HEADERS }
@@ -384,16 +533,94 @@ export async function POST(req: NextRequest) {
 
         logSafeAttemptError("INVALID_MODEL_OUTPUT", 502, attemptIdx, model, elapsedMs);
         defaultCircuitBreaker.recordFailure(model, "INVALID_MODEL_OUTPUT", 502);
+        attemptsDiagnostics.push({
+          provider: "gemini",
+          code: "INVALID_MODEL_OUTPUT",
+          httpStatus: 502,
+          attemptNumber: attemptIdx,
+          elapsedMs,
+        });
       } catch (err: unknown) {
         clearTimeout(timeoutHandle);
         const elapsedMs = Date.now() - start;
-        logSafeAttemptError("UPSTREAM_ERROR", 502, attemptIdx, model, elapsedMs, (err as Error)?.message);
-        defaultCircuitBreaker.recordFailure(model, "UPSTREAM_ERROR", 502);
+        const status = getErrorStatus(err);
+        const errMessage = (err as Error)?.message || String(err);
+
+        let safeCode: string;
+        let httpStatus = status ?? 502;
+
+        if (status === 400 && !isModelSpecific400(err)) {
+          // Malformed request caused by syntax on our side: do NOT loop!
+          safeCode = "INVALID_REQUEST";
+          httpStatus = 400;
+          logSafeAttemptError("UPSTREAM_ERROR", 400, attemptIdx, model, elapsedMs, errMessage);
+          attemptsDiagnostics.push({
+            provider: "gemini",
+            code: safeCode,
+            httpStatus: 400,
+            attemptNumber: attemptIdx,
+            elapsedMs,
+          });
+          break;
+        } else if (status === 400 && isModelSpecific400(err)) {
+          safeCode = "UPSTREAM_ERROR";
+          httpStatus = 400;
+          logSafeAttemptError("UPSTREAM_ERROR", 400, attemptIdx, model, elapsedMs, errMessage);
+          defaultCircuitBreaker.recordFailure(model, "UPSTREAM_ERROR", 400);
+          attemptsDiagnostics.push({
+            provider: "gemini",
+            code: safeCode,
+            httpStatus: 400,
+            attemptNumber: attemptIdx,
+            elapsedMs,
+          });
+          continue;
+        } else if (isRateLimitError(err, status)) {
+          safeCode = "RATE_LIMITED";
+          httpStatus = 429;
+          logSafeAttemptError("RATE_LIMITED", 429, attemptIdx, model, elapsedMs, errMessage);
+          defaultCircuitBreaker.recordFailure(model, "RATE_LIMITED", 429);
+          attemptsDiagnostics.push({
+            provider: "gemini",
+            code: safeCode,
+            httpStatus: 429,
+            attemptNumber: attemptIdx,
+            elapsedMs,
+          });
+          continue;
+        } else if (isTimeoutError(err)) {
+          safeCode = "TIMEOUT";
+          httpStatus = 504;
+          logSafeAttemptError("TIMEOUT", 504, attemptIdx, model, elapsedMs, errMessage);
+          defaultCircuitBreaker.recordFailure(model, "TIMEOUT", 504);
+          attemptsDiagnostics.push({
+            provider: "gemini",
+            code: safeCode,
+            httpStatus: 504,
+            attemptNumber: attemptIdx,
+            elapsedMs,
+          });
+          continue;
+        } else {
+          safeCode = "UPSTREAM_ERROR";
+          httpStatus = status ?? 502;
+          logSafeAttemptError("UPSTREAM_ERROR", httpStatus, attemptIdx, model, elapsedMs, errMessage);
+          defaultCircuitBreaker.recordFailure(model, "UPSTREAM_ERROR", httpStatus);
+          attemptsDiagnostics.push({
+            provider: "gemini",
+            code: safeCode,
+            httpStatus,
+            attemptNumber: attemptIdx,
+            elapsedMs,
+          });
+          continue;
+        }
       }
     }
   }
 
   // PRIORITY 3: Deterministic Offline Fallback Response
+  reportDiagnostics(true);
   const fallback = getDeterministicAskFallback(lastUserMessage);
   return NextResponse.json(
     { ok: true, data: fallback },

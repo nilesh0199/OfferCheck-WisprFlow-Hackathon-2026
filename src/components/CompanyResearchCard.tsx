@@ -45,7 +45,7 @@ export function CompanyResearchCard({
   entities,
   level = "optional",
   reasons = [],
-  defaultCollapsed = false,
+  defaultCollapsed = true,
 }: CompanyResearchCardProps) {
   // Extract contact items from offerText
   const extracted = useMemo(

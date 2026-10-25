@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import fs from "node:fs";
 import { NextRequest } from "next/server";
-import { POST } from "@/app/api/ask/route";
+import { POST, AskExecutionDiagnostics } from "@/app/api/ask/route";
 
 // Load .env.local if present
 if (fs.existsSync(".env.local")) {
@@ -15,7 +15,11 @@ if (fs.existsSync(".env.local")) {
   }
 }
 
+const hasGeminiKey = Boolean(process.env.GEMINI_API_KEY?.trim());
 const hasGroqKey = Boolean(process.env.GROQ_API_KEY?.trim());
+
+// Print which keys are present as booleans only
+console.log("[Ask Live Key Status]", { hasGeminiKey, hasGroqKey });
 
 const EXAMPLE_QUESTIONS = [
   "I paid Rs 2,000 for a course that was sold as an internship. What should I do now?",
@@ -28,10 +32,16 @@ const BANNED_WORDS_REGEX = /\b(scam|scammer|scammers|fraud|fraudulent|frauds)\b/
 const BANNED_GENERALIZATIONS_REGEX =
   /\b(employers\s+do\s+not|authentic\s+employers?|legitimate\s+employers?|genuine\s+employers?|rarely\s+ask)\b/i;
 
+const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 describe("Ask live route evaluations (Milestone R5)", () => {
   for (const question of EXAMPLE_QUESTIONS) {
     it(`evaluates live /api/ask handler for: "${question.slice(0, 30)}..."`, async () => {
+      // Pause between live test requests to respect free-tier rate limits
+      await pause(1500);
+
       const startTime = Date.now();
+      let diagnostics: AskExecutionDiagnostics | undefined;
 
       const req = new NextRequest("http://localhost:3000/api/ask", {
         method: "POST",
@@ -41,7 +51,12 @@ describe("Ask live route evaluations (Milestone R5)", () => {
         }),
       });
 
-      const res = await POST(req);
+      const res = await POST(req, {
+        onDiagnostics: (d: AskExecutionDiagnostics) => {
+          diagnostics = d;
+        },
+      });
+
       const elapsedMs = Date.now() - startTime;
       expect(res.status).toBe(200);
 
@@ -59,10 +74,28 @@ describe("Ask live route evaluations (Milestone R5)", () => {
 
       // Identify code path taken
       const isFallback =
-        typeof data.summary === "string" &&
-        data.summary.startsWith(
-          "The AI service is unavailable right now, so this is general guidance."
-        );
+        diagnostics?.fallbackUsed ??
+        (typeof data.summary === "string" &&
+          data.summary.startsWith(
+            "The AI service is unavailable right now, so this is general guidance."
+          ));
+
+      // Diagnostics check when provider keys exist:
+      // Fail if fallback was used or if response arrived suspiciously fast (<300ms)
+      if (hasGeminiKey || hasGroqKey) {
+        if (isFallback) {
+          console.error(
+            `[Ask Live Test Failure] Fallback was used for question: "${question}". Attempts:`,
+            JSON.stringify(diagnostics?.attempts, null, 2)
+          );
+        }
+        expect(
+          isFallback,
+          `Expected live model path to answer when API key exists, but deterministic fallback was used. Diagnostics: ${JSON.stringify(diagnostics?.attempts)}`
+        ).toBe(false);
+        expect(elapsedMs).toBeGreaterThanOrEqual(300);
+      }
+
       const codePath = isFallback
         ? "Deterministic Fallback (getDeterministicAskFallback)"
         : hasGroqKey
@@ -72,8 +105,9 @@ describe("Ask live route evaluations (Milestone R5)", () => {
       console.log(`[Ask Live Test] Question: "${question}"`);
       console.log(`  -> Code path: ${codePath}`);
       console.log(`  -> Elapsed: ${elapsedMs} ms`);
+      console.log(`  -> Attempts recorded:`, diagnostics?.attempts);
       console.log(`  -> Resources returned: [${data.resources?.join(", ")}]`);
       console.log(`  -> Summary: "${data.summary.slice(0, 80)}..."`);
-    }, 30000);
+    }, 90000);
   }
 });

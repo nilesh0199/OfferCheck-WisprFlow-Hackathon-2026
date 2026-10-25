@@ -626,16 +626,16 @@ export function CommandBar() {
       <aside
         ref={asideRef}
         aria-label="Command bar"
-        className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-[min(480px,94vw)] px-3 sm:px-0 pointer-events-none pb-[calc(env(safe-area-inset-bottom,0px))] print:hidden"
+        className="fixed bottom-2.5 sm:bottom-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-[min(340px,92vw)] sm:max-w-[min(480px,94vw)] px-2 sm:px-0 pointer-events-none pb-[calc(env(safe-area-inset-bottom,0px))] print:hidden"
       >
         {/* Status Line: Countdown or Announcement */}
         {pendingCommand && countdown !== null && (
           <div
             role="status"
             aria-live="polite"
-            className="pointer-events-auto mb-2 flex items-center justify-between text-xs font-medium text-[var(--text)] bg-[var(--surface)] border border-[var(--border)] rounded-xl px-3.5 py-2 shadow-xs gap-2"
+            className="pointer-events-auto mb-1.5 sm:mb-2 flex items-center justify-between text-xs font-medium text-[var(--text)] bg-[var(--surface)] border border-[var(--border)] rounded-lg sm:rounded-xl px-2.5 py-1.5 sm:px-3.5 sm:py-2 shadow-xs gap-1.5 sm:gap-2"
           >
-            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+            <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
               <span className="font-semibold text-[var(--text)]">
                 Running {getCommandDisplayLabel(pendingCommand)}...
               </span>
@@ -646,7 +646,7 @@ export function CommandBar() {
             <button
               type="button"
               onClick={handleCancel}
-              className="text-xs font-semibold text-[var(--color-primary)] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded px-1.5 py-0.5 min-h-[32px] inline-flex items-center shrink-0 cursor-pointer"
+              className="text-xs font-semibold text-[var(--color-primary)] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded px-1.5 py-0.5 min-h-[32px] sm:min-h-[36px] inline-flex items-center shrink-0 cursor-pointer"
             >
               Cancel
             </button>
@@ -657,7 +657,7 @@ export function CommandBar() {
           <div
             role="status"
             aria-live="polite"
-            className="pointer-events-auto mb-2 flex items-center justify-between text-xs font-medium text-[var(--text-muted)] bg-[var(--surface)] border border-[var(--border)] rounded-xl px-3.5 py-2 shadow-xs gap-2"
+            className="pointer-events-auto mb-1.5 sm:mb-2 flex items-center justify-between text-xs font-medium text-[var(--text-muted)] bg-[var(--surface)] border border-[var(--border)] rounded-lg sm:rounded-xl px-2.5 py-1.5 sm:px-3.5 sm:py-2 shadow-xs gap-1.5 sm:gap-2"
           >
             <span className="leading-snug">{announcement}</span>
             <button
@@ -688,26 +688,26 @@ export function CommandBar() {
 
         {/* Input Bar */}
         <div
-          className={`pointer-events-auto rounded-xl bg-[var(--surface)] p-1.5 flex items-center gap-1.5 sm:gap-2 transition-all duration-300 ${
+          className={`pointer-events-auto rounded-xl bg-[var(--surface)] p-1 sm:p-1.5 flex items-center gap-1 sm:gap-2 transition-all duration-300 ${
             isActive
-              ? "border-2 border-[var(--command-active-border)] ring-3 ring-[var(--command-active-border)]/25 shadow-[0_0_24px_var(--command-active-glow)]"
+              ? "border-2 border-[var(--command-active-border)] ring-2 sm:ring-3 ring-[var(--command-active-border)]/25 shadow-[0_0_18px_var(--command-active-glow)] sm:shadow-[0_0_24px_var(--command-active-glow)]"
               : "border border-[var(--border)] shadow-md"
           }`}
         >
           {/* Active Status Indicator Light */}
-          <div className="pl-2 shrink-0 flex items-center justify-center">
+          <div className="pl-1.5 sm:pl-2 shrink-0 flex items-center justify-center">
             {isActive ? (
-              <span className="relative flex h-2.5 w-2.5" title="Command bar active">
+              <span className="relative flex h-2 w-2 sm:h-2.5 sm:w-2.5" title="Command bar active">
                 <span className="sr-only">Command bar active</span>
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--command-active-border)] opacity-75" />
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[var(--command-active-border)]" />
+                <span className="relative inline-flex rounded-full h-2 w-2 sm:h-2.5 sm:w-2.5 bg-[var(--command-active-border)]" />
               </span>
             ) : (
               <>
                 <span className="sr-only">Command bar ready</span>
                 <svg
                   aria-hidden="true"
-                  className="w-4 h-4 text-[var(--text-muted)]"
+                  className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[var(--text-muted)]"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -776,10 +776,10 @@ export function CommandBar() {
                 }
               }
             }}
-            placeholder="Dictate a command..."
+            placeholder="Dictate a Command"
             title="Voice commands: dictate with Wispr Flow or any dictation tool"
-            className="flex-1 min-w-0 bg-transparent text-xs sm:text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none min-h-[44px] px-2.5 sm:px-3 rounded-lg"
-            aria-label="Dictate a command"
+            className="flex-1 min-w-0 bg-transparent text-xs sm:text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none min-h-[38px] sm:min-h-[44px] px-1.5 sm:px-3 rounded-lg"
+            aria-label="Dictate a Command"
           />
 
           <button
@@ -804,13 +804,14 @@ export function CommandBar() {
                 openHelp();
               }
             }}
-            className={`shrink-0 px-2.5 sm:px-3 py-2 text-xs font-medium rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px] transition-colors border ${
+            className={`shrink-0 px-2 sm:px-3 py-1.5 sm:py-2 text-xs font-medium rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[38px] sm:min-h-[44px] transition-colors border ${
               highlightHelp || isHelpOpen
                 ? "border-[var(--color-primary)] ring-2 ring-[var(--focus-ring)] text-[var(--color-primary)] font-semibold"
                 : "border-transparent"
             }`}
           >
-            What can I say?
+            <span className="hidden min-[360px]:inline">What can I say?</span>
+            <span className="min-[360px]:hidden">Help</span>
           </button>
         </div>
       </aside>

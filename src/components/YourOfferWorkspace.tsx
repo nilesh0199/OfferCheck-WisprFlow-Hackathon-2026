@@ -92,7 +92,7 @@ export function YourOfferWorkspace({
   }, [activeConcernId]);
 
   return (
-    <div className="rounded border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 shadow-2xs space-y-3.5 transition-colors">
+    <div className="rounded border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 shadow-2xs space-y-3.5 transition-colors w-full">
       {/* Header with Title and Status on Tinted Bar */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] -mx-4 sm:-mx-5 -mt-4 sm:-mt-5 p-3.5 sm:px-5 rounded-t bg-[var(--tint-info-bg)]">
         <div>
@@ -122,7 +122,7 @@ export function YourOfferWorkspace({
         tabIndex={0}
         role="region"
         aria-label="Analyzed text with line numbers and quote highlights"
-        className="max-h-[380px] w-full overflow-y-auto rounded border border-[var(--border)] bg-[var(--surface-muted)] p-2.5 font-mono text-xs leading-relaxed text-[var(--text)] custom-scrollbar focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
+        className="max-h-[380px] 2xl:max-h-[calc(100dvh-17rem)] w-full overflow-y-auto rounded border border-[var(--border)] bg-[var(--surface-muted)] p-2.5 font-mono text-xs leading-relaxed text-[var(--text)] custom-scrollbar focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
       >
         {documentLines.map((line) => {
           const fullLineText = line.segments.map((s) => s.text).join("");

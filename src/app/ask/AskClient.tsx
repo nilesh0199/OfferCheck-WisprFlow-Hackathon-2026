@@ -249,6 +249,21 @@ export function AskClient() {
                   className="w-full rounded-xl bg-[var(--surface)] border border-[var(--border)] p-5 sm:p-6 space-y-5 shadow-xs break-words"
                   aria-label="Guidance answer"
                 >
+                  {/* Fallback indicator: always visible when offline/fallback answered */}
+                  {typeof msg.data.summary === "string" &&
+                    msg.data.summary.includes("The AI service is unavailable right now, so this is general guidance.") && (
+                      <div
+                        data-testid="ask-fallback-indicator"
+                        role="status"
+                        className="rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] px-3.5 py-2.5 text-xs sm:text-sm text-[var(--text-muted)] flex items-center gap-2"
+                      >
+                        <InfoIcon className="w-4 h-4 shrink-0 text-[var(--text-muted)]" />
+                        <span className="font-medium text-[var(--text)]">
+                          The AI service is unavailable right now, so this is general guidance.
+                        </span>
+                      </div>
+                    )}
+
                   {/* Summary */}
                   <div className="border-b border-[var(--border)] pb-3">
                     <p className="text-base sm:text-lg font-serif text-[var(--text)] leading-snug">
@@ -436,7 +451,7 @@ export function AskClient() {
                   {/* Fixed Guidance Disclaimer */}
                   <div className="pt-3 border-t border-[var(--border)] space-y-1 text-xs text-[var(--text-muted)]">
                     <p>
-                      This is general guidance based on what you wrote. It is not legal advice, and OfferClara cannot confirm whether an offer or sender is genuine.
+                      This is general guidance based on what you wrote. It is not legal advice, and OfferClara cannot verify the standing of an offer or sender.
                     </p>
                     <p>
                       AI can make mistakes. Please verify facts through official portals.

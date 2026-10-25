@@ -303,15 +303,14 @@ export function Step5Review({
             Research the company (optional)
           </h3>
           <p className="text-xs text-[var(--text-muted)]">
-            Prepare an external search prompt to verify company registration and corporate presence
-            independently before analyzing.
+            You will get a structured prompt with all the details filled after analysis.
           </p>
         </div>
 
         <CompanyResearchCard
           offerText={combinedText}
           level="optional"
-          defaultCollapsed={false}
+          defaultCollapsed={true}
         />
       </aside>
     </div>

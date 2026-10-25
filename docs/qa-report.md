@@ -10,12 +10,12 @@
 
 | Category | Status | Details |
 | :--- | :--- | :--- |
-| **Vitest Tests** | Pass | 49 test files passed (479 tests). 0 failures. |
+| **Vitest Tests** | Pass | All unit test files passing, 0 failures. |
 | **ESLint** | Pass | 0 errors, 0 warnings. |
 | **TypeScript** | Pass | `tsc --noEmit` compiled with 0 errors. |
-| **Next.js Build** | Pass | All 14 routes generated cleanly. |
+| **Next.js Build** | Pass | All routes generated cleanly. |
 | **Forbidden Speech APIs** | Clean | 0 occurrences of `SpeechRecognition`, `webkitSpeechRecognition`, `getUserMedia`, `navigator.mediaDevices`, `MediaRecorder`. |
-| **Route HTTP Statuses** | Pass | All 8 valid routes returned HTTP 200; 404 route returned HTTP 404. 0 hydration warnings. |
+| **Route HTTP Statuses** | Pass | All 8 valid routes returned HTTP 200; 404 route returned HTTP 404. Manual checks (hydration warnings, phone layouts, screen readers) not yet run. |
 
 ---
 
@@ -32,7 +32,7 @@
 | **Command Bar Active Glow Contrast** | Check active border tokens against 3:1 non-text WCAG contrast | **Resolved (R1)** | `--color-command-active-border` light theme was `#10b981` (2.5:1 contrast vs `#ffffff`, failing WCAG 3:1 non-text requirement). | **P1** | Updated light token to `#059669` (3.76:1 vs `#ffffff`, 3.42:1 vs `#f2f5f9`). Dark theme `#34d399` provides 5.8:1. Paired with 2px border change and screen-reader status text. Verified in `tests/wcag-contrast.test.ts`. |
 | **Home Page Hero** | Inspect hero layout, headline size, button dimensions, and vertical spacing | **Resolved (R2)** | Headline was 2.25rem–3.75rem without "Make every offer clear." sub-line; buttons were < 3.5rem; large empty area below buttons on 1440x900 and 1366x768. | **P1** | Headline updated to display clamp `clamp(2.75rem, 5.5vw, 4.5rem)` in serif; added `"Make every offer clear."` in serif at `clamp(1.5rem, 2.5vw, 1.875rem)` in muted ink; buttons enlarged to `min-h-[3.5rem]` (56px) with `px-8` and `text-[1.125rem]`; trust strip increased to `text-[1rem]` with `gap-x-4 gap-y-2`. Desktop layout vertically centered against example card (`lg:items-center`), fully visible above fold at 1440x900 and 1366x768 without scrolling. |
 | **Decorative Icon Attributes** | Check microphone icon and shortcut badge accessibility | **Resolved (R1)** | Microphone SVG and shortcut badge lacked `aria-hidden="true"`; lacked explicit no-mic disclaimer. | **P2** | Added `aria-hidden="true"` to mic icon and badge; updated tooltip, help dialog, and `/privacy` stating OfferClara does not access the microphone. |
-| **Microphone API Grep Test** | Verify automated regression test preventing speech API introduction | **Resolved (R5)** | No automated test failed if `SpeechRecognition` or `getUserMedia` was added under `src/`. | **P2** | Added automated test in `tests/logging-audit.test.ts` scanning all files in `src/` and failing on `SpeechRecognition`, `webkitSpeechRecognition`, `getUserMedia`, `navigator.mediaDevices`, or `MediaRecorder`. 5/5 tests passed. |
+| **Microphone API Grep Test** | Verify automated regression test preventing speech API introduction | **Resolved (R5)** | No automated test failed if `SpeechRecognition` or `getUserMedia` was added under `src/`. | **P2** | Added automated test in `tests/logging-audit.test.ts` scanning all files in `src/` and failing on `SpeechRecognition`, `webkitSpeechRecognition`, `getUserMedia`, `navigator.mediaDevices`, or `MediaRecorder`. Automated audit tests passed. |
 
 ---
 
@@ -52,34 +52,46 @@
 
 ---
 
-## 4. Live Check Results (Milestone R5)
+## 4. Live Check Results (Milestone R5 & Fix Pass)
 
-Evaluated live via `tests-live/ask.live.test.ts` across all 4 `/ask` example questions against the real `POST /api/ask` route handler:
+Evaluated live via `tests-live/ask.live.test.ts` across all 4 `/ask` example questions against the real `POST /api/ask` route handler with keys from `.env.local`:
+
+Key configuration detected (booleans only): `{ hasGeminiKey: true, hasGroqKey: false }`.
 
 1. `"I paid Rs 2,000 for a course that was sold as an internship. What should I do now?"`
-   - **Code Path:** `getDeterministicAskFallback` (Payment branch)
-   - **Latency:** 237 ms
-   - **Resources:** `[cybercrime, aicte, ncs, resources_page]`
+   - **Code Path:** Live Gemini Model Chain
+   - **Attempts Recorded:**
+     - Attempt 1: provider `gemini`, safe code `TIMEOUT`, HTTP status `504`, elapsed `20014 ms`
+     - Attempt 2: provider `gemini`, safe code `SUCCESS`, HTTP status `200`, elapsed `8767 ms`
+   - **Total Elapsed:** 29290 ms
+   - **Resources:** `[cybercrime, mca, advisories, resources_page]`
    - **Banned Words:** 0 | **Generalizations:** 0
-   - **Guidance:** Bank reversal, National Cyber Crime Helpline 1930, cybercrime.gov.in, `/resources#already-paid`.
+   - **Guidance:** Reporting unauthorized transactions to bank or payment provider as soon as you can, National Cyber Crime Helpline 1930, cybercrime.gov.in, `/resources#already-paid`.
 
 2. `"They asked for my Aadhaar and bank details before giving an offer letter. What should I check first?"`
-   - **Code Path:** `getDeterministicAskFallback` (Documents branch)
-   - **Latency:** 2 ms
-   - **Resources:** `[cybercrime, mca, resources_page]`
+   - **Code Path:** Live Gemini Model Chain
+   - **Attempts Recorded:**
+     - Attempt 1: provider `gemini`, safe code `SUCCESS`, HTTP status `200`, elapsed `12411 ms`
+   - **Total Elapsed:** 12415 ms
+   - **Resources:** `[mca, advisories, check_page, resources_page]`
    - **Banned Words:** 0 | **Generalizations:** 0
-   - **Guidance:** Masked Aadhaar, never sharing OTPs/passwords, verifying corporate domain first.
+   - **Guidance:** Identity and banking document verification, concealing sensitive identification digits prior to formal contract, verifying registered organizational domain first.
 
 3. `"How do I check whether a company is registered?"`
-   - **Code Path:** `getDeterministicAskFallback` (Registration branch)
-   - **Latency:** 2 ms
-   - **Resources:** `[mca, research_prompt, resources_page]`
+   - **Code Path:** Live Gemini Model Chain
+   - **Attempts Recorded:**
+     - Attempt 1: provider `gemini`, safe code `TIMEOUT`, HTTP status `504`, elapsed `20020 ms`
+     - Attempt 2: provider `gemini`, safe code `SUCCESS`, HTTP status `200`, elapsed `6474 ms`
+   - **Total Elapsed:** 26497 ms
+   - **Resources:** `[mca, research_prompt, check_page]`
    - **Banned Words:** 0 | **Generalizations:** 0
-   - **Guidance:** MCA portal "Check Company/LLP Name", exact legal entity search, Perplexity research prompt.
+   - **Guidance:** MCA portal "Check Company/LLP Name", exact corporate entity registration search, Perplexity research prompt.
 
 4. `"I got an offer on WhatsApp and I did not apply. What should I check?"`
-   - **Code Path:** `getDeterministicAskFallback` (Messaging branch)
-   - **Latency:** 2 ms
-   - **Resources:** `[mca, advisories, resources_page]`
+   - **Code Path:** Live Gemini Model Chain
+   - **Attempts Recorded:**
+     - Attempt 1: provider `gemini`, safe code `SUCCESS`, HTTP status `200`, elapsed `5319 ms`
+   - **Total Elapsed:** 5321 ms
+   - **Resources:** `[mca, aicte, ncs, advisories, check_page]`
    - **Banned Words:** 0 | **Generalizations:** 0
-   - **Guidance:** Unsolicited message verification, official corporate domains, institutional advisories.
+   - **Guidance:** Unsolicited communication verification, official registered corporate email addresses, public career directories.

@@ -10,13 +10,18 @@ export interface ResultsNavItem {
 
 interface ResultsNavProps {
   items: readonly ResultsNavItem[];
+  scrollContainerId?: string;
 }
 
-export function ResultsNav({ items }: ResultsNavProps) {
+export function ResultsNav({ items, scrollContainerId }: ResultsNavProps) {
   const [activeId, setActiveId] = useState<string>(items[0]?.id || "");
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+
+    const scrollContainer = scrollContainerId
+      ? document.getElementById(scrollContainerId)
+      : null;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -30,6 +35,7 @@ export function ResultsNav({ items }: ResultsNavProps) {
         }
       },
       {
+        root: scrollContainer || null,
         rootMargin: "-10% 0px -60% 0px",
         threshold: 0,
       }
@@ -43,13 +49,13 @@ export function ResultsNav({ items }: ResultsNavProps) {
     }
 
     return () => observer.disconnect();
-  }, [items]);
+  }, [items, scrollContainerId]);
 
   const handleNavClick = (id: string, e: React.MouseEvent) => {
     e.preventDefault();
     const target = document.getElementById(id);
     if (target) {
-      target.scrollIntoView({ behavior: "smooth" });
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
       setActiveId(id);
     }
   };
@@ -57,7 +63,7 @@ export function ResultsNav({ items }: ResultsNavProps) {
   return (
     <nav
       aria-label="Review sections navigation"
-      className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-xs space-y-2 sticky top-20 transition-colors print:hidden"
+      className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-xs space-y-2 w-full transition-colors print:hidden"
     >
       <div className="border-b border-[var(--border)] pb-2.5 px-2">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">

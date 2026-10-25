@@ -16,6 +16,9 @@ if (fs.existsSync(".env.local")) {
 
 const groqApiKey = process.env.GROQ_API_KEY?.trim();
 const hasGroqKey = Boolean(groqApiKey);
+const hasGeminiKey = Boolean(process.env.GEMINI_API_KEY?.trim());
+
+console.log("[Groq Live Key Status]", { hasGeminiKey, hasGroqKey });
 
 if (!hasGroqKey) {
   console.warn(

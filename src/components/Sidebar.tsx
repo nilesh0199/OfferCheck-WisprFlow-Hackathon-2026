@@ -18,9 +18,7 @@ interface SidebarProps {
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [copied, setCopied] = useState(false);
-  const [viewportHeight, setViewportHeight] = useState<number>(() =>
-    typeof window !== "undefined" ? window.innerHeight : 800
-  );
+  const [viewportHeight, setViewportHeight] = useState<number>(800);
   const pathname = usePathname();
   const router = useRouter();
   const { isCommandBarEnabled, toggleCommandBar } = useOfferSession();
@@ -55,6 +53,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   // Track viewport height for zero-scroll sizing
   useEffect(() => {
+    setViewportHeight(window.innerHeight);
     const handleResize = () => setViewportHeight(window.innerHeight);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);

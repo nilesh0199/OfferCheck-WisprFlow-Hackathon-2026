@@ -123,6 +123,9 @@ export default function AboutPage() {
                     <strong className="text-[var(--text)]">Multi-step structured intake:</strong> An accessible 5-step wizard guides candidates through offer text, communication channel, sender details, interview history, and deposit requests.
                   </li>
                   <li>
+                    <strong className="text-[var(--text)]">Client-side privacy masking:</strong> On-device regex detection identifies sensitive personal details (names, phone numbers, emails, Aadhaar, PAN, UPI IDs) and provides an interactive visual scrubber in Step 5 to mask them before anything is sent to upstream AI providers.
+                  </li>
+                  <li>
                     <strong className="text-[var(--text)]">Dual-AI analysis on free-tier infrastructure:</strong> Evaluates offer context using Google Gemini models with automatic model fallback and circuit breaker safeguards.
                   </li>
                   <li>

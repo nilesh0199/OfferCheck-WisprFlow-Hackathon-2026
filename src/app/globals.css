@@ -66,6 +66,9 @@
   --color-tint-attention-accent: #d9a400;
   --color-tint-attention-text: #593e00;
 
+  /* Danger / Warning Alert */
+  --color-danger-text: #b91c1c;
+
   /* Command Bar Active State (Green light surround, WCAG >= 3:1 UI component contrast) */
   --color-command-active-border: #059669;
   --color-command-active-glow: rgba(5, 150, 105, 0.25);
@@ -163,6 +166,9 @@
   --color-tint-attention-border: #947620;
   --color-tint-attention-accent: #d9a400;
   --color-tint-attention-text: #fde896;
+
+  /* Danger / Warning Alert */
+  --color-danger-text: #f87171;
 
   /* Command Bar Active State (Green light surround) */
   --color-command-active-border: #34d399;

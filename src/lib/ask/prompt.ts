@@ -57,7 +57,11 @@ You MUST respond with valid JSON matching this schema:
   "askOrCheck": ["Up to 4 verification questions or checks to verify the opportunity independently."],
   "resources": ["cybercrime" | "aicte" | "ncs" | "mca" | ...],
   "clarifyingQuestion": "Optional question if the student's question was incomplete or ambiguous, else null"
-}`;
+}
+
+7. CLIENT-SIDE PRIVACY PLACEHOLDERS:
+- The user may share text containing bracketed privacy placeholders like [CANDIDATE_NAME], [PHONE_REDACTED], [EMAIL_REDACTED], [AADHAAR_REDACTED], [PAN_REDACTED], [UPI_REDACTED], or [ACCOUNT_REDACTED].
+- Recognize these as on-device privacy placeholders protecting personal data. Treat them naturally as the corresponding real-world details (e.g. [CANDIDATE_NAME] as the candidate's name) without treating them as errors or templates.`;
 
 export function buildAskUserMessage(
   question: string,

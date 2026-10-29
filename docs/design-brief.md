@@ -131,7 +131,7 @@ OfferClara supports three complete, accessible, production-tested colour palette
 ## 4. Layout Architecture
 - **Global Container Primitive**: Full-bleed responsive container across all pages: `width: min(100% - 2 * gutter, 2000px)` with `gutter = clamp(16px, 2.5vw, 48px)`. No rigid 1152px/max-w-6xl choke-points.
 - **Tool Page (`/check`) Three-Zone Desk**:
-  - *Pre-analysis*: 7/12 left input card + 5/12 right contextual guidance (samples, explanation, privacy).
+  - *Pre-analysis*: 7/12 left input card + 5/12 right contextual guidance (samples, explanation, privacy). Step 5 integrates client-side regex masking and an interactive visual preview to manually scrub sensitive data (names, phones, emails, Aadhaar, PAN) with semantic placeholder tokens prior to AI submission.
   - *Post-analysis (>= 1280px)*: Left rail (original offer text with line numbers and interactive evidence highlights), Center fluid column (findings, checklist, questions, resources), Right rail (sticky section outline and actions).
   - *1024–1279px*: 2-column layout with collapsible offer panel in center.
   - *< 1024px*: Single column with sticky horizontal section pills.

@@ -93,7 +93,7 @@ export interface OfferSessionContextValue {
   isResultOutdated: boolean;
   setOfferText: (text: string) => void;
   loadSample: (text: string) => void;
-  handleAnalyze: () => Promise<void>;
+  handleAnalyze: (scrubbedTextOverride?: string) => Promise<void>;
   handleCancel: () => void;
   handleClear: () => void;
   handleClearAll: () => void;
@@ -568,10 +568,10 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     return isReadyToAnalyse(state);
   }, [state]);
 
-  const handleAnalyze = useCallback(async () => {
+  const handleAnalyze = useCallback(async (scrubbedTextOverride?: string) => {
     if (state.status === "loading") return;
 
-    const currentCombined = buildCombinedText(state).text;
+    const currentCombined = scrubbedTextOverride || buildCombinedText(state).text;
     const check = isReadyToAnalyse(state);
 
     if (!check.ready) {

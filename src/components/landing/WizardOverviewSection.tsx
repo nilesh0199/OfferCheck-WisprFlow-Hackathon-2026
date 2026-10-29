@@ -42,9 +42,9 @@ const WIZARD_STEPS: readonly WizardStepCard[] = [
   {
     number: 5,
     title: "Review & submit",
-    summary: "Summary & AI analysis",
+    summary: "On-device masking & analysis",
     detail:
-      "Review your answers, verify character boundaries, and run the deep analysis across our model fallback chain.",
+      "Review your answers, scrub sensitive personal details with on-device privacy masking, and run the analysis safely.",
   },
 ];
 

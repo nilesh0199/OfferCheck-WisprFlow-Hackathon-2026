@@ -9,7 +9,7 @@ import { FileUploadDropzone } from "../upload/FileUploadDropzone";
 import { SelectedFileList } from "../upload/SelectedFileList";
 import { useOfferSession } from "../SessionProvider";
 import { WizardStep } from "@/lib/combined-text";
-import { ChevronDownIcon, SpinnerIcon } from "../Icons";
+import { ChevronDownIcon, SpinnerIcon, AttentionIcon } from "../Icons";
 
 interface Step1OfferProps {
   onGoToStep: (step: WizardStep) => void;
@@ -139,8 +139,8 @@ export function Step1Offer({ onGoToStep }: Step1OfferProps) {
           />
         </div>
 
-        {/* Link for candidates without written documents */}
-        <div className="flex items-center justify-between text-xs pt-1">
+        {/* Link for candidates without written documents & sensitive info warning */}
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 pt-1 text-xs">
           <button
             type="button"
             onClick={() => onGoToStep(3)}
@@ -148,6 +148,14 @@ export function Step1Offer({ onGoToStep }: Step1OfferProps) {
           >
             I don&apos;t have a document (describe a call or conversation instead)
           </button>
+
+          <div
+            role="alert"
+            className="inline-flex items-center gap-1.5 text-sm font-bold text-[var(--color-danger-text)]"
+          >
+            <AttentionIcon className="w-4 h-4 shrink-0" aria-hidden="true" />
+            <span>Warning: Please remove personal / sensitive information</span>
+          </div>
         </div>
 
         {/* File Attachments & Transcription */}

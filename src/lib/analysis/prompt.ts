@@ -51,7 +51,14 @@ Heading lines such as "---- Offer text ----", "---- How you received it (your an
    - In the optional "entities" object, return "companyName" exactly as written in the offer text or conversation, or null if it is not clearly stated or several organisations are mentioned; never infer. The company name entity must come from the offer text or conversation, never from the answers.
    - In the same way, return "roleTitle" exactly as written in the offer text or conversation, or null if it is not clearly stated; never infer.
 11. OUTPUT FORMAT:
-   - Return valid JSON matching the provided schema. Do not output markdown fences or explanatory text outside the JSON object.`;
+   - Return valid JSON matching the provided schema. Do not output markdown fences or explanatory text outside the JSON object.
+12. CLIENT-SIDE PRIVACY REDACTION TOKENS:
+   - The input text may contain bracketed privacy placeholder tokens such as [CANDIDATE_NAME], [PHONE_REDACTED], [EMAIL_REDACTED], [AADHAAR_REDACTED], [PAN_REDACTED], [UPI_REDACTED], or [ACCOUNT_REDACTED].
+   - These placeholders are inserted on-device by OfferClara's client-side privacy scrubber to protect the candidate's personal data before analysis.
+   - Understand what each placeholder represents: [CANDIDATE_NAME] represents the candidate's actual name, [PHONE_REDACTED] represents a phone number, [EMAIL_REDACTED] represents an email address, [AADHAAR_REDACTED] represents an Aadhaar number, [PAN_REDACTED] represents a PAN card number, [UPI_REDACTED] represents a UPI ID, and [ACCOUNT_REDACTED] represents a bank account number.
+   - DO NOT treat these placeholders as suspicious template artifacts, placeholder text, incomplete offer templates, or missing candidate details.
+   - DO NOT flag the mere presence of "[CANDIDATE_NAME]" or "[EMAIL_REDACTED]" as a concern.
+   - If the surrounding context describes a concern (e.g. asking for an upfront fee via "[UPI_REDACTED]" or demanding government identity documents like "[PAN_REDACTED]"), evaluate the underlying request as a concern normally, and quote the exact phrase including the bracketed token verbatim (e.g. "submit your PAN [PAN_REDACTED]").`;
 
 /**
  * Wraps untrusted offer text inside explicit delimiters and provides instructions to treat it as data.

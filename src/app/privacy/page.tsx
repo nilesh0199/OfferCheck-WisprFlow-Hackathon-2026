@@ -66,6 +66,39 @@ export default function PrivacyPage() {
               </div>
             </section>
 
+            {/* Section 2: Client-side sensitive data masking and scrubbing */}
+            <section
+              id="client-side-privacy-masking"
+              aria-labelledby="heading-masking"
+              className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 sm:p-8 space-y-4 shadow-xs"
+            >
+              <h2
+                id="heading-masking"
+                className="text-lg sm:text-xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]"
+              >
+                Client-side sensitive data masking and scrubbing
+              </h2>
+              <div className="space-y-3 text-sm text-[var(--text-muted)] leading-relaxed">
+                <p>
+                  To ensure personal identifiers never reach external AI models, OfferClara incorporates an on-device regex detection engine and an interactive visual preview scrubber in Step 5 (Review & Submit).
+                </p>
+                <ul className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm">
+                  <li>
+                    <strong>100% on-device detection:</strong> Identifiers such as phone numbers, personal email addresses, Aadhaar numbers, PAN cards, UPI IDs, bank account numbers, and candidate names are detected entirely within your browser using regex patterns. Zero external network calls or AI queries are made for this process.
+                  </li>
+                  <li>
+                    <strong>Interactive visual toggle:</strong> Detected items are displayed with interactive badges directly in the review screen. You can review every item and choose to keep or mask it with a single click, or use the &ldquo;Redact all&rdquo; and &ldquo;Keep all&rdquo; batch controls.
+                  </li>
+                  <li>
+                    <strong>Semantic placeholders:</strong> Masked tokens are substituted with safe, readable placeholders (such as <code className="font-mono text-xs px-1.5 py-0.5 rounded bg-[var(--surface-muted)] border border-[var(--border)]">[PHONE_REDACTED]</code>, <code className="font-mono text-xs px-1.5 py-0.5 rounded bg-[var(--surface-muted)] border border-[var(--border)]">[EMAIL_REDACTED]</code>, <code className="font-mono text-xs px-1.5 py-0.5 rounded bg-[var(--surface-muted)] border border-[var(--border)]">[AADHAAR_REDACTED]</code>, <code className="font-mono text-xs px-1.5 py-0.5 rounded bg-[var(--surface-muted)] border border-[var(--border)]">[PAN_REDACTED]</code>, <code className="font-mono text-xs px-1.5 py-0.5 rounded bg-[var(--surface-muted)] border border-[var(--border)]">[UPI_REDACTED]</code>, and <code className="font-mono text-xs px-1.5 py-0.5 rounded bg-[var(--surface-muted)] border border-[var(--border)]">[CANDIDATE_NAME]</code>). Upstream AI models are instructed to recognize these tags as privacy placeholders without confusing them with missing or suspicious information.
+                  </li>
+                  <li>
+                    <strong>Non-destructive overlay:</strong> Your original text remains completely untouched in your local session, ensuring you can still edit or reference it freely. Only the actively scrubbed overlay is transmitted when you proceed to analysis.
+                  </li>
+                </ul>
+              </div>
+            </section>
+
             {/* Section 2: What OfferClara does not store */}
             <section
               id="what-we-do-not-store"

@@ -42,6 +42,16 @@ describe("SYSTEM_INSTRUCTION prompt rules and additions", () => {
       "The company name entity must come from the offer text or conversation, never from the answers."
     );
   });
+
+  it("instructs model that bracketed privacy placeholders represent scrubbed personal data, not template artifacts", () => {
+    expect(SYSTEM_INSTRUCTION).toContain("CLIENT-SIDE PRIVACY REDACTION TOKENS");
+    expect(SYSTEM_INSTRUCTION).toContain("[CANDIDATE_NAME]");
+    expect(SYSTEM_INSTRUCTION).toContain("[PHONE_REDACTED]");
+    expect(SYSTEM_INSTRUCTION).toContain("[EMAIL_REDACTED]");
+    expect(SYSTEM_INSTRUCTION).toContain("[AADHAAR_REDACTED]");
+    expect(SYSTEM_INSTRUCTION).toContain("[PAN_REDACTED]");
+    expect(SYSTEM_INSTRUCTION).toContain("DO NOT treat these placeholders as suspicious template artifacts");
+  });
 });
 
 describe("buildUserContent helper", () => {

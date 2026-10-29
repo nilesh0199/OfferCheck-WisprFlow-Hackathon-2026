@@ -32,7 +32,7 @@ A review works in five structured steps:
 2. **Step 2 — Source and channel:** Specify how the offer was received (email, LinkedIn, WhatsApp, Telegram, campus, or job portal) and whether an application was submitted.
 3. **Step 3 — Described conversation:** Describe recruiter phone calls, verbal promises, or interview details in your own words (typed or dictated).
 4. **Step 4 — Money and documents:** Note any requested training fees, security deposits, equipment charges, or sensitive identity documents.
-5. **Step 5 — Review and submit:** Inspect the structured summary, check character limits (up to 12,000 characters), review AI data notices, and launch the evidence-linked review.
+5. **Step 5 — Review and submit:** Inspect the structured summary, review the interactive visual preview with client-side privacy masking (scrubs names, phone numbers, emails, Aadhaar, and PAN directly on your device), review AI data notices, and launch the evidence-linked review.
 
 ---
 
@@ -53,6 +53,7 @@ A review works in five structured steps:
 | Feature | Status | Notes |
 | :--- | :--- | :--- |
 | **5-step review wizard** | Implemented | Step-by-step guidance separating offer documents, source channel, candidate-described conversations, payment/document requests, and review snapshot at `/check`. Header row includes a "Clear and start over" ghost button. |
+| **Client-side privacy masking** | Implemented | Step 5 interactive visual preview and regex scrubber that detects personal identifiers (candidate names, phone numbers, emails, Aadhaar numbers, PAN cards, UPI IDs, bank accounts) on-device, offering 1-click batch masking and individual toggle pills before sending text to the AI. |
 | **Combined text & file review** | Implemented | Evaluates combined text up to 12,000 characters; up to 5 screenshots (PNG, JPEG, WebP) or PDFs (max 4 MB total) transcribed via Gemini multimodal API and appended with generic source markers (`---- Text from Screenshot N ----`, `---- Text from PDF N ----`) and 1-level undo. |
 | **Docked Command Box** | Implemented | Docked bottom bar with placeholder `Dictate a command`, optional top bar/sidebar toggle, active green glow, `What can I say?` dialog, Spacebar cancellation, 1-second countdown, and dynamic `--dock-offset` preventing viewport overlap. |
 | **Clear doubt with AI** | Implemented | Focused full-height chat interface at `/ask` with docked bottom composer, auto-growing textarea, IME guards, 2x2 starter questions, calm text-only loading state, and question-aware deterministic fallback with zero employer generalizations. |
@@ -106,6 +107,10 @@ flowchart TD
 
 <details>
 <summary><strong>Privacy and Responsible Use</strong></summary>
+
+### Client-Side Privacy Masking & Sensitive Data Scrubbing
+
+Before submitting offer text or conversation transcripts to upstream models, Step 5 (Review & Submit) runs pure client-side regex detection on your device. It detects phone numbers, personal email addresses, Aadhaar numbers, PAN cards, UPI IDs, bank account runs, and candidate names. Users can preview detected tokens with interactive visual toggle pills, batch-redact or keep items, and ensure personal data is replaced with generic placeholders (`[PHONE_REDACTED]`, `[EMAIL_REDACTED]`, `[AADHAAR_REDACTED]`, `[PAN_REDACTED]`, `[UPI_REDACTED]`, `[CANDIDATE_NAME]`) with zero server or AI calls.
 
 ### What Is Sent to External Services
 

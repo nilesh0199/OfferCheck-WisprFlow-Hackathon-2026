@@ -72,4 +72,24 @@ Please reply to careers@example.com or call +91 98000 00000.`;
       expect(detectSensitiveIdentifiers(cleanOffer)).toEqual([]);
     });
   });
+
+  describe("Step 1 Sensitive Information Warning", () => {
+    it("verifies Step 1 shows a bold red warning beside the document fallback button", () => {
+      const fs = require("fs");
+      const path = require("path");
+      const step1Path = path.resolve(
+        process.cwd(),
+        "src/components/wizard/Step1Offer.tsx"
+      );
+      const content = fs.readFileSync(step1Path, "utf-8");
+
+      // Verify the warning text exists in Step 1
+      expect(content).toContain("Warning: Please remove personal / sensitive information");
+      // Verify it's styled bold, red (danger text variable), and text-sm (1 size bigger than text-xs button)
+      expect(content).toContain("font-bold text-[var(--color-danger-text)]");
+      expect(content).toContain("text-sm font-bold");
+      // Verify it's alongside the 'I don't have a document' button
+      expect(content).toContain("I don&apos;t have a document (describe a call or conversation instead)");
+    });
+  });
 });

@@ -12,7 +12,7 @@ import { Step5Review } from "./Step5Review";
 import { SpinnerIcon } from "../Icons";
 
 interface WizardContainerProps {
-  onAnalyze: () => void;
+  onAnalyze: (scrubbedTextOverride?: string) => void;
   isLoading: boolean;
   elapsedSeconds: number;
 }
@@ -150,7 +150,7 @@ export function WizardContainer({
             {isReady ? (
               <button
                 type="button"
-                onClick={onAnalyze}
+                onClick={() => onAnalyze()}
                 disabled={isLoading}
                 className="order-2 sm:order-1 px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-xs sm:text-sm font-medium text-[var(--color-primary)] hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[44px] transition-colors"
               >
@@ -205,7 +205,7 @@ export function WizardContainer({
           {isReady && (
             <button
               type="button"
-              onClick={onAnalyze}
+              onClick={() => onAnalyze()}
               disabled={isLoading}
               className="px-3 py-2 rounded-lg border border-[var(--border)] text-xs font-medium text-[var(--color-primary)] min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
             >

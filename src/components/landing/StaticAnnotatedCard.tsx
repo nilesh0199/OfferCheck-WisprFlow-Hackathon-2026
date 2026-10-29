@@ -4,7 +4,7 @@ import React from "react";
 
 export function StaticAnnotatedCard() {
   return (
-    <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-lg overflow-hidden transition-colors">
+    <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5">
       {/* Top Document Header Bar */}
       <div className="border-b border-[var(--border)] bg-[var(--surface-muted)]/60 px-4 py-2.5 flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -32,7 +32,7 @@ export function StaticAnnotatedCard() {
         </p>
 
         {/* Highlight 1: Training fee clause */}
-        <div className="space-y-2 rounded-xl p-2.5 bg-[var(--tint-info-bg)]/40 border border-[var(--border)]">
+        <div className="space-y-2 rounded-xl p-2.5 bg-[var(--tint-info-bg)]/40 border border-[var(--border)] transition-colors hover:border-[var(--color-primary)]">
           <p className="text-[var(--text)] leading-relaxed">
             &quot;To confirm your seat,{" "}
             <mark className="bg-[var(--accent-highlighter)] text-[var(--color-primary-contrast)] font-medium px-1 rounded-xs">
@@ -40,14 +40,17 @@ export function StaticAnnotatedCard() {
             </mark>{" "}
             prior to project assignment.&quot;
           </p>
-          <div className="flex items-center gap-1.5 text-xs text-[var(--color-primary)] font-medium pl-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-highlighter)]" aria-hidden="true" />
+          <div className="flex items-center gap-2 text-xs text-[var(--color-primary)] font-medium pl-1">
+            <span className="relative flex h-2 w-2 shrink-0">
+              <span className="radar-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-primary)] opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-primary)]" />
+            </span>
             <span>Observation: Paid training requested before internship starts</span>
           </div>
         </div>
 
         {/* Highlight 2: 24-hour urgency deadline */}
-        <div className="space-y-2 rounded-xl p-2.5 bg-[var(--tint-info-bg)]/40 border border-[var(--border)]">
+        <div className="space-y-2 rounded-xl p-2.5 bg-[var(--tint-info-bg)]/40 border border-[var(--border)] transition-colors hover:border-[var(--color-primary)]">
           <p className="text-[var(--text)] leading-relaxed">
             &quot;Payment and document submission must be completed{" "}
             <mark className="bg-[var(--accent-highlighter)] text-[var(--color-primary-contrast)] font-medium px-1 rounded-xs">
@@ -55,14 +58,17 @@ export function StaticAnnotatedCard() {
             </mark>
             .&quot;
           </p>
-          <div className="flex items-center gap-1.5 text-xs text-[var(--color-primary)] font-medium pl-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-highlighter)]" aria-hidden="true" />
+          <div className="flex items-center gap-2 text-xs text-[var(--color-primary)] font-medium pl-1">
+            <span className="relative flex h-2 w-2 shrink-0">
+              <span className="radar-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-primary)] opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-primary)]" />
+            </span>
             <span>Observation: Urgent payment deadline prevents independent verification</span>
           </div>
         </div>
 
         {/* Highlight 3: Unverified Telegram handle */}
-        <div className="space-y-2 rounded-xl p-2.5 bg-[var(--tint-info-bg)]/40 border border-[var(--border)]">
+        <div className="space-y-2 rounded-xl p-2.5 bg-[var(--tint-info-bg)]/40 border border-[var(--border)] transition-colors hover:border-[var(--color-primary)]">
           <p className="text-[var(--text)] leading-relaxed">
             &quot;After transferring the fee, send your payment screenshot to{" "}
             <mark className="bg-[var(--accent-highlighter)] text-[var(--color-primary-contrast)] font-medium px-1 rounded-xs">
@@ -70,8 +76,11 @@ export function StaticAnnotatedCard() {
             </mark>{" "}
             for instant batch allocation.&quot;
           </p>
-          <div className="flex items-center gap-1.5 text-xs text-[var(--color-primary)] font-medium pl-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-highlighter)]" aria-hidden="true" />
+          <div className="flex items-center gap-2 text-xs text-[var(--color-primary)] font-medium pl-1">
+            <span className="relative flex h-2 w-2 shrink-0">
+              <span className="radar-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-primary)] opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-primary)]" />
+            </span>
             <span>Observation: Contact and payment proof diverted to personal messaging app</span>
           </div>
         </div>

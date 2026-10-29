@@ -26,6 +26,12 @@ export function FaqSection() {
       a: "'No concerns identified' must not be interpreted as 'safe' or 'verified'. Messages can copy official or common offer templates word for word. Confirm the offer through official company communication channels.",
     },
     {
+      q: "What should I know about courses or training sold as 'guaranteed internships'?",
+      a: "A common pattern in student recruitment is offering an 'internship' that requires paying upfront for a 1- or 2-month training program, course, or certification before any internship or stipend begins. Dubious solicitors often mention prestigious institutions like IITs, NITs, or major tech companies to look authentic. While legitimate training courses exist, genuine employers do not charge candidates for training to hire them. This is why independently verifying the entity on official registries like MCA and institutional portals is critical before transferring money.",
+      linkHref: "/resources",
+      linkLabel: "View verified institutional advisories",
+    },
+    {
       q: "What should I do if I have already paid or shared documents?",
       a: "Contact your bank or payment provider as soon as you can, and report the incident on the National Cyber Crime Reporting Portal (cybercrime.gov.in) or by calling 1930. Keep screenshots, messages and payment proofs, and avoid sending more money or documents until you have confirmed the offer independently. This is general guidance, not legal advice.",
       linkHref: "/resources",

@@ -91,7 +91,7 @@ export default function AboutPage() {
               </h2>
               <div className="text-xs sm:text-sm text-[var(--text-muted)] space-y-3 leading-relaxed">
                 <p>
-                  Every year, thousands of college students, fresh graduates, and career changers across India and globally encounter deceptive employment practices. Dubious entities exploit candidates&apos; enthusiasm by asking for &quot;refundable training fees&quot;, &quot;laptop courier charges&quot;, &quot;registration deposits&quot;, or sensitive identity documents like Aadhaar cards and bank details.
+                  Every year, thousands of college students, fresh graduates, and career changers across India and globally encounter deceptive employment practices. Dubious entities exploit candidates&apos; enthusiasm by asking for &quot;refundable training fees&quot;, &quot;laptop courier charges&quot;, &quot;registration deposits&quot;, or selling paid training courses disguised as &quot;guaranteed internships&quot; (frequently citing premier institutions like IITs or top universities to manufacture credibility).
                 </p>
                 <p>
                   Candidates often realize the issue only after sending money or sharing confidential papers. Traditional advice often says &quot;just be careful&quot; or &quot;do your research&quot;, which fails to give candidates concrete verification questions or explain why specific clauses are concerning.

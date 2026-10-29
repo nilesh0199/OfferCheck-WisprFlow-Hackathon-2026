@@ -12,7 +12,7 @@ const WHAT_IT_DOES = [
   {
     title: "Spots fee and course demands",
     description:
-      "Identifies requests for registration fees, training packages, laptop deposits, or verification charges presented as internships.",
+      "Identifies paid training packages and courses disguised as 'guaranteed internships' (often citing names like IITs or premier brands), registration fees, and laptop deposits.",
   },
   {
     title: "Flags missing contract terms",
@@ -81,7 +81,7 @@ export function CapabilitiesComparisonSection() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
           {/* Column 1: What it does */}
-          <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)]/40 p-6 sm:p-8 space-y-6">
+          <div className="capabilities-col rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)]/40 p-6 sm:p-8 space-y-6">
             <div className="flex items-center gap-2 border-b border-[var(--border)] pb-3">
               <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-primary)]" />
               <h3 className="text-base sm:text-lg font-semibold text-[var(--text)]">
@@ -104,7 +104,7 @@ export function CapabilitiesComparisonSection() {
           </div>
 
           {/* Column 2: What it will not do */}
-          <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)]/40 p-6 sm:p-8 space-y-6">
+          <div className="capabilities-col rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)]/40 p-6 sm:p-8 space-y-6">
             <div className="flex items-center gap-2 border-b border-[var(--border)] pb-3">
               <span className="w-2.5 h-2.5 rounded-full bg-[var(--text-muted)]" />
               <h3 className="text-base sm:text-lg font-semibold text-[var(--text)]">

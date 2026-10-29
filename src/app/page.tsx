@@ -9,6 +9,8 @@ import { PrivacySection } from "@/components/landing/PrivacySection";
 import { FaqSection } from "@/components/landing/FaqSection";
 import { FinalCta } from "@/components/landing/FinalCta";
 import { LandingFooter } from "@/components/landing/LandingFooter";
+import { LandingWordBand } from "@/components/landing/LandingWordBand";
+import { LandingScrollEffects } from "@/components/landing/LandingScrollEffects";
 import { Container } from "@/components/Container";
 import { APP_NAME } from "@/lib/config";
 
@@ -21,23 +23,28 @@ export const metadata: Metadata = {
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col justify-between transition-colors">
+      <LandingScrollEffects />
+
       <main className="flex-1">
         {/* Asymmetric Hero Section */}
-        <section className="pt-4 pb-10 sm:pt-6 sm:pb-12 lg:pt-8 lg:pb-12 border-b border-[var(--border)] bg-[var(--tint-info-bg)]/40 transition-colors">
+        <section className="pt-4 pb-10 sm:pt-6 sm:pb-12 lg:pt-8 lg:pb-12 border-b border-[var(--border)] bg-[var(--tint-info-bg)]/40 transition-colors overflow-hidden">
           <Container className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start lg:items-center">
             {/* Left Column: Asymmetric Typography, Actions & Trust Bar */}
-            <div className="lg:col-span-6 space-y-6 text-left">
+            <div className="lg:col-span-6 space-y-6 text-left hero-left-content">
               <div className="space-y-3">
-                <h1 className="text-[clamp(2.75rem,5.5vw,4.5rem)] font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]">
-                  Understand the offer. Know what to verify.
+                <h1 className="text-[clamp(2.75rem,5.5vw,4.5rem)] font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08] hero-title descender-safe">
+                  <span className="relative inline-block glossy-heading-text descender-safe-clip">
+                    Understand the offer.
+                  </span>{" "}
+                  Know what to verify.
                 </h1>
-                <p className="text-[clamp(1.5rem,2.5vw,1.875rem)] font-serif text-[var(--text-muted)] leading-snug">
+                <p className="text-[clamp(1.5rem,2.5vw,1.875rem)] font-serif text-[var(--text-muted)] leading-snug hero-subtitle descender-safe">
                   Make every offer clear.
                 </p>
               </div>
 
               {/* Primary & Secondary CTAs */}
-              <div className="pt-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
+              <div className="pt-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 hero-cta">
                 <Link
                   href="/check"
                   className="inline-flex items-center justify-center rounded-xl bg-[var(--color-primary)] text-[var(--color-primary-contrast)] px-8 py-3.5 text-[1.125rem] font-semibold shadow-xs hover:bg-[var(--color-primary-hover)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-h-[3.5rem]"
@@ -53,7 +60,7 @@ export default function LandingPage() {
               </div>
 
               {/* Trust Strip in Sans Font */}
-              <div className="pt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-[1rem] text-[var(--text-muted)] font-sans leading-normal">
+              <div className="pt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-[1rem] text-[var(--text-muted)] font-sans leading-normal hero-trust">
                 <span>No sign-up</span>
                 <span aria-hidden="true">•</span>
                 <span>We do not store your offer text</span>
@@ -65,11 +72,14 @@ export default function LandingPage() {
             </div>
 
             {/* Right Column: Static Annotated Card */}
-            <div className="lg:col-span-6 w-full">
+            <div className="lg:col-span-6 w-full hero-card">
               <StaticAnnotatedCard />
             </div>
           </Container>
         </section>
+
+        {/* Core Review Capabilities Word Band Ribbon */}
+        <LandingWordBand />
 
         {/* 5-Step Guided Review Wizard Overview */}
         <WizardOverviewSection />

@@ -76,17 +76,35 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       }
       document.documentElement.style.overflow = "hidden";
       document.body.style.overflow = "hidden";
+      try {
+        const win = window as unknown as { __lenis?: { stop: () => void; start: () => void } };
+        win.__lenis?.stop();
+      } catch {
+        // Safe fallback
+      }
     } else {
       if (dialog.open) {
         dialog.close();
       }
       document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
+      try {
+        const win = window as unknown as { __lenis?: { stop: () => void; start: () => void } };
+        win.__lenis?.start();
+      } catch {
+        // Safe fallback
+      }
     }
 
     return () => {
       document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
+      try {
+        const win = window as unknown as { __lenis?: { stop: () => void; start: () => void } };
+        win.__lenis?.start();
+      } catch {
+        // Safe fallback
+      }
     };
   }, [isOpen]);
 
@@ -201,6 +219,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         <div
           role="presentation"
           aria-hidden="true"
+          data-lenis-prevent="true"
           onClick={onClose}
           className="fixed inset-0 bg-[rgba(0,0,0,0.45)] backdrop-blur-xs z-40 transition-opacity duration-200 pointer-events-auto print:hidden"
         />
@@ -208,6 +227,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       <dialog
         id="app-sidebar"
         ref={dialogRef}
+        data-lenis-prevent="true"
         aria-label="OfferClara navigation sidebar"
       onCancel={(e) => {
         e.preventDefault();

@@ -4,8 +4,8 @@ import { Container } from "@/components/Container";
 
 export function FinalCta() {
   return (
-    <section className="py-16 sm:py-24 border-t border-[var(--border)] bg-[var(--surface)] transition-colors">
-      <Container className="text-center space-y-6">
+    <section className="py-16 sm:py-24 border-t border-[var(--border)] bg-[var(--surface)] transition-colors overflow-hidden">
+      <Container className="final-cta-card text-center space-y-6">
         <h2 className="text-2xl sm:text-4xl font-serif tracking-[-0.015em] text-[var(--text)] leading-[1.08]">
           Ready to review an offer?
         </h2>

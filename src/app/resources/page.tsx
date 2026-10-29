@@ -101,6 +101,29 @@ export default function ResourcesPage() {
             </div>
           </section>
 
+          {/* Critical Note on Courses Sold as Internships */}
+          <section
+            id="courses-sold-as-internships"
+            aria-labelledby="course-internship-warning-heading"
+            className="rounded-2xl border border-[var(--border)] bg-[var(--tint-attention-bg)]/40 p-5 sm:p-6 space-y-3 transition-colors shadow-xs"
+          >
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-primary)]" />
+              <h3
+                id="course-internship-warning-heading"
+                className="text-base sm:text-lg font-semibold text-[var(--text)]"
+              >
+                A note on training courses sold as &ldquo;guaranteed internships&rdquo;
+              </h3>
+            </div>
+            <p className="text-xs sm:text-sm text-[var(--text)] leading-relaxed">
+              A recurring pattern reported across colleges is when entities pitch an internship but demand that candidates first pay for a 1- or 2-month &ldquo;training&rdquo; or &ldquo;mandatory certification&rdquo; before the real internship or stipend starts. Many of these solicitations prominently name-drop premier institutions like IITs, NITs, or multinational tech corporations to appear legitimate.
+            </p>
+            <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">
+              While genuine skill-development courses exist, <strong className="text-[var(--text)] font-semibold">legitimate employers do not charge candidates money to be hired or intern</strong>. Most solicitations following this &ldquo;pay for training first, work later&rdquo; formula turn out to be ed-tech course sales rather than genuine job openings. Always verify with the institution&apos;s official placement office or corporate career portal before making any payment.
+            </p>
+          </section>
+
           {/* Institutional Advisories */}
           <OfficialAdvisoriesSection />
         </Container>

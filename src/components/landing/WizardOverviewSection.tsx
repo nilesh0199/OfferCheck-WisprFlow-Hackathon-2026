@@ -72,7 +72,7 @@ export function WizardOverviewSection() {
           {WIZARD_STEPS.map((step) => (
             <div
               key={step.number}
-              className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)]/40 p-5 space-y-3 flex flex-col justify-between transition-colors hover:border-[var(--color-primary)]"
+              className="wizard-step-card rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)]/40 p-5 space-y-3 flex flex-col justify-between transition-colors hover:border-[var(--color-primary)]"
             >
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
